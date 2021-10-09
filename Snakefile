@@ -3,13 +3,14 @@ wildcard_constraints:
 
 rule download_1000g_genotype_data:
   # hg19
+  # TODO Really not sure that these files work with Plink v1.9
   output:
     "resources/1000g/{chr}.vcf.gz"
   run:
     if wildcards.chr == 'chrX':
-        shell("wget -O resources/1000g/{wildcards.chr}.vcf.gz       ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.{wildcards.chr}.phase3_shapeit2_mvncall_integrated_v1c.20130502.genotypes.vcf.gz")
+        shell("wget -O resources/1000g/{wildcards.chr}.vcf.gz       http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.{wildcards.chr}.phase3_shapeit2_mvncall_integrated_v1c.20130502.genotypes.vcf.gz")
     elif wildcards.chr == 'chrY':
-        shell("wget -O resources/1000g/{wildcards.chr}.vcf.gz ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chrY.phase3_integrated_v2b.20130502.genotypes.vcf.gz")
+        shell("wget -O resources/1000g/{wildcards.chr}.vcf.gz http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chrY.phase3_integrated_v2b.20130502.genotypes.vcf.gz")
     else:
       shell("wget -O resources/1000g/{wildcards.chr}.vcf.gz http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.{wildcards.chr}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz")
 
@@ -30,6 +31,7 @@ rule vcf_to_bed:
     "resources/1000g/{chr}.bed",
     "resources/1000g/{chr}.bim",
     "resources/1000g/{chr}.fam"
+  threads: 8
   shell:
     "plink --memory 16000 --threads 8 --vcf resources/1000g/{wildcards.chr}.vcf.gz --make-bed --out resources/1000g/{wildcards.chr}"
 
@@ -52,6 +54,7 @@ rule get_euro_samples:
     "resources/1000g/euro/{chr}_euro.bed",
     "resources/1000g/euro/{chr}_euro.bim",
     "resources/1000g/euro/{chr}_euro.fam"
+  threads: 8
   shell:
     "plink --memory 16000 --threads 8 --bfile resources/1000g/{wildcards.chr} --keep resources/1000g/euro.fam --make-bed --silent --out resources/1000g/euro/{wildcards.chr}_euro"
 
@@ -64,6 +67,7 @@ rule qc:
     "resources/1000g/euro/qc/{chr}_qc.bed",
     "resources/1000g/euro/qc/{chr}_qc.bim",
     "resources/1000g/euro/qc/{chr}_qc.fam"
+  threads: 8
   shell:
     "plink --memory 16000 --threads 8 --bfile resources/1000g/euro/{wildcards.chr}_euro --geno 0.1 --mind 0.1 --maf 0.005 --hwe 1e-50 --make-bed --silent --out resources/1000g/euro/qc/{wildcards.chr}_qc"
 
@@ -178,55 +182,98 @@ rule decompress_ukbb_sum_stats:
         for i,x in enumerate(input):
             shell("gunzip -c %s >%s" % (x, output[i]))
 
+rule merge_ukbb_sum_stats:
+    input:
+        "resources/ukbb_sum_stats/20002_1111.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1113.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1154.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1465.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1473.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/22126.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/6148_2.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/6148_5.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/D25.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/I9_IHD.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/K51.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/K57.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/K80.gwas.imputed_v3.both_sexes.tsv"
+    output:
+        "resources/ukbb_sum_stats/merged_sum_stats.tsv"
+    threads: 8
+    shell:
+        "Rscript scripts/merge_sum_stats.R"
+
 rule make_plink_ranges:
     input:
+      "resources/ukbb_sum_stats/merged_sum_stats.tsv",
       ("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
-      gwas_file = "results/gwas/{traitA}_{traitB}/{traitA}_{traitB}.tsv.gz"
+      "resources/1000g/euro/qc/chrX_qc.bim"
     output:
-      ("results/gwas/{traitA}_{traitB}/matching_ids/chr%d.txt" % x for x in range(1,23))
-    params:
-      input_dir = "resources/1000g/euro/qc",
-      output_dir = "results/gwas/{traitA}_{traitB}/matching_ids",
-    threads: 2
+      ("resources/ukbb_sum_stats/plink_ranges/chr%d.txt" % x for x in range(1,23)),
+      "resources/ukbb_sum_stats/plink_ranges/chrX.txt"
+    threads: 8
     shell:
-      "Rscript scripts/make_plink_ranges.R -i {input.gwas_file} -b {params.input_dir} -r chr%d_qc.bim -o {params.output_dir} -nt {threads}"
+      "Rscript scripts/make_plink_ranges.R"
 
 rule subset_reference:
     input:
       "resources/1000g/euro/qc/{chr}_qc.bed",
       "resources/1000g/euro/qc/{chr}_qc.bim",
       "resources/1000g/euro/qc/{chr}_qc.fam",
-      range_file = "results/gwas/{traitA}_{traitB}/matching_ids/{chr}.txt"
+      range_file = "resources/ukbb_sum_stats/plink_ranges/{chr}.txt"
     output:
-      "results/gwas/{traitA}_{traitB}/plink/{chr}.bed",
-      "results/gwas/{traitA}_{traitB}/plink/{chr}.bim",
-      "results/gwas/{traitA}_{traitB}/plink/{chr}.fam"
+      "resources/ukbb_sum_stats/plink_subsets/{chr}.bed",
+      "resources/ukbb_sum_stats/plink_subsets/{chr}.bim",
+      "resources/ukbb_sum_stats/plink_subsets/{chr}.fam"
     params:
       bfile = "resources/1000g/euro/qc/{chr}_qc",
-      out = "results/gwas/{traitA}_{traitB}/plink/{chr}"
+      out = "resources/ukbb_sum_stats/plink_subsets/{chr}"
     threads: 8
     shell:
       "plink --memory 16000 --threads 8 --bfile {params.bfile} --extract {input.range_file} --make-bed --out {params.out}"
 
 rule make_prune_ranges:
     input:
-      "results/gwas/{traitA}_{traitB}/plink/{chr}.bed",
-      "results/gwas/{traitA}_{traitB}/plink/{chr}.bim",
-      "results/gwas/{traitA}_{traitB}/plink/{chr}.fam"
+      "resources/ukbb_sum_stats/plink_subsets/{chr}.bed",
+      "resources/ukbb_sum_stats/plink_subsets/{chr}.bim",
+      "resources/ukbb_sum_stats/plink_subsets/{chr}.fam"
     output:
-      "results/gwas/{traitA}_{traitB}/prune/{chr}.prune.in",
-      "results/gwas/{traitA}_{traitB}/prune/{chr}.prune.out"
+      "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}.prune.in",
+      "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}.prune.out"
     params:
-      bfile = "results/gwas/{traitA}_{traitB}/plink/{chr}",
-      prune_out = "results/gwas/{traitA}_{traitB}/prune/{chr}"
+      bfile = "resources/ukbb_sum_stats/plink_subsets/{chr}",
+      prune_out = "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}"
     threads: 8
     shell:
       "plink --memory 16000 --threads 8 --bfile {params.bfile} --indep-pairwise 1000kb 50 0.2 --out {params.prune_out}"
 
 rule cat_prune_ranges:
     input:
-      ("results/gwas/{traitA}_{traitB}/prune/chr%d.prune.in" % x for x in range(1,23))
+      ("resources/ukbb_sum_stats/plink_subsets/pruned_ranges/chr%d.prune.in" % x for x in range(1,23))
     output:
-      "results/gwas/{traitA}_{traitB}/prune/all.prune.in"
+      "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/all.prune.in"
     shell:
       "for x in {input}; do cat $x >>{output}; done"
+
+rule cat_bim_files:
+    input:
+        ("resources/ukbb_sum_stats/plink_subsets/{chr}.bim" % x for x in range(1,23))
+    output:
+        "resources/ukbb_sum_stats/plink_subsets/all.bim"
+    shell:
+        "for x in {input}; do cat $x >>{output}; done"
+
+rule prune_merged_sum_stats:
+    input:
+      "resources/ukbb_sum_stats/plink_subsets/all.bim",
+      "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/all.prune.in"
+    output:
+      "resources/ukbb_sum_stats/pruned_merged_sum_stats.tsv"
+    shell:
+      "Rscript prune_merged_sum_stats.R"
