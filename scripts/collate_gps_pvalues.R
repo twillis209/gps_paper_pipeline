@@ -66,12 +66,12 @@ names(merged_daf)[names(merged_daf) == 'n_cases'] <- 'n_cases.B'
 
 merged_daf <- merged_daf[order(merged_daf$gps, decreasing = T),]
 
-merged_daf$gps <- format(merged_daf$gps, digits = 1)
-merged_daf$pval.gps <- format(merged_daf$pval.gps, digits = 2)
-merged_daf$rg <- signif(merged_daf$rg, digits = 2)
-
-merged_daf$n_cases.A <- format(merged_daf$n_cases.A, big.mark = ',')
-merged_daf$n_cases.B <- format(merged_daf$n_cases.B, big.mark = ',')
+#merged_daf$gps <- format(merged_daf$gps, digits = 1)
+#merged_daf$pval.gps <- format(merged_daf$pval.gps, digits = 2)
+#merged_daf$rg <- signif(merged_daf$rg, digits = 2)
+#
+#merged_daf$n_cases.A <- format(merged_daf$n_cases.A, big.mark = ',')
+#merged_daf$n_cases.B <- format(merged_daf$n_cases.B, big.mark = ',')
 
 write.table(merged_daf, file = 'temp_gps_rg_results.tsv', sep = '\t', row.names = F)
 
