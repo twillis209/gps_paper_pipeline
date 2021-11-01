@@ -88,6 +88,8 @@ rule download_ukbb_sum_stats:
         "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv.bgz",
+        "resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv.bgz",
+        "resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv.bgz",
@@ -109,6 +111,8 @@ rule download_ukbb_sum_stats:
         wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1220.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv.bgz	
         wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1226.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv.bgz	
         wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1286.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv.bgz	
+        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1289.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv.bgz	
+        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1381.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv.bgz	
         wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1452.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv.bgz	
         wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1462.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv.bgz	
         wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1464.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv.bgz	
@@ -154,6 +158,8 @@ rule decompress_ukbb_sum_stats:
         "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv.bgz",
+        "resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv.bgz",
+        "resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv.bgz",
         "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv.bgz",
@@ -174,6 +180,8 @@ rule decompress_ukbb_sum_stats:
         "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv",
@@ -199,6 +207,8 @@ rule merge_ukbb_sum_stats:
         "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv",
@@ -299,7 +309,7 @@ rule compute_gps:
     output:
       "results/gps_values.tsv"
     shell:
-      "scripts/gps_cpp/build/apps/computeGpsCLI -i {input} -o {output}"
+      "scripts/gps_cpp/build/apps/computeGpsForUkbbTraitPairsCLI -i {input} -o {output}"
 
 rule permute_trait_pair:
     input:

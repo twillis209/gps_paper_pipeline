@@ -16,24 +16,37 @@ results_files %>%
 
 trait_name_daf <- read.table('resources/ukbb_sum_stats/traits_codes_abbrv_cases.csv', sep = ',', header = T)
 
+imd_abbrvs <- c('asthma', 'diabetes', 'hypothyroidism', 'eczema/derm', 'CD', 'rheumatoid arthritis', 'hayfever', 'UC')
+
 trait_A_values <- unique(daf$Trait_A)
 trait_B_values <- unique(daf$Trait_B)
 
-gps_mat <- matrix(nrow = length(trait_A_values), ncol = length(trait_B_values))
-pval_mat <- matrix(nrow = length(trait_A_values), ncol = length(trait_B_values))
-gps_pval_mat <- matrix(nrow = length(trait_A_values), ncol = length(trait_B_values))
+trait_values <- trait_name_daf$code
 
-rownames(gps_mat) <- trait_A_values
-colnames(gps_mat) <- trait_B_values
-rownames(pval_mat) <- trait_A_values
-colnames(pval_mat) <- trait_B_values
+gps_mat <- matrix(nrow = length(trait_values), ncol = length(trait_values))
+pval_mat <- matrix(nrow = length(trait_values), ncol = length(trait_values))
+gps_pval_mat <- matrix(nrow = length(trait_values), ncol = length(trait_values))
 
-for(i in 1:nrow(daf)) {
-  x_ix <- which(rownames(gps_mat) == daf$Trait_A[i])
-  y_ix <- which(rownames(gps_mat) == daf$Trait_B[i])
+rownames(gps_mat) <- trait_values
+colnames(gps_mat) <- trait_values
+rownames(pval_mat) <- trait_values
+colnames(pval_mat) <- trait_values
 
-  gps_mat[x_ix, y_ix] <- daf$gps[i]
-  pval_mat[x_ix, y_ix] <- daf$pval[i]
+for(i in 1:length(trait_values)) {
+  for(j in i:length(trait_values)) {
+    if(i == j) {
+      gps <- NA
+      pval <- NA
+    } else {
+      gps <- subset(daf, Trait_A == trait_values[i] & Trait_B == trait_values[j] | Trait_A == trait_values[j] & Trait_B == trait_values[i])$gps
+      pval <- subset(daf, Trait_A == trait_values[i] & Trait_B == trait_values[j] | Trait_A == trait_values[j] & Trait_B == trait_values[i])$pval
+    }
+
+    gps_mat[i, j] <- gps
+    gps_mat[j, i] <- gps
+    pval_mat[i, j] <- pval
+    pval_mat[j, i] <- pval
+  }
 }
 
 rownames(gps_mat) <- plyr::mapvalues(rownames(gps_mat), from = trait_name_daf$code, to = trait_name_daf$abbrv)
@@ -41,9 +54,11 @@ colnames(gps_mat) <- plyr::mapvalues(colnames(gps_mat), from = trait_name_daf$co
 rownames(pval_mat) <- plyr::mapvalues(rownames(pval_mat), from = trait_name_daf$code, to = trait_name_daf$abbrv)
 colnames(pval_mat) <- plyr::mapvalues(colnames(pval_mat), from = trait_name_daf$code, to = trait_name_daf$abbrv)
 
-#paste(format(pval_mat, scientific = T, digits = 2), format(gps_mat, digits = 2), sep = '/') %>% stringr::str_replace(., ' ', '')
+imd_gps_mat <- gps_mat[rownames(gps_mat) %in% imd_abbrvs, colnames(gps_mat) %in% imd_abbrvs]
+imd_pval_mat <- pval_mat[rownames(pval_mat) %in% imd_abbrvs, colnames(pval_mat) %in% imd_abbrvs]
 
-format(gps_mat, digits = 2)
+
+#paste(format(pval_mat, scientific = T, digits = 2), format(gps_mat, digits = 2), sep = '/') %>% stringr::str_replace(., ' ', '')
 
 rg_daf <- read.table('resources/ukbb_sum_stats/traits_rg.tsv', sep = '\t', header = T)
 
@@ -66,6 +81,10 @@ names(merged_daf)[names(merged_daf) == 'n_cases'] <- 'n_cases.B'
 
 merged_daf <- merged_daf[order(merged_daf$gps, decreasing = T),]
 
+merged_daf <- merged_daf[c("Trait_A","Trait_B","gps","pval.gps","rg","se.rg","pval.rg","n_cases.A","n_cases.B")]
+
+write.table(merged_daf, file = 'gps_rg_results.tsv', sep = '\t', row.names = F)
+
 #merged_daf$gps <- format(merged_daf$gps, digits = 1)
 #merged_daf$pval.gps <- format(merged_daf$pval.gps, digits = 2)
 #merged_daf$rg <- signif(merged_daf$rg, digits = 2)
@@ -73,9 +92,15 @@ merged_daf <- merged_daf[order(merged_daf$gps, decreasing = T),]
 #merged_daf$n_cases.A <- format(merged_daf$n_cases.A, big.mark = ',')
 #merged_daf$n_cases.B <- format(merged_daf$n_cases.B, big.mark = ',')
 
-write.table(merged_daf, file = 'temp_gps_rg_results.tsv', sep = '\t', row.names = F)
+pretty_merged_daf <- merged_daf
+pretty_merged_daf$pval.gps <- signif(pretty_merged_daf$pval.gps, 2)
+pretty_merged_daf$gps <- round(pretty_merged_daf$gps, 1)
+pretty_merged_daf[c('n_cases.A', 'n_cases.B')] <- format(pretty_merged_daf[c('n_cases.A', 'n_cases.B')], big.mark = ',')
 
-daf <- daf[with(daf, order(-gps)),]
+write.table(pretty_merged_daf, file = 'pretty_format_gps_rg_results.tsv', sep = '\t', row.names = F)
 
-daf$Trait_A_abbrv <- plyr::mapvalues(daf$Trait_A, from = trait_name_daf$code, to = trait_name_daf$abbrv)
-daf$Trait_B_abbrv <- plyr::mapvalues(daf$Trait_B, from = trait_name_daf$code, to = trait_name_daf$abbrv)
+
+#daf <- daf[with(daf, order(-gps)),]
+
+#daf$Trait_A_abbrv <- plyr::mapvalues(daf$Trait_A, from = trait_name_daf$code, to = trait_name_daf$abbrv)
+#daf$Trait_B_abbrv <- plyr::mapvalues(daf$Trait_B, from = trait_name_daf$code, to = trait_name_daf$abbrv)
