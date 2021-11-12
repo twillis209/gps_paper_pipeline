@@ -1,7 +1,7 @@
 library(data.table)
 setDTthreads(8)
 
-sum_stats_dat <- fread("resources/ukbb_sum_stats/merged_sum_stats.tsv", sep = '\t', header = T)
+sum_stats_dat <- fread("resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz", sep = '\t', header = T)
 
 for(i in 1:22) {
   bim_dat <- fread(sprintf("resources/1000g/euro/qc/chr%d_qc.bim", i), sep = '\t', header = F, col.names = c('chr', 'ID', 'Cm', 'bp', 'A1', 'A2'))

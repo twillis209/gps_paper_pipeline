@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH -J ld_snakemake
+#SBATCH -J gps_paper_pipeline_submit_without_scheduling
 #SBATCH -A MRC-BSU-SL2-CPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=4:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
-#SBATCH -p cclake
+#SBATCH -p cclake,icelake,icelake-himem,skylake-himem,skylake
 #SBATCH -o %j.out
 
 #! Number of nodes and tasks per node allocated by SLURM (do not change):

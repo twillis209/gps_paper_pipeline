@@ -82,119 +82,17 @@ rule qc:
 
 rule download_ukbb_sum_stats:
     output:
-        "resources/ukbb_sum_stats/20002_1111.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1113.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1154.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1465.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1473.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/22126.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/6148_2.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/6148_5.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/D25.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/I9_IHD.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/K51.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/K57.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/K80.gwas.imputed_v3.both_sexes.tsv.bgz"
+        "resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv.bgz",
     shell:
         """
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1111.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1111.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1113.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1113.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1154.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1154.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1220.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1226.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1286.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1289.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1381.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1452.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1462.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1464.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1465.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1465.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/20002_1473.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/20002_1473.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/22126.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/22126.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/6148_2.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/6148_2.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/6148_5.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/6148_5.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/D25.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/D25.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/I9_IHD.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/I9_IHD.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/K51.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/K51.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/K57.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/K57.gwas.imputed_v3.both_sexes.tsv.bgz	
-        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/K80.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/K80.gwas.imputed_v3.both_sexes.tsv.bgz
+        wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/{wildcards.id}.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/{wildcards.id}.gwas.imputed_v3.both_sexes.tsv.bgz
         """
-
-"""
-ceeabfc0db7de5400f9a5ab1ad623f92
-58e844f62b9ed983240cd0ffbab27aec
-e647700a08c45ccb43cd6f23162dd6a2
-05ff0825233a942af4a2882af49095ef
-1bd4e7f6df2b74a20c20d61cea4236f7
-08ea662fb003101dafbd87aeedff155c
-d4b0fd4d8b33e9dc095ad673116448eb
-42608dee500ae5d5ffd494cdd7540147
-590f210d10c7b07d16a662e04b0ce21f
-1f5a5675725d2675632a2339a6b556b8
-32a1fee9b94a2670eff787ce9958ee49
-96530bc3fe31c217833bbbf20bb4992f
-f2ba980abfbd5d8dcb5a77ba4a38df26
-c4aa8e26d88b28f96418ac380a2a60f1
-f21035b64cc567eaff5a6af886d32f14
-9cc7e9b25cbbf74f13321cac42753bd5
-8acddc62ae088aa3fb962ba3af485ba1
-6668642bbacc7f59d91c1a5d6a3bb1f7
-6a7160c17c71e4c95415249f76ad96c1
-"""
 
 rule decompress_ukbb_sum_stats:
     input:
-        "resources/ukbb_sum_stats/20002_1111.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1113.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1154.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1465.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/20002_1473.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/22126.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/6148_2.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/6148_5.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/D25.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/I9_IHD.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/K51.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/K57.gwas.imputed_v3.both_sexes.tsv.bgz",
-        "resources/ukbb_sum_stats/K80.gwas.imputed_v3.both_sexes.tsv.bgz"
+        "resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv.bgz"
     output:
-        "resources/ukbb_sum_stats/20002_1111.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1113.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1154.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1465.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1473.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/22126.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/6148_2.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/6148_5.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/D25.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/I9_IHD.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/K51.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/K57.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/K80.gwas.imputed_v3.both_sexes.tsv"
+        "resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv"
     run:
         for i,x in enumerate(input):
             shell("gunzip -c %s >%s" % (x, output[i]))
@@ -208,6 +106,7 @@ rule merge_ukbb_sum_stats:
         "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv",
+        "resources/ukbb_sum_stats/20002_1291.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv",
@@ -223,14 +122,25 @@ rule merge_ukbb_sum_stats:
         "resources/ukbb_sum_stats/K57.gwas.imputed_v3.both_sexes.tsv",
         "resources/ukbb_sum_stats/K80.gwas.imputed_v3.both_sexes.tsv"
     output:
-        "resources/ukbb_sum_stats/merged_sum_stats.tsv"
+        "resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz"
     threads: 8
     shell:
-        "Rscript scripts/merge_sum_stats.R"
+      "Rscript scripts/merge_ukbb_sum_stats.R"
 
-rule make_plink_ranges:
+rule merge_pid_and_ukbb_sum_stats:
     input:
-      "resources/ukbb_sum_stats/merged_sum_stats.tsv",
+      "resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz",
+      "resources/pid.tsv.gz"
+    output:
+      "resources/pid_ukbb_sum_stats/merged_pid_ukbb_sum_stats.tsv.gz"
+    threads: 8
+    shell:
+      "Rscript scripts/merge_pid_and_ukbb_sum_stats.R"
+
+# SNP sets differ between UKBB pairs and PID-UKBB pairs
+rule make_ukbb_plink_ranges:
+    input:
+      "resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz",
       ("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
       "resources/1000g/euro/qc/chrX_qc.bim"
     output:
@@ -238,7 +148,7 @@ rule make_plink_ranges:
       "resources/ukbb_sum_stats/plink_ranges/chrX.txt"
     threads: 8
     shell:
-      "Rscript scripts/make_plink_ranges.R"
+      "Rscript scripts/make_ukbb_plink_ranges.R"
 
 rule subset_reference:
     input:
@@ -294,15 +204,95 @@ rule cat_bim_files:
 
 rule prune_merged_sum_stats:
     input:
+      "resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz",
       "resources/ukbb_sum_stats/plink_subsets/all.bim",
       "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/all.prune.in"
     output:
       "resources/ukbb_sum_stats/pruned_merged_sum_stats.tsv"
     shell:
       """
-      Rscript prune_merged_sum_stats.R
+      Rscript scripts/prune_merged_sum_stats.R
       sed -i 's/pval\.//g' resources/ukbb_sum_stats/pruned_merged_sum_stats.tsv
       """
+
+# TODO next thing to fix
+rule make_pid_ukbb_plink_ranges:
+    input:
+        "resources/pid_ukbb_sum_stats/merged_pid_ukbb_sum_stats.tsv.gz",
+        ("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
+        "resources/1000g/euro/qc/chrX_qc.bim"
+    output:
+        ("resources/pid_ukbb_sum_stats/plink_ranges/chr%d.txt" % x for x in range(1,23)),
+        "resources/pid_ukbb_sum_stats/plink_ranges/chrX.txt"
+    threads: 8
+    shell:
+        "Rscript scripts/make_pid_ukbb_plink_ranges.R"
+
+rule subset_reference_for_pid_ukbb:
+    input:
+      "resources/1000g/euro/qc/{chr}_qc.bed",
+      "resources/1000g/euro/qc/{chr}_qc.bim",
+      "resources/1000g/euro/qc/{chr}_qc.fam",
+      range_file = "resources/pid_ukbb_sum_stats/plink_ranges/{chr}.txt"
+    output:
+      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.bed",
+      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.bim",
+      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.fam"
+    params:
+      bfile = "resources/1000g/euro/qc/{chr}_qc",
+      out = "resources/pid_ukbb_sum_stats/plink_subsets/{chr}"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    shell:
+      "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --extract {input.range_file} --make-bed --out {params.out}"
+
+rule make_prune_ranges_for_pid_ukbb:
+    input:
+      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.bed",
+      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.bim",
+      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.fam"
+    output:
+      "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}.prune.in",
+      "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}.prune.out"
+    params:
+      bfile = "resources/pid_ukbb_sum_stats/plink_subsets/{chr}",
+      prune_out = "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    shell:
+      "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --indep-pairwise 1000kb 50 0.2 --out {params.prune_out}"
+
+rule cat_prune_ranges_for_pid_ukbb:
+    input:
+      ("resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/chr%d.prune.in" % x for x in range(1,23))
+    output:
+      "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/all.prune.in"
+    shell:
+      "for x in {input}; do cat $x >>{output}; done"
+
+rule cat_bim_files_for_pid_ukbb:
+    input:
+        ("resources/pid_ukbb_sum_stats/plink_subsets/chr%d.bim" % x for x in range(1,23))
+    output:
+        "resources/pid_ukbb_sum_stats/plink_subsets/all.bim"
+    shell:
+        "for x in {input}; do cat $x >>{output}; done"
+
+rule prune_merged_sum_stats_for_pid_ukbb:
+    input:
+      "resources/pid_ukbb_sum_stats/merged_pid_ukbb_sum_stats.tsv.gz",
+      "resources/pid_ukbb_sum_stats/plink_subsets/all.bim",
+      "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/all.prune.in"
+    output:
+      "resources/pid_ukbb_sum_stats/pruned_merged_sum_stats.tsv"
+    shell:
+      """
+      Rscript scripts/prune_merged_sum_stats_for_pid_ukbb.R
+      sed -i 's/pval\.//g' resources/pid_ukbb_sum_stats/pruned_merged_sum_stats.tsv
+      """
+
 rule compute_gps:
     input:
       "resources/ukbb_sum_stats/pruned_merged_sum_stats.tsv"
@@ -311,201 +301,321 @@ rule compute_gps:
     shell:
       "scripts/gps_cpp/build/apps/computeGpsForUkbbTraitPairsCLI -i {input} -o {output}"
 
+# TODO fix me for PID-containing tsv file
+rule compute_gps_for_pid_ukbb:
+    input:
+        "resources/pid_ukbb_sum_stats/pruned_merged_sum_stats.tsv"
+    output:
+        "results/pid_ukbb_gps_values.tsv"
+    shell:
+        "scripts/gps_cpp/build/apps/computeGpsForPidUkbbTraitPairsCLI -i {input} -o {output}"
+
 rule permute_trait_pair:
     input:
       "resources/ukbb_sum_stats/pruned_merged_sum_stats.tsv"
     output:
-      "results/permutations/{trait_A}-{trait_B}.tsv"
+        "results/permutations/{trait_A,[A-Z0-9_]+}-{trait_B,[A-Z0-9_]+}.tsv"
     threads: 8
     resources:
         mem_mb=get_mem_mb
     shell:
       "scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input} -o {output} -a {wildcards.trait_A} -b {wildcards.trait_B} -c 8 -n 375"
 
+rule permute_trait_pair_for_pid_ukbb:
+    input:
+        "resources/pid_ukbb_sum_stats/pruned_merged_sum_stats.tsv"
+    output:
+        "results/permutations/pid_ukbb/pid-{trait_B,[A-Z0-9_]+}.tsv"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    shell:
+        "scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input} -o {output} -a pid -b {wildcards.trait_B} -c 8 -n 375"
+
 rule compute_gps_p_value:
     input:
       gps_file = "results/gps_values.tsv",
-      perm_file = "results/permutations/{trait_A}-{trait_B}.tsv"
+      perm_file = "results/permutations/{trait_A,[A-Z0-9_]+}-{trait_B,[A-Z0-9_]+}.tsv"
     output:
-      "results/{trait_A}-{trait_B}_gps_pvalue.tsv"
+        "results/{trait_A,[A-Z0-9_]+}-{trait_B,[A-Z0-9_]+}_gps_pvalue.tsv"
     shell:
       "Rscript scripts/compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
 
+rule compute_gps_p_value_for_pid_ukbb:
+    input:
+        gps_file = "results/pid_ukbb_gps_values.tsv",
+        perm_file = "results/permutations/pid_ukbb/pid-{trait_B}.tsv"
+    output:
+        "results/pid_ukbb/pid-{trait_B,[A-Z0-9_]+}_gps_pvalue.tsv"
+    shell:
+        "Rscript scripts/compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a pid -b {wildcards.trait_B} -o {output}"
+
 rule collate_gps_p_value_data:
     input:
-        "results/20002_1111-20002_1113_gps_pvalue.tsv",
-        "results/20002_1111-20002_1154_gps_pvalue.tsv",
-        "results/20002_1111-20002_1220_gps_pvalue.tsv",
-        "results/20002_1111-20002_1226_gps_pvalue.tsv",
-        "results/20002_1111-20002_1286_gps_pvalue.tsv",
-        "results/20002_1111-20002_1452_gps_pvalue.tsv",
-        "results/20002_1111-20002_1462_gps_pvalue.tsv",
-        "results/20002_1111-20002_1464_gps_pvalue.tsv",
-        "results/20002_1111-20002_1465_gps_pvalue.tsv",
-        "results/20002_1111-20002_1473_gps_pvalue.tsv",
+        "resources/ukbb_sum_stats/traits_codes_abbrv_cases.csv",
+        "resources/ukbb_sum_stats/traits_rg.tsv",
         "results/20002_1111-22126_gps_pvalue.tsv",
-        "results/20002_1111-6148_2_gps_pvalue.tsv",
-        "results/20002_1111-6148_5_gps_pvalue.tsv",
-        "results/20002_1111-D25_gps_pvalue.tsv",
-        "results/20002_1111-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1111-K51_gps_pvalue.tsv",
-        "results/20002_1111-K57_gps_pvalue.tsv",
-        "results/20002_1111-K80_gps_pvalue.tsv",
-        "results/20002_1113-20002_1154_gps_pvalue.tsv",
-        "results/20002_1113-20002_1220_gps_pvalue.tsv",
-        "results/20002_1113-20002_1226_gps_pvalue.tsv",
-        "results/20002_1113-20002_1286_gps_pvalue.tsv",
-        "results/20002_1113-20002_1452_gps_pvalue.tsv",
-        "results/20002_1113-20002_1462_gps_pvalue.tsv",
-        "results/20002_1113-20002_1464_gps_pvalue.tsv",
-        "results/20002_1113-20002_1465_gps_pvalue.tsv",
-        "results/20002_1113-20002_1473_gps_pvalue.tsv",
-        "results/20002_1113-22126_gps_pvalue.tsv",
-        "results/20002_1113-6148_2_gps_pvalue.tsv",
-        "results/20002_1113-6148_5_gps_pvalue.tsv",
-        "results/20002_1113-D25_gps_pvalue.tsv",
-        "results/20002_1113-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1113-K51_gps_pvalue.tsv",
-        "results/20002_1113-K57_gps_pvalue.tsv",
-        "results/20002_1113-K80_gps_pvalue.tsv",
-        "results/20002_1154-20002_1220_gps_pvalue.tsv",
-        "results/20002_1154-20002_1226_gps_pvalue.tsv",
-        "results/20002_1154-20002_1286_gps_pvalue.tsv",
-        "results/20002_1154-20002_1452_gps_pvalue.tsv",
-        "results/20002_1154-20002_1462_gps_pvalue.tsv",
-        "results/20002_1154-20002_1464_gps_pvalue.tsv",
-        "results/20002_1154-20002_1465_gps_pvalue.tsv",
-        "results/20002_1154-20002_1473_gps_pvalue.tsv",
-        "results/20002_1154-22126_gps_pvalue.tsv",
-        "results/20002_1154-6148_2_gps_pvalue.tsv",
-        "results/20002_1154-6148_5_gps_pvalue.tsv",
-        "results/20002_1154-D25_gps_pvalue.tsv",
-        "results/20002_1154-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1154-K51_gps_pvalue.tsv",
-        "results/20002_1154-K57_gps_pvalue.tsv",
-        "results/20002_1154-K80_gps_pvalue.tsv",
-        "results/20002_1220-20002_1226_gps_pvalue.tsv",
-        "results/20002_1220-20002_1286_gps_pvalue.tsv",
-        "results/20002_1220-20002_1452_gps_pvalue.tsv",
-        "results/20002_1220-20002_1462_gps_pvalue.tsv",
-        "results/20002_1220-20002_1464_gps_pvalue.tsv",
+        "results/20002_1473-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1220-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1111-20002_1113_gps_pvalue.tsv",
         "results/20002_1220-20002_1465_gps_pvalue.tsv",
         "results/20002_1220-20002_1473_gps_pvalue.tsv",
-        "results/20002_1220-22126_gps_pvalue.tsv",
-        "results/20002_1220-6148_2_gps_pvalue.tsv",
-        "results/20002_1220-6148_5_gps_pvalue.tsv",
-        "results/20002_1220-D25_gps_pvalue.tsv",
-        "results/20002_1220-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1220-K51_gps_pvalue.tsv",
-        "results/20002_1220-K57_gps_pvalue.tsv",
         "results/20002_1220-K80_gps_pvalue.tsv",
-        "results/20002_1226-20002_1286_gps_pvalue.tsv",
-        "results/20002_1226-20002_1452_gps_pvalue.tsv",
-        "results/20002_1226-20002_1462_gps_pvalue.tsv",
-        "results/20002_1226-20002_1464_gps_pvalue.tsv",
-        "results/20002_1226-20002_1465_gps_pvalue.tsv",
-        "results/20002_1226-20002_1473_gps_pvalue.tsv",
-        "results/20002_1226-22126_gps_pvalue.tsv",
-        "results/20002_1226-6148_2_gps_pvalue.tsv",
-        "results/20002_1226-6148_5_gps_pvalue.tsv",
-        "results/20002_1226-D25_gps_pvalue.tsv",
+        "results/20002_1111-20002_1465_gps_pvalue.tsv",
+        "results/20002_1111-20002_1452_gps_pvalue.tsv",
         "results/20002_1226-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1226-K51_gps_pvalue.tsv",
-        "results/20002_1226-K57_gps_pvalue.tsv",
-        "results/20002_1226-K80_gps_pvalue.tsv",
-        "results/20002_1286-20002_1452_gps_pvalue.tsv",
-        "results/20002_1286-20002_1462_gps_pvalue.tsv",
-        "results/20002_1286-20002_1464_gps_pvalue.tsv",
-        "results/20002_1286-20002_1465_gps_pvalue.tsv",
-        "results/20002_1286-20002_1473_gps_pvalue.tsv",
-        "results/20002_1286-22126_gps_pvalue.tsv",
-        "results/20002_1286-6148_2_gps_pvalue.tsv",
-        "results/20002_1286-6148_5_gps_pvalue.tsv",
-        "results/20002_1286-D25_gps_pvalue.tsv",
-        "results/20002_1286-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1286-K51_gps_pvalue.tsv",
-        "results/20002_1286-K57_gps_pvalue.tsv",
-        "results/20002_1286-K80_gps_pvalue.tsv",
-        "results/20002_1452-20002_1462_gps_pvalue.tsv",
-        "results/20002_1452-20002_1464_gps_pvalue.tsv",
-        "results/20002_1452-20002_1465_gps_pvalue.tsv",
-        "results/20002_1452-20002_1473_gps_pvalue.tsv",
-        "results/20002_1452-22126_gps_pvalue.tsv",
-        "results/20002_1452-6148_2_gps_pvalue.tsv",
-        "results/20002_1452-6148_5_gps_pvalue.tsv",
-        "results/20002_1452-D25_gps_pvalue.tsv",
-        "results/20002_1452-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1452-K51_gps_pvalue.tsv",
-        "results/20002_1452-K57_gps_pvalue.tsv",
-        "results/20002_1452-K80_gps_pvalue.tsv",
-        "results/20002_1462-20002_1464_gps_pvalue.tsv",
-        "results/20002_1462-20002_1465_gps_pvalue.tsv",
-        "results/20002_1462-20002_1473_gps_pvalue.tsv",
-        "results/20002_1462-22126_gps_pvalue.tsv",
-        "results/20002_1462-6148_2_gps_pvalue.tsv",
-        "results/20002_1462-6148_5_gps_pvalue.tsv",
-        "results/20002_1462-D25_gps_pvalue.tsv",
-        "results/20002_1462-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1462-K51_gps_pvalue.tsv",
-        "results/20002_1462-K57_gps_pvalue.tsv",
-        "results/20002_1462-K80_gps_pvalue.tsv",
-        "results/20002_1464-20002_1465_gps_pvalue.tsv",
-        "results/20002_1464-20002_1473_gps_pvalue.tsv",
-        "results/20002_1464-22126_gps_pvalue.tsv",
-        "results/20002_1464-6148_2_gps_pvalue.tsv",
-        "results/20002_1464-6148_5_gps_pvalue.tsv",
-        "results/20002_1464-D25_gps_pvalue.tsv",
-        "results/20002_1464-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1464-K51_gps_pvalue.tsv",
-        "results/20002_1464-K57_gps_pvalue.tsv",
-        "results/20002_1464-K80_gps_pvalue.tsv",
-        "results/20002_1465-20002_1473_gps_pvalue.tsv",
-        "results/20002_1465-22126_gps_pvalue.tsv",
-        "results/20002_1465-6148_2_gps_pvalue.tsv",
-        "results/20002_1465-6148_5_gps_pvalue.tsv",
-        "results/20002_1465-D25_gps_pvalue.tsv",
         "results/20002_1465-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1465-K51_gps_pvalue.tsv",
-        "results/20002_1465-K57_gps_pvalue.tsv",
-        "results/20002_1465-K80_gps_pvalue.tsv",
-        "results/20002_1473-22126_gps_pvalue.tsv",
-        "results/20002_1473-6148_2_gps_pvalue.tsv",
-        "results/20002_1473-6148_5_gps_pvalue.tsv",
-        "results/20002_1473-D25_gps_pvalue.tsv",
-        "results/20002_1473-I9_IHD_gps_pvalue.tsv",
-        "results/20002_1473-K51_gps_pvalue.tsv",
-        "results/20002_1473-K57_gps_pvalue.tsv",
-        "results/20002_1473-K80_gps_pvalue.tsv",
-        "results/22126-6148_2_gps_pvalue.tsv",
-        "results/22126-6148_5_gps_pvalue.tsv",
-        "results/22126-D25_gps_pvalue.tsv",
-        "results/22126-I9_IHD_gps_pvalue.tsv",
-        "results/22126-K51_gps_pvalue.tsv",
-        "results/22126-K57_gps_pvalue.tsv",
-        "results/22126-K80_gps_pvalue.tsv",
-        "results/6148_2-6148_5_gps_pvalue.tsv",
-        "results/6148_2-D25_gps_pvalue.tsv",
-        "results/6148_2-I9_IHD_gps_pvalue.tsv",
-        "results/6148_2-K51_gps_pvalue.tsv",
-        "results/6148_2-K57_gps_pvalue.tsv",
-        "results/6148_2-K80_gps_pvalue.tsv",
-        "results/6148_5-D25_gps_pvalue.tsv",
-        "results/6148_5-I9_IHD_gps_pvalue.tsv",
-        "results/6148_5-K51_gps_pvalue.tsv",
-        "results/6148_5-K57_gps_pvalue.tsv",
-        "results/6148_5-K80_gps_pvalue.tsv",
-        "results/D25-I9_IHD_gps_pvalue.tsv",
-        "results/D25-K51_gps_pvalue.tsv",
-        "results/D25-K57_gps_pvalue.tsv",
-        "results/D25-K80_gps_pvalue.tsv",
-        "results/I9_IHD-K51_gps_pvalue.tsv",
-        "results/I9_IHD-K57_gps_pvalue.tsv",
         "results/I9_IHD-K80_gps_pvalue.tsv",
+        "results/20002_1113-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1465-K57_gps_pvalue.tsv",
+        "results/20002_1111-20002_1220_gps_pvalue.tsv",
+        "results/20002_1113-K57_gps_pvalue.tsv",
+        "results/20002_1286-20002_1465_gps_pvalue.tsv",
+        "results/20002_1154-20002_1286_gps_pvalue.tsv",
+        "results/20002_1113-20002_1220_gps_pvalue.tsv",
+        "results/20002_1286-K57_gps_pvalue.tsv",
+        "results/20002_1465-20002_1473_gps_pvalue.tsv",
+        "results/K57-K80_gps_pvalue.tsv",
+        "results/20002_1286-20002_1291_gps_pvalue.tsv",
+        "results/20002_1452-22126_gps_pvalue.tsv",
+        "results/20002_1154-20002_1465_gps_pvalue.tsv",
+        "results/20002_1113-20002_1465_gps_pvalue.tsv",
+        "results/20002_1220-K57_gps_pvalue.tsv",
+        "results/20002_1111-K57_gps_pvalue.tsv",
+        "results/20002_1226-20002_1473_gps_pvalue.tsv",
+        "results/20002_1220-20002_1226_gps_pvalue.tsv",
+        "results/20002_1113-20002_1473_gps_pvalue.tsv",
+        "results/20002_1111-20002_1154_gps_pvalue.tsv",
+        "results/20002_1154-K57_gps_pvalue.tsv",
+        "results/20002_1464-20002_1465_gps_pvalue.tsv",
+        "results/20002_1111-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1154-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1154-22126_gps_pvalue.tsv",
+        "results/20002_1113-20002_1286_gps_pvalue.tsv",
+        "results/20002_1154-20002_1220_gps_pvalue.tsv",
+        "results/20002_1226-20002_1465_gps_pvalue.tsv",
+        "results/20002_1465-K80_gps_pvalue.tsv",
+        "results/20002_1286-K80_gps_pvalue.tsv",
+        "results/20002_1473-K80_gps_pvalue.tsv",
+        "results/20002_1286-20002_1473_gps_pvalue.tsv",
+        "results/20002_1220-20002_1464_gps_pvalue.tsv",
+        "results/20002_1226-20002_1286_gps_pvalue.tsv",
+        "results/20002_1111-20002_1473_gps_pvalue.tsv",
+        "results/20002_1286-22126_gps_pvalue.tsv",
+        "results/20002_1462-K51_gps_pvalue.tsv",
+        "results/20002_1154-K80_gps_pvalue.tsv",
+        "results/20002_1111-20002_1286_gps_pvalue.tsv",
+        "results/20002_1465-22126_gps_pvalue.tsv",
+        "results/20002_1286-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1220-20002_1286_gps_pvalue.tsv",
+        "results/I9_IHD-K57_gps_pvalue.tsv",
+        "results/20002_1111-K80_gps_pvalue.tsv",
+        "results/20002_1113-22126_gps_pvalue.tsv",
+        "results/20002_1154-20002_1226_gps_pvalue.tsv",
+        "results/20002_1226-K80_gps_pvalue.tsv",
+        "results/20002_1291-20002_1452_gps_pvalue.tsv",
+        "results/20002_1473-K57_gps_pvalue.tsv",
+        "results/20002_1462-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1464-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1154-20002_1473_gps_pvalue.tsv",
+        "results/22126-K57_gps_pvalue.tsv",
+        "results/20002_1113-K51_gps_pvalue.tsv",
+        "results/20002_1226-20002_1464_gps_pvalue.tsv",
+        "results/20002_1113-20002_1464_gps_pvalue.tsv",
+        "results/20002_1226-K57_gps_pvalue.tsv",
+        "results/20002_1226-D25_gps_pvalue.tsv",
+        "results/20002_1462-6148_2_gps_pvalue.tsv",
+        "results/20002_1464-20002_1473_gps_pvalue.tsv",
+        "results/20002_1111-20002_1464_gps_pvalue.tsv",
+        "results/20002_1286-D25_gps_pvalue.tsv",
+        "results/20002_1111-20002_1226_gps_pvalue.tsv",
+        "results/22126-6148_2_gps_pvalue.tsv",
+        "results/I9_IHD-K51_gps_pvalue.tsv",
+        "results/20002_1220-6148_2_gps_pvalue.tsv",
+        "results/20002_1113-K80_gps_pvalue.tsv",
+        "results/20002_1464-K51_gps_pvalue.tsv",
+        "results/20002_1113-20002_1226_gps_pvalue.tsv",
+        "results/6148_2-K51_gps_pvalue.tsv",
+        "results/20002_1452-20002_1473_gps_pvalue.tsv",
+        "results/20002_1462-20002_1473_gps_pvalue.tsv",
+        "results/20002_1452-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1291-K51_gps_pvalue.tsv",
+        "results/22126-K51_gps_pvalue.tsv",
+        "results/6148_2-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1462-22126_gps_pvalue.tsv",
+        "results/20002_1464-6148_2_gps_pvalue.tsv",
+        "results/20002_1111-20002_1462_gps_pvalue.tsv",
+        "results/20002_1464-K80_gps_pvalue.tsv",
+        "results/20002_1291-20002_1462_gps_pvalue.tsv",
+        "results/20002_1111-D25_gps_pvalue.tsv",
+        "results/20002_1113-20002_1154_gps_pvalue.tsv",
+        "results/20002_1452-6148_2_gps_pvalue.tsv",
+        "results/20002_1452-20002_1465_gps_pvalue.tsv",
+        "results/20002_1154-20002_1452_gps_pvalue.tsv",
+        "results/20002_1113-6148_5_gps_pvalue.tsv",
+        "results/20002_1286-20002_1452_gps_pvalue.tsv",
+        "results/20002_1464-22126_gps_pvalue.tsv",
+        "results/20002_1465-6148_2_gps_pvalue.tsv",
+        "results/20002_1291-K57_gps_pvalue.tsv",
+        "results/20002_1220-20002_1291_gps_pvalue.tsv",
+        "results/6148_5-K57_gps_pvalue.tsv",
+        "results/20002_1291-20002_1473_gps_pvalue.tsv",
+        "results/D25-K57_gps_pvalue.tsv",
+        "results/20002_1473-D25_gps_pvalue.tsv",
+        "results/20002_1465-D25_gps_pvalue.tsv",
+        "results/20002_1286-6148_5_gps_pvalue.tsv",
+        "results/20002_1464-K57_gps_pvalue.tsv",
+        "results/20002_1220-K51_gps_pvalue.tsv",
+        "results/20002_1291-K80_gps_pvalue.tsv",
+        "results/20002_1286-20002_1462_gps_pvalue.tsv",
+        "results/20002_1291-6148_2_gps_pvalue.tsv",
+        "results/20002_1291-22126_gps_pvalue.tsv",
+        "results/20002_1291-20002_1465_gps_pvalue.tsv",
+        "results/20002_1452-K80_gps_pvalue.tsv",
         "results/K51-K57_gps_pvalue.tsv",
+        "results/20002_1291-6148_5_gps_pvalue.tsv",
+        "results/20002_1462-6148_5_gps_pvalue.tsv",
+        "results/20002_1226-K51_gps_pvalue.tsv",
+        "results/20002_1111-6148_2_gps_pvalue.tsv",
+        "results/20002_1464-D25_gps_pvalue.tsv",
+        "results/22126-D25_gps_pvalue.tsv",
+        "results/6148_2-D25_gps_pvalue.tsv",
+        "results/20002_1113-20002_1462_gps_pvalue.tsv",
+        "results/20002_1462-K57_gps_pvalue.tsv",
+        "results/20002_1473-6148_5_gps_pvalue.tsv",
+        "results/20002_1226-20002_1452_gps_pvalue.tsv",
+        "results/20002_1220-20002_1462_gps_pvalue.tsv",
+        "results/20002_1111-K51_gps_pvalue.tsv",
+        "results/20002_1226-6148_5_gps_pvalue.tsv",
+        "results/6148_2-6148_5_gps_pvalue.tsv",
+        "results/20002_1291-D25_gps_pvalue.tsv",
+        "results/20002_1226-20002_1291_gps_pvalue.tsv",
+        "results/20002_1286-20002_1464_gps_pvalue.tsv",
+        "results/20002_1462-D25_gps_pvalue.tsv",
+        "results/20002_1462-K80_gps_pvalue.tsv",
+        "results/D25-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1111-20002_1291_gps_pvalue.tsv",
+        "results/20002_1113-D25_gps_pvalue.tsv",
+        "results/20002_1154-20002_1291_gps_pvalue.tsv",
+        "results/6148_5-D25_gps_pvalue.tsv",
+        "results/20002_1154-K51_gps_pvalue.tsv",
+        "results/20002_1291-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1462-20002_1465_gps_pvalue.tsv",
+        "results/20002_1452-K51_gps_pvalue.tsv",
+        "results/20002_1111-6148_5_gps_pvalue.tsv",
+        "results/20002_1452-6148_5_gps_pvalue.tsv",
+        "results/20002_1226-6148_2_gps_pvalue.tsv",
+        "results/20002_1291-20002_1464_gps_pvalue.tsv",
+        "results/6148_2-K80_gps_pvalue.tsv",
+        "results/6148_5-K51_gps_pvalue.tsv",
+        "results/20002_1154-6148_5_gps_pvalue.tsv",
+        "results/20002_1154-D25_gps_pvalue.tsv",
+        "results/22126-K80_gps_pvalue.tsv",
+        "results/20002_1220-D25_gps_pvalue.tsv",
+        "results/20002_1462-20002_1464_gps_pvalue.tsv",
+        "results/D25-K80_gps_pvalue.tsv",
+        "results/20002_1113-20002_1452_gps_pvalue.tsv",
+        "results/20002_1154-6148_2_gps_pvalue.tsv",
+        "results/22126-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1113-20002_1291_gps_pvalue.tsv",
+        "results/20002_1113-6148_2_gps_pvalue.tsv",
+        "results/20002_1220-6148_5_gps_pvalue.tsv",
+        "results/D25-K51_gps_pvalue.tsv",
+        "results/20002_1220-20002_1452_gps_pvalue.tsv",
+        "results/6148_2-K57_gps_pvalue.tsv",
+        "results/22126-6148_5_gps_pvalue.tsv",
+        "results/20002_1464-6148_5_gps_pvalue.tsv",
+        "results/20002_1154-20002_1464_gps_pvalue.tsv",
+        "results/20002_1473-6148_2_gps_pvalue.tsv",
+        "results/20002_1465-K51_gps_pvalue.tsv",
+        "results/20002_1452-D25_gps_pvalue.tsv",
+        "results/20002_1226-22126_gps_pvalue.tsv",
+        "results/20002_1473-22126_gps_pvalue.tsv",
+        "results/20002_1226-20002_1462_gps_pvalue.tsv",
+        "results/6148_5-I9_IHD_gps_pvalue.tsv",
         "results/K51-K80_gps_pvalue.tsv",
-        "results/K57-K80_gps_pvalue.tsv"
+        "results/20002_1286-6148_2_gps_pvalue.tsv",
+        "results/20002_1473-K51_gps_pvalue.tsv",
+        "results/6148_5-K80_gps_pvalue.tsv",
+        "results/20002_1154-20002_1462_gps_pvalue.tsv",
+        "results/20002_1465-6148_5_gps_pvalue.tsv",
+        "results/20002_1452-20002_1462_gps_pvalue.tsv",
+        "results/20002_1220-22126_gps_pvalue.tsv",
+        "results/20002_1286-K51_gps_pvalue.tsv",
+        "results/20002_1452-20002_1464_gps_pvalue.tsv",
+        "results/20002_1452-K57_gps_pvalue.tsv",
+        "results/20002_1111-20002_1289_gps_pvalue.tsv",
+        "results/20002_1111-20002_1381_gps_pvalue.tsv",
+        "results/20002_1113-20002_1289_gps_pvalue.tsv",
+        "results/20002_1113-20002_1381_gps_pvalue.tsv",
+        "results/20002_1154-20002_1289_gps_pvalue.tsv",
+        "results/20002_1154-20002_1381_gps_pvalue.tsv",
+        "results/20002_1220-20002_1289_gps_pvalue.tsv",
+        "results/20002_1220-20002_1381_gps_pvalue.tsv",
+        "results/20002_1226-20002_1289_gps_pvalue.tsv",
+        "results/20002_1226-20002_1381_gps_pvalue.tsv",
+        "results/20002_1286-20002_1289_gps_pvalue.tsv",
+        "results/20002_1286-20002_1381_gps_pvalue.tsv",
+        "results/20002_1289-20002_1291_gps_pvalue.tsv",
+        "results/20002_1289-20002_1381_gps_pvalue.tsv",
+        "results/20002_1289-20002_1452_gps_pvalue.tsv",
+        "results/20002_1289-20002_1462_gps_pvalue.tsv",
+        "results/20002_1289-20002_1464_gps_pvalue.tsv",
+        "results/20002_1289-20002_1465_gps_pvalue.tsv",
+        "results/20002_1289-20002_1473_gps_pvalue.tsv",
+        "results/20002_1289-22126_gps_pvalue.tsv",
+        "results/20002_1289-6148_2_gps_pvalue.tsv",
+        "results/20002_1289-6148_5_gps_pvalue.tsv",
+        "results/20002_1289-D25_gps_pvalue.tsv",
+        "results/20002_1289-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1289-K51_gps_pvalue.tsv",
+        "results/20002_1289-K57_gps_pvalue.tsv",
+        "results/20002_1289-K80_gps_pvalue.tsv",
+        "results/20002_1291-20002_1381_gps_pvalue.tsv",
+        "results/20002_1381-20002_1452_gps_pvalue.tsv",
+        "results/20002_1381-20002_1462_gps_pvalue.tsv",
+        "results/20002_1381-20002_1464_gps_pvalue.tsv",
+        "results/20002_1381-20002_1465_gps_pvalue.tsv",
+        "results/20002_1381-20002_1473_gps_pvalue.tsv",
+        "results/20002_1381-22126_gps_pvalue.tsv",
+        "results/20002_1381-6148_2_gps_pvalue.tsv",
+        "results/20002_1381-6148_5_gps_pvalue.tsv",
+        "results/20002_1381-D25_gps_pvalue.tsv",
+        "results/20002_1381-I9_IHD_gps_pvalue.tsv",
+        "results/20002_1381-K51_gps_pvalue.tsv",
+        "results/20002_1381-K57_gps_pvalue.tsv",
+        "results/20002_1381-K80_gps_pvalue.tsv"
     output:
         "results/collated_gps_pvalues.tsv"
     shell:
         "Rscript scripts/collate_gps_pvalues.R"
 
+rule collate_gps_p_value_data_for_pid_ukbb:
+    input:
+        "resources/pid_ukbb_sum_stats/traits_codes_abbrv_cases.csv",
+        "results/pid_ukbb/pid-20002_1111_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1113_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1154_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1220_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1226_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1286_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1289_gps_pvalue.tsv",
+        #"results/pid_ukbb/pid-20002_1291_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1381_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1452_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1462_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1464_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1465_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1473_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-22126_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-6148_2_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-6148_5_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-D25_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-I9_IHD_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-K51_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-K57_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-K80_gps_pvalue.tsv"
+    output:
+        "results/pid_ukbb_collated_gps_pvalues.tsv"
+    shell:
+        "Rscript scripts/collate_pid_ukbb_gps_pvalues.R"

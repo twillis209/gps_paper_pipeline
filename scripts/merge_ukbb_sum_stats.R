@@ -7,6 +7,8 @@ sum_stats_files <- c("resources/ukbb_sum_stats/20002_1111.gwas.imputed_v3.both_s
 "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv",
 "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv",
 "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv",
+"resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv",
+"resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv",
 "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv",
 "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv",
 "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv",
@@ -28,6 +30,8 @@ names(sum_stats_files) <-
 "20002_1220",
 "20002_1226",
 "20002_1286",
+"20002_1289",
+"20002_1381",
 "20002_1452",
 "20002_1462",
 "20002_1464",
@@ -54,4 +58,4 @@ for(i in 2:length(sum_stats_files)) {
   left_dat <- merge(left_dat, right_dat, by = 'variant')
 }
 
-fwrite(left_dat, file = 'resources/ukbb_sum_stats/merged_sum_stats.tsv', sep = '\t')
+fwrite(left_dat, file = 'resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz', sep = '\t')

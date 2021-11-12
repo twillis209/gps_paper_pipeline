@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
-#SBATCH -p cclake
+#SBATCH -p cclake,cclake-himem,icelake,icelake-himem,skylake,skylake-himem
 #SBATCH -o logs/gps_paper_pipeline_scheduler-%j.out
 
 #! Number of nodes and tasks per node allocated by SLURM (do not change):
@@ -63,8 +63,5 @@ echo -e "\nExecuting command:\n==================\n\n"
 source  /home/tw395/.bashrc
 
 conda activate gps_paper_pipeline
-
-# Old code without use of profile
-#snakemake -j 50 --cluster "sbatch -A MRC-BSU-SL2-CPU -p skylake,skylake-himem,cclake -J {rule}_{wildcards} --time {resources.time} --nodes 1 --ntasks 1 --cpus-per-task {threads} -o logs/{rule}_{wildcards}.out -e logs/{rule}_{wildcards}.err --mail-type FAIL" -p cd_pid/ldak/combined_weights_meta.all
 
 snakemake -j 200 --keep-going --profile "$HOME/.config/snakemake/slurm" $1

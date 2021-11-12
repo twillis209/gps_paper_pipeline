@@ -4,3 +4,4 @@ machine.file.*
 resources
 .snakemake
 logs
+submit_with*
