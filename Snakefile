@@ -97,209 +97,123 @@ rule decompress_ukbb_sum_stats:
         for i,x in enumerate(input):
             shell("gunzip -c %s >%s" % (x, output[i]))
 
-rule merge_ukbb_sum_stats:
-    input:
-        "resources/ukbb_sum_stats/20002_1111.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1113.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1154.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1220.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1226.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1286.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1289.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1291.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1381.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1452.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1462.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1464.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1465.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/20002_1473.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/22126.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/6148_2.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/6148_5.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/D25.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/I9_IHD.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/K51.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/K57.gwas.imputed_v3.both_sexes.tsv",
-        "resources/ukbb_sum_stats/K80.gwas.imputed_v3.both_sexes.tsv"
-    output:
-        "resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz"
-    threads: 8
-    shell:
-      "Rscript scripts/merge_ukbb_sum_stats.R"
-
+# TODO add temp files to later rules
 rule merge_pid_and_ukbb_sum_stats:
     input:
-      "resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz",
-      "resources/pid.tsv.gz"
+        ukbb_files = ["resources/ukbb_sum_stats/%s.gwas.imputed_v3.both_sexes.tsv" % x for x in glob_wildcards("resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv").id],
+        pid_file = "resources/pid.tsv.gz"
     output:
-      "resources/pid_ukbb_sum_stats/merged_pid_ukbb_sum_stats.tsv.gz"
+        merged_file = "resources/merged_pid_ukbb_sum_stats.tsv.gz",
+        temp_files = [temp("resources/%s.temp" % x) for x in glob_wildcards("resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv").id]+["resources/pid.temp"]
     threads: 8
     shell:
-      "Rscript scripts/merge_pid_and_ukbb_sum_stats.R"
+      """
+      Rscript scripts/merge_pid_and_ukbb_sum_stats.R --ukbb_files {input.ukbb_files} --pid_file {input.pid_file} -o {output.merged_file} -nt {threads};
+      for x in {output.temp_files}; do touch $x; done
+      """
 
 # SNP sets differ between UKBB pairs and PID-UKBB pairs
 rule make_ukbb_plink_ranges:
     input:
-      "resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz",
-      ("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
-      "resources/1000g/euro/qc/chrX_qc.bim"
+      sum_stats_file = "resources/merged_pid_ukbb_sum_stats.tsv.gz",
+      bim_files = [("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
+      "resources/1000g/euro/qc/chrX_qc.bim"]
     output:
-      ("resources/ukbb_sum_stats/plink_ranges/chr%d.txt" % x for x in range(1,23)),
-      "resources/ukbb_sum_stats/plink_ranges/chrX.txt"
+      bim_files = [("resources/plink_ranges/ukbb/chr%d.txt" % x for x in range(1,23)),
+      "resources/plink_ranges/ukbb/chrX.txt"]
+    params:
+      non_na_cols = "pval.%s" % glob_wildcards("resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv").id[0]
     threads: 8
     shell:
-      "Rscript scripts/make_ukbb_plink_ranges.R"
+      "Rscript scripts/make_plink_ranges.R --sum_stats_file {input.sum_stats_file} --input_bim_files {input.bim_files} --non_na_cols {params.non_na_cols} --output_bim_files {output.bim_files} -nt {threads}"
+
+rule make_pid_ukbb_plink_ranges:
+    input:
+      sum_stats_file = "resources/merged_pid_ukbb_sum_stats.tsv.gz",
+      bim_files = [("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)), "resources/1000g/euro/qc/chrX_qc.bim"]
+    output:
+      bim_files = [("resources/plink_ranges/pid_ukbb/chr%d.txt" % x for x in range(1,23)), "resources/plink_ranges/pid_ukbb/chrX.txt"]
+    params:
+      non_na_cols = ["pval.pid", "pval.%s" % glob_wildcards("resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv").id[0]]
+    threads: 8
+    shell:
+        "Rscript scripts/make_plink_ranges.R --sum_stats_file {input.sum_stats_file} --input_bim_files {input.bim_files} --non_na_cols {params.non_na_cols} --output_bim_files {output.bim_files} -nt {threads}"
 
 rule subset_reference:
     input:
       "resources/1000g/euro/qc/{chr}_qc.bed",
       "resources/1000g/euro/qc/{chr}_qc.bim",
       "resources/1000g/euro/qc/{chr}_qc.fam",
-      range_file = "resources/ukbb_sum_stats/plink_ranges/{chr}.txt"
+      range_file = "resources/plink_ranges/{join}/{chr}.txt"
     output:
-      "resources/ukbb_sum_stats/plink_subsets/{chr}.bed",
-      "resources/ukbb_sum_stats/plink_subsets/{chr}.bim",
-      "resources/ukbb_sum_stats/plink_subsets/{chr}.fam"
+      "resources/plink_subsets/{join}/{chr}.bed",
+      "resources/plink_subsets/{join}/{chr}.bim",
+      "resources/plink_subsets/{join}/{chr}.fam"
     params:
       bfile = "resources/1000g/euro/qc/{chr}_qc",
-      out = "resources/ukbb_sum_stats/plink_subsets/{chr}"
+      out = "resources/plink_subsets/{join}/{chr}"
     threads: 8
     resources:
         mem_mb=get_mem_mb
     shell:
       "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --extract {input.range_file} --make-bed --out {params.out}"
 
-rule make_prune_ranges:
+rule make_pruned_ranges:
     input:
-      "resources/ukbb_sum_stats/plink_subsets/{chr}.bed",
-      "resources/ukbb_sum_stats/plink_subsets/{chr}.bim",
-      "resources/ukbb_sum_stats/plink_subsets/{chr}.fam"
+      "resources/plink_subsets/{join}/{chr}.bed",
+      "resources/plink_subsets/{join}/{chr}.bim",
+      "resources/plink_subsets/{join}/{chr}.fam"
     output:
-      "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}.prune.in",
-      "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}.prune.out"
+      "resources/plink_ranges/{join}/pruned_ranges/{chr}.prune.in",
+      "resources/plink_ranges/{join}/pruned_ranges/{chr}.prune.out"
     params:
-      bfile = "resources/ukbb_sum_stats/plink_subsets/{chr}",
-      prune_out = "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}"
+      bfile = "resources/plink_subsets/{join}/{chr}",
+      prune_out = "resources/plink_subsets/{join}/pruned_ranges/{chr}"
     threads: 8
     resources:
         mem_mb=get_mem_mb
     shell:
       "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --indep-pairwise 1000kb 50 0.2 --out {params.prune_out}"
 
-rule cat_prune_ranges:
+rule cat_pruned_ranges:
     input:
-      ("resources/ukbb_sum_stats/plink_subsets/pruned_ranges/chr%d.prune.in" % x for x in range(1,23))
+      ("resources/plink_ranges/{join}/pruned_ranges/chr%d.prune.in" % x for x in range(1,23))
     output:
-      "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/all.prune.in"
+      "resources/plink_ranges/{join}/pruned_ranges/all.prune.in"
     shell:
       "for x in {input}; do cat $x >>{output}; done"
 
 rule cat_bim_files:
     input:
-        ("resources/ukbb_sum_stats/plink_subsets/chr%d.bim" % x for x in range(1,23))
+        ("resources/plink_subsets/{join}/chr%d.bim" % x for x in range(1,23))
     output:
-        "resources/ukbb_sum_stats/plink_subsets/all.bim"
+        "resources/plink_subsets/{join}/all.bim"
     shell:
         "for x in {input}; do cat $x >>{output}; done"
 
 rule prune_merged_sum_stats:
     input:
-      "resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz",
-      "resources/ukbb_sum_stats/plink_subsets/all.bim",
-      "resources/ukbb_sum_stats/plink_subsets/pruned_ranges/all.prune.in"
+      sum_stats_file = "resources/merged_pid_ukbb_sum_stats.tsv.gz",
+      bim_file = "resources/plink_subsets/{join}/all.bim",
+      pruned_range_file = "resources/plink_ranges/{join}/pruned_ranges/all.prune.in"
     output:
-      "resources/ukbb_sum_stats/pruned_merged_sum_stats.tsv"
+      "resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv"
     shell:
       """
-      Rscript scripts/prune_merged_sum_stats.R
-      sed -i 's/pval\.//g' resources/ukbb_sum_stats/pruned_merged_sum_stats.tsv
+      Rscript scripts/prune_merged_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --range_file {input.pruned_range_file} -o {output};
+      sed -i 's/pval\.//g' {output}
       """
 
-# TODO next thing to fix
-rule make_pid_ukbb_plink_ranges:
-    input:
-        "resources/pid_ukbb_sum_stats/merged_pid_ukbb_sum_stats.tsv.gz",
-        ("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
-        "resources/1000g/euro/qc/chrX_qc.bim"
-    output:
-        ("resources/pid_ukbb_sum_stats/plink_ranges/chr%d.txt" % x for x in range(1,23)),
-        "resources/pid_ukbb_sum_stats/plink_ranges/chrX.txt"
-    threads: 8
-    shell:
-        "Rscript scripts/make_pid_ukbb_plink_ranges.R"
-
-rule subset_reference_for_pid_ukbb:
-    input:
-      "resources/1000g/euro/qc/{chr}_qc.bed",
-      "resources/1000g/euro/qc/{chr}_qc.bim",
-      "resources/1000g/euro/qc/{chr}_qc.fam",
-      range_file = "resources/pid_ukbb_sum_stats/plink_ranges/{chr}.txt"
-    output:
-      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.bed",
-      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.bim",
-      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.fam"
-    params:
-      bfile = "resources/1000g/euro/qc/{chr}_qc",
-      out = "resources/pid_ukbb_sum_stats/plink_subsets/{chr}"
-    threads: 8
-    resources:
-        mem_mb=get_mem_mb
-    shell:
-      "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --extract {input.range_file} --make-bed --out {params.out}"
-
-rule make_prune_ranges_for_pid_ukbb:
-    input:
-      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.bed",
-      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.bim",
-      "resources/pid_ukbb_sum_stats/plink_subsets/{chr}.fam"
-    output:
-      "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}.prune.in",
-      "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}.prune.out"
-    params:
-      bfile = "resources/pid_ukbb_sum_stats/plink_subsets/{chr}",
-      prune_out = "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/{chr}"
-    threads: 8
-    resources:
-        mem_mb=get_mem_mb
-    shell:
-      "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --indep-pairwise 1000kb 50 0.2 --out {params.prune_out}"
-
-rule cat_prune_ranges_for_pid_ukbb:
-    input:
-      ("resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/chr%d.prune.in" % x for x in range(1,23))
-    output:
-      "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/all.prune.in"
-    shell:
-      "for x in {input}; do cat $x >>{output}; done"
-
-rule cat_bim_files_for_pid_ukbb:
-    input:
-        ("resources/pid_ukbb_sum_stats/plink_subsets/chr%d.bim" % x for x in range(1,23))
-    output:
-        "resources/pid_ukbb_sum_stats/plink_subsets/all.bim"
-    shell:
-        "for x in {input}; do cat $x >>{output}; done"
-
-rule prune_merged_sum_stats_for_pid_ukbb:
-    input:
-      "resources/pid_ukbb_sum_stats/merged_pid_ukbb_sum_stats.tsv.gz",
-      "resources/pid_ukbb_sum_stats/plink_subsets/all.bim",
-      "resources/pid_ukbb_sum_stats/plink_subsets/pruned_ranges/all.prune.in"
-    output:
-      "resources/pid_ukbb_sum_stats/pruned_merged_sum_stats.tsv"
-    shell:
-      """
-      Rscript scripts/prune_merged_sum_stats_for_pid_ukbb.R
-      sed -i 's/pval\.//g' resources/pid_ukbb_sum_stats/pruned_merged_sum_stats.tsv
-      """
-
+# TODO make this for just a pair; wasteful, but makes things more atomic
 rule compute_gps:
     input:
-      "resources/ukbb_sum_stats/pruned_merged_sum_stats.tsv"
+      "resources/{trait_A}.temp",
+      "resources/{trait_B}.temp",
+      sum_stats_file = "resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv",
     output:
-      "results/gps_values.tsv"
+      "results/{trait_A}-{trait_B}_gps_value.tsv"
     shell:
-      "scripts/gps_cpp/build/apps/computeGpsForUkbbTraitPairsCLI -i {input} -o {output}"
+      "scripts/gps_cpp/build/apps/computeGpsForTraitPairCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
 
 # TODO fix me for PID-containing tsv file
 rule compute_gps_for_pid_ukbb:
@@ -337,7 +251,7 @@ rule compute_gps_p_value:
       gps_file = "results/gps_values.tsv",
       perm_file = "results/permutations/{trait_A,[A-Z0-9_]+}-{trait_B,[A-Z0-9_]+}.tsv"
     output:
-        "results/{trait_A,[A-Z0-9_]+}-{trait_B,[A-Z0-9_]+}_gps_pvalue.tsv"
+        "results/{trait_A}-{trait_B}_gps_pvalue.tsv"
     shell:
       "Rscript scripts/compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
 

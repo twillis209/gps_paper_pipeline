@@ -58,4 +58,4 @@ for(i in 2:length(sum_stats_files)) {
   left_dat <- merge(left_dat, right_dat, by = 'variant')
 }
 
-fwrite(left_dat, file = 'resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz', sep = '\t')
+fwrite(left_dat, file = 'resources/merged_ukbb_sum_stats.tsv.gz', sep = '\t')
