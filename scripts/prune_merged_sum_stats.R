@@ -18,7 +18,7 @@ pruned_rsid_dat <- fread(args$range_file, sep = ' ', header = F)
 
 names(pruned_rsid_dat) <- 'ID'
 
-bim_dat <- fread($args$bim_file, sep = '\t', header = F, col.names = c('chr', 'ID', 'Cm', 'bp', 'A1', 'A2'))
+bim_dat <- fread(args$bim_file, sep = '\t', header = F, col.names = c('chr', 'ID', 'Cm', 'bp', 'A1', 'A2'))
 
 # Prune the rsIDs
 bim_dat <- bim_dat[ID %in% pruned_rsid_dat$ID]
