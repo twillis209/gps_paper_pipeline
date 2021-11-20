@@ -5,8 +5,6 @@ def get_mem_mb(wildcards, threads):
     return threads * 3420
 
 rule download_1000g_genotype_data:
-  # hg19
-  # TODO Really not sure that these files work with Plink v1.9
   output:
     "resources/1000g/{chr}.vcf.gz"
   run:
@@ -213,7 +211,7 @@ rule compute_gps_for_trait_pair:
     output:
       temp("results/{join}/{trait_A}-{trait_B}_gps_value.tsv")
     shell:
-      "scripts/gps_cpp/build/apps/computeGpsForTraitPairCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
+      "scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -o {output}"
 
 rule permute_trait_pair:
     input:
@@ -228,7 +226,7 @@ rule permute_trait_pair:
     shell:
       "scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {wildcards.trait_A} -b {wildcards.trait_B} -c 8 -n 375"
 
-rule compute_gps_p_value_for_trait_pair:
+rule compute_gps_pvalue_for_trait_pair:
     input:
       gps_file = "results/{join}/{trait_A}-{trait_B}_gps_value.tsv",
       perm_file = "results/{join}/permutations/{trait_A}-{trait_B}.tsv"
@@ -237,12 +235,8 @@ rule compute_gps_p_value_for_trait_pair:
     shell:
       "Rscript scripts/compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
 
-# TODO make CLI argument
-rule collate_gps_p_value_data:
+rule collate_gps_pvalue_data:
     input:
-#        "resources/ukbb_sum_stats/traits_codes_abbrv_cases.csv",
-#        "resources/ukbb_sum_stats/traits_rg.tsv",
-        "results/ukbb/20002_1111-pid_gps_pvalue.tsv"
         "results/ukbb/20002_1111-22126_gps_pvalue.tsv",
         "results/ukbb/20002_1473-I9_IHD_gps_pvalue.tsv",
         "results/ukbb/20002_1220-I9_IHD_gps_pvalue.tsv",
@@ -473,9 +467,25 @@ rule collate_gps_p_value_data:
         "results/ukbb/20002_1381-I9_IHD_gps_pvalue.tsv",
         "results/ukbb/20002_1381-K51_gps_pvalue.tsv",
         "results/ukbb/20002_1381-K57_gps_pvalue.tsv",
-        "results/ukbb/20002_1381-K80_gps_pvalue.tsv"
-#    output:
-#        "results/collated_gps_pvalues.tsv"
-#    shell:
-#        "Rscript scripts/collate_gps_pvalues.R"
-
+        "results/ukbb/20002_1381-K80_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1220_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1286_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1289_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1291_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-I9_IHD_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1464_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1111_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-22126_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1462_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-K51_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1465_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1473_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-K57_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-K80_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1452_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1154_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-D25_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-6148_2_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1113_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-6148_5_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1226_gps_pvalue.tsv"
