@@ -1,3 +1,5 @@
+import re
+
 wildcard_constraints:
     chr = "chr[0-9XY]{1,2}"
 
@@ -489,3 +491,24 @@ rule collate_gps_pvalue_data:
         "results/pid_ukbb/pid-20002_1113_gps_pvalue.tsv",
         "results/pid_ukbb/pid-6148_5_gps_pvalue.tsv",
         "results/pid_ukbb/pid-20002_1226_gps_pvalue.tsv"
+    output:
+        "results/combined_pvalues.tsv"
+    run:
+        with open(output[0], 'w') as outfile:
+            outfile.write(("\t".join(["trait_A", "trait_B", "gps", "n", "loc", "loc.sd", "scale", "scale.sd", "shape", "shape.sd", "pval"]))+"\n")
+            for i,x in enumerate(input):
+                with open(x, 'r') as infile:
+                    data_line = infile.readlines()[1]
+
+                m = re.match("results/(pid_){0,1}ukbb/(\w+)-(\w+)_gps_pvalue.tsv", x)
+
+                outfile.write(("\t".join([m[2], m[3], data_line])))
+
+rule add_trait_labels:
+    input:
+      pvalue_file = "results/combined_pvalues.tsv",
+      lookup_file = "resources/ukbb_sum_stats/traits_codes_abbrv_cases.tsv"
+    output:
+      "results/combined_pvalues_with_labels.tsv"
+    shell:
+      "Rscript scripts/add_trait_labels.R -p {input.pvalue_file} -l {input.lookup_file} -o {output}"
