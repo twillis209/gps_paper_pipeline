@@ -474,6 +474,7 @@ rule collate_gps_pvalue_data:
         "results/pid_ukbb/pid-20002_1286_gps_pvalue.tsv",
         "results/pid_ukbb/pid-20002_1289_gps_pvalue.tsv",
         "results/pid_ukbb/pid-20002_1291_gps_pvalue.tsv",
+        "results/pid_ukbb/pid-20002_1381_gps_pvalue.tsv",
         "results/pid_ukbb/pid-I9_IHD_gps_pvalue.tsv",
         "results/pid_ukbb/pid-20002_1464_gps_pvalue.tsv",
         "results/pid_ukbb/pid-20002_1111_gps_pvalue.tsv",
@@ -490,7 +491,7 @@ rule collate_gps_pvalue_data:
         "results/pid_ukbb/pid-6148_2_gps_pvalue.tsv",
         "results/pid_ukbb/pid-20002_1113_gps_pvalue.tsv",
         "results/pid_ukbb/pid-6148_5_gps_pvalue.tsv",
-        "results/pid_ukbb/pid-20002_1226_gps_pvalue.tsv"
+        "results/pid_ukbb/pid-20002_1226_gps_pvalue.tsv",
     output:
         "results/combined_pvalues.tsv"
     run:
@@ -512,3 +513,36 @@ rule add_trait_labels:
       "results/combined_pvalues_with_labels.tsv"
     shell:
       "Rscript scripts/add_trait_labels.R -p {input.pvalue_file} -l {input.lookup_file} -o {output}"
+
+rule plot_rg_gps_heatmap:
+    input:
+      pvalue_file = "results/combined_pvalues_with_labels.tsv",
+      rg_file = "resources/rg_values.tsv",
+      # traits argument allows me to set order of traits in matrix
+      traits = [ "asthma",
+      "bipolar disorder",
+      "CD",
+      "glaucoma",
+      "MD",
+      "depression",
+      "schizophrenia",
+      "leiomyoma",
+      "emphysema/chronic bronchitis",
+      "UC",
+      "diabetes",
+      "eczema/derm",
+      "rheumatoid arthritis",
+      "hayfever",
+      "hypercholesterolaemia",
+      "osteoarthritis",
+      "IHD",
+      "lupus",
+      "hypothyroidism",
+      "diverticulosis",
+      "cholelithiasis",
+                 "IBS",
+                 "pid"]
+    output:
+      "results/plots/rg_vs_gps.png"
+    shell:
+      "Rscript scripts/rg_vs_gps_heatmap.R -p {input.pvalue_file} -r {input.rg_file} -t {input.traits} -o {output}"
