@@ -115,9 +115,9 @@ rule merge_pid_and_ukbb_sum_stats:
 # SNP sets differ between UKBB pairs and PID-UKBB pairs
 rule make_ukbb_plink_ranges:
     input:
-      sum_stats_file = "resources/merged_pid_ukbb_sum_stats.tsv.gz",
-      bim_files = [("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
-      "resources/1000g/euro/qc/chrX_qc.bim"]
+      sum_stats_file = ancient("resources/merged_pid_ukbb_sum_stats.tsv.gz"),
+      bim_files = ancient([("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
+      "resources/1000g/euro/qc/chrX_qc.bim"])
     output:
       bim_files = [("resources/plink_ranges/ukbb/chr%d.txt" % x for x in range(1,23)),
       "resources/plink_ranges/ukbb/chrX.txt"]
@@ -129,8 +129,8 @@ rule make_ukbb_plink_ranges:
 
 rule make_pid_ukbb_plink_ranges:
     input:
-      sum_stats_file = "resources/merged_pid_ukbb_sum_stats.tsv.gz",
-      bim_files = [("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)), "resources/1000g/euro/qc/chrX_qc.bim"]
+      sum_stats_file = ancient("resources/merged_pid_ukbb_sum_stats.tsv.gz"),
+      bim_files = ancient([("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)), "resources/1000g/euro/qc/chrX_qc.bim"])
     output:
       bim_files = [("resources/plink_ranges/pid_ukbb/chr%d.txt" % x for x in range(1,23)), "resources/plink_ranges/pid_ukbb/chrX.txt"]
     params:
@@ -193,9 +193,9 @@ rule cat_bim_files:
 
 rule prune_merged_sum_stats:
     input:
-      sum_stats_file = "resources/merged_pid_ukbb_sum_stats.tsv.gz",
-      bim_file = "resources/plink_subsets/{join}/all.bim",
-      pruned_range_file = "resources/plink_ranges/{join}/pruned_ranges/all.prune.in"
+      sum_stats_file = ancient("resources/merged_pid_ukbb_sum_stats.tsv.gz"),
+      bim_file = ancient("resources/plink_subsets/{join}/all.bim"),
+      pruned_range_file = ancient("resources/plink_ranges/{join}/pruned_ranges/all.prune.in")
     output:
       "resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv"
     threads: 8
@@ -207,9 +207,9 @@ rule prune_merged_sum_stats:
 
 rule compute_gps_for_trait_pair:
     input:
-      "resources/{trait_A}.temp",
-      "resources/{trait_B}.temp",
-      sum_stats_file = "resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv",
+      ancient("resources/{trait_A}.temp"),
+      ancient("resources/{trait_B}.temp"),
+      sum_stats_file = ancient("resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv"),
     output:
       temp("results/{join}/{trait_A}-{trait_B}_gps_value.tsv")
     shell:
@@ -217,9 +217,9 @@ rule compute_gps_for_trait_pair:
 
 rule permute_trait_pair:
     input:
-      "resources/{trait_A}.temp",
-      "resources/{trait_B}.temp",
-      sum_stats_file = "resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv",
+      ancient("resources/{trait_A}.temp"),
+      ancient("resources/{trait_B}.temp"),
+      sum_stats_file = ancient("resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv"),
     output:
       "results/{join}/permutations/{trait_A}-{trait_B}.tsv"
     threads: 8
@@ -505,44 +505,307 @@ rule collate_gps_pvalue_data:
 
                 outfile.write(("\t".join([m[2], m[3], data_line])))
 
-rule add_trait_labels:
+rule add_trait_labels_to_gps_results:
     input:
       pvalue_file = "results/combined_pvalues.tsv",
       lookup_file = "resources/ukbb_sum_stats/traits_codes_abbrv_cases.tsv"
     output:
       "results/combined_pvalues_with_labels.tsv"
     shell:
-      "Rscript scripts/add_trait_labels.R -p {input.pvalue_file} -l {input.lookup_file} -o {output}"
+      "Rscript scripts/add_trait_labels_to_gps_results.R -p {input.pvalue_file} -l {input.lookup_file} -o {output}"
 
 rule plot_rg_gps_heatmap:
     input:
       pvalue_file = "results/combined_pvalues_with_labels.tsv",
       rg_file = "resources/rg_values.tsv",
+    params:
       # traits argument allows me to set order of traits in matrix
-      traits = [ "asthma",
-      "bipolar disorder",
-      "CD",
-      "glaucoma",
-      "MD",
-      "depression",
-      "schizophrenia",
-      "leiomyoma",
-      "emphysema/chronic bronchitis",
-      "UC",
-      "diabetes",
-      "eczema/derm",
-      "rheumatoid arthritis",
-      "hayfever",
-      "hypercholesterolaemia",
-      "osteoarthritis",
-      "IHD",
-      "lupus",
-      "hypothyroidism",
-      "diverticulosis",
-      "cholelithiasis",
-                 "IBS",
-                 "pid"]
+      traits = "bipolar disorder,glaucoma,MD,depression,schizophrenia,leiomyoma,emphysema/chronic bronchitis,hypercholesterolaemia,osteoarthritis,IHD,diverticulosis,cholelithiasis,IBS,CD,UC,diabetes,hayfever,asthma,eczema/derm,rheumatoid arthritis,lupus,hypothyroidism,pid"
     output:
       "results/plots/rg_vs_gps.png"
     shell:
-      "Rscript scripts/rg_vs_gps_heatmap.R -p {input.pvalue_file} -r {input.rg_file} -t {input.traits} -o {output}"
+      "Rscript scripts/rg_vs_gps_heatmap.R -p {input.pvalue_file} -r {input.rg_file} -t '{params.traits}' -o {output}"
+
+rule compute_hoeffdings_for_trait_pair:
+    input:
+        ancient("resources/{trait_A}.temp"),
+        ancient("resources/{trait_B}.temp"),
+        sum_stats_file = ancient("resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv"),
+    output:
+        temp("results/{join}/{trait_A}-{trait_B}_hoeffdings.tsv")
+    shell:
+        "Rscript scripts/compute_hoeffdings.R -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
+
+rule collate_hoeffdings_results:
+    input:
+        "results/ukbb/20002_1111-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1473-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1220-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1113_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1220-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1452_hoeffdings.tsv",
+        "results/ukbb/20002_1226-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1465-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/I9_IHD-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1113-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1465-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1220_hoeffdings.tsv",
+        "results/ukbb/20002_1113-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1286-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1286_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1220_hoeffdings.tsv",
+        "results/ukbb/20002_1286-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1465-20002_1473_hoeffdings.tsv",
+        "results/ukbb/K57-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1286-20002_1291_hoeffdings.tsv",
+        "results/ukbb/20002_1452-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1220-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1111-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1226-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1226_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1154_hoeffdings.tsv",
+        "results/ukbb/20002_1154-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1464-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1111-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1154-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1154-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1286_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1220_hoeffdings.tsv",
+        "results/ukbb/20002_1226-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1465-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1286-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1473-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1286-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1464_hoeffdings.tsv",
+        "results/ukbb/20002_1226-20002_1286_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1286-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1462-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1154-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1286_hoeffdings.tsv",
+        "results/ukbb/20002_1465-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1286-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1286_hoeffdings.tsv",
+        "results/ukbb/I9_IHD-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1111-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1113-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1226_hoeffdings.tsv",
+        "results/ukbb/20002_1226-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1291-20002_1452_hoeffdings.tsv",
+        "results/ukbb/20002_1473-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1462-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1464-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1473_hoeffdings.tsv",
+        "results/ukbb/22126-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1113-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1226-20002_1464_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1464_hoeffdings.tsv",
+        "results/ukbb/20002_1226-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1226-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1462-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1464-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1464_hoeffdings.tsv",
+        "results/ukbb/20002_1286-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1226_hoeffdings.tsv",
+        "results/ukbb/22126-6148_2_hoeffdings.tsv",
+        "results/ukbb/I9_IHD-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1220-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1113-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1464-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1226_hoeffdings.tsv",
+        "results/ukbb/6148_2-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1452-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1462-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1452-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1291-K51_hoeffdings.tsv",
+        "results/ukbb/22126-K51_hoeffdings.tsv",
+        "results/ukbb/6148_2-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1462-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1464-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1462_hoeffdings.tsv",
+        "results/ukbb/20002_1464-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1291-20002_1462_hoeffdings.tsv",
+        "results/ukbb/20002_1111-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1154_hoeffdings.tsv",
+        "results/ukbb/20002_1452-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1452-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1452_hoeffdings.tsv",
+        "results/ukbb/20002_1113-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1286-20002_1452_hoeffdings.tsv",
+        "results/ukbb/20002_1464-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1465-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1291-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1291_hoeffdings.tsv",
+        "results/ukbb/6148_5-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1291-20002_1473_hoeffdings.tsv",
+        "results/ukbb/D25-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1473-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1465-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1286-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1464-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1220-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1291-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1286-20002_1462_hoeffdings.tsv",
+        "results/ukbb/20002_1291-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1291-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1291-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1452-K80_hoeffdings.tsv",
+        "results/ukbb/K51-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1291-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1462-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1226-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1111-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1464-D25_hoeffdings.tsv",
+        "results/ukbb/22126-D25_hoeffdings.tsv",
+        "results/ukbb/6148_2-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1462_hoeffdings.tsv",
+        "results/ukbb/20002_1462-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1473-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1226-20002_1452_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1462_hoeffdings.tsv",
+        "results/ukbb/20002_1111-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1226-6148_5_hoeffdings.tsv",
+        "results/ukbb/6148_2-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1291-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1226-20002_1291_hoeffdings.tsv",
+        "results/ukbb/20002_1286-20002_1464_hoeffdings.tsv",
+        "results/ukbb/20002_1462-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1462-K80_hoeffdings.tsv",
+        "results/ukbb/D25-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1291_hoeffdings.tsv",
+        "results/ukbb/20002_1113-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1291_hoeffdings.tsv",
+        "results/ukbb/6148_5-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1154-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1291-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1462-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1452-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1111-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1452-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1226-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1291-20002_1464_hoeffdings.tsv",
+        "results/ukbb/6148_2-K80_hoeffdings.tsv",
+        "results/ukbb/6148_5-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1154-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1154-D25_hoeffdings.tsv",
+        "results/ukbb/22126-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1220-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1462-20002_1464_hoeffdings.tsv",
+        "results/ukbb/D25-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1452_hoeffdings.tsv",
+        "results/ukbb/20002_1154-6148_2_hoeffdings.tsv",
+        "results/ukbb/22126-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1291_hoeffdings.tsv",
+        "results/ukbb/20002_1113-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1220-6148_5_hoeffdings.tsv",
+        "results/ukbb/D25-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1452_hoeffdings.tsv",
+        "results/ukbb/6148_2-K57_hoeffdings.tsv",
+        "results/ukbb/22126-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1464-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1464_hoeffdings.tsv",
+        "results/ukbb/20002_1473-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1465-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1452-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1226-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1473-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1226-20002_1462_hoeffdings.tsv",
+        "results/ukbb/6148_5-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/K51-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1286-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1473-K51_hoeffdings.tsv",
+        "results/ukbb/6148_5-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1462_hoeffdings.tsv",
+        "results/ukbb/20002_1465-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1452-20002_1462_hoeffdings.tsv",
+        "results/ukbb/20002_1220-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1286-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1452-20002_1464_hoeffdings.tsv",
+        "results/ukbb/20002_1452-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1289_hoeffdings.tsv",
+        "results/ukbb/20002_1111-20002_1381_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1289_hoeffdings.tsv",
+        "results/ukbb/20002_1113-20002_1381_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1289_hoeffdings.tsv",
+        "results/ukbb/20002_1154-20002_1381_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1289_hoeffdings.tsv",
+        "results/ukbb/20002_1220-20002_1381_hoeffdings.tsv",
+        "results/ukbb/20002_1226-20002_1289_hoeffdings.tsv",
+        "results/ukbb/20002_1226-20002_1381_hoeffdings.tsv",
+        "results/ukbb/20002_1286-20002_1289_hoeffdings.tsv",
+        "results/ukbb/20002_1286-20002_1381_hoeffdings.tsv",
+        "results/ukbb/20002_1289-20002_1291_hoeffdings.tsv",
+        "results/ukbb/20002_1289-20002_1381_hoeffdings.tsv",
+        "results/ukbb/20002_1289-20002_1452_hoeffdings.tsv",
+        "results/ukbb/20002_1289-20002_1462_hoeffdings.tsv",
+        "results/ukbb/20002_1289-20002_1464_hoeffdings.tsv",
+        "results/ukbb/20002_1289-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1289-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1289-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1289-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1289-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1289-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1289-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1289-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1289-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1289-K80_hoeffdings.tsv",
+        "results/ukbb/20002_1291-20002_1381_hoeffdings.tsv",
+        "results/ukbb/20002_1381-20002_1452_hoeffdings.tsv",
+        "results/ukbb/20002_1381-20002_1462_hoeffdings.tsv",
+        "results/ukbb/20002_1381-20002_1464_hoeffdings.tsv",
+        "results/ukbb/20002_1381-20002_1465_hoeffdings.tsv",
+        "results/ukbb/20002_1381-20002_1473_hoeffdings.tsv",
+        "results/ukbb/20002_1381-22126_hoeffdings.tsv",
+        "results/ukbb/20002_1381-6148_2_hoeffdings.tsv",
+        "results/ukbb/20002_1381-6148_5_hoeffdings.tsv",
+        "results/ukbb/20002_1381-D25_hoeffdings.tsv",
+        "results/ukbb/20002_1381-I9_IHD_hoeffdings.tsv",
+        "results/ukbb/20002_1381-K51_hoeffdings.tsv",
+        "results/ukbb/20002_1381-K57_hoeffdings.tsv",
+        "results/ukbb/20002_1381-K80_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1220_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1286_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1289_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1291_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1381_hoeffdings.tsv",
+        "results/pid_ukbb/pid-I9_IHD_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1464_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1111_hoeffdings.tsv",
+        "results/pid_ukbb/pid-22126_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1462_hoeffdings.tsv",
+        "results/pid_ukbb/pid-K51_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1465_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1473_hoeffdings.tsv",
+        "results/pid_ukbb/pid-K57_hoeffdings.tsv",
+        "results/pid_ukbb/pid-K80_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1452_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1154_hoeffdings.tsv",
+        "results/pid_ukbb/pid-D25_hoeffdings.tsv",
+        "results/pid_ukbb/pid-6148_2_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1113_hoeffdings.tsv",
+        "results/pid_ukbb/pid-6148_5_hoeffdings.tsv",
+        "results/pid_ukbb/pid-20002_1226_hoeffdings.tsv",
+    output:
+      "results/hoeffdings_results.tsv"
+    shell:
+       """
+       echo -e 'trait_A\ttrait_B\tn\tDn\tscaled\tp.value' >> {output}
+       for x in {input}; do
+          cat <(tail -n 1 $x) >> {output}
+       done
+       """
+
+rule add_trait_labels_to_hoeffdings_results:
+    input:
+        results_file = "results/hoeffdings_results.tsv",
+        lookup_file = "resources/ukbb_sum_stats/traits_codes_abbrv_cases.tsv"
+    output:
+        "results/hoeffdings_results_with_labels.tsv"
+    shell:
+        "Rscript scripts/add_trait_labels_to_hoeffdings_results.R -r {input.results_file} -l {input.lookup_file} -o {output}"
