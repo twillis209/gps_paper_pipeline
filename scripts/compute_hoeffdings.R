@@ -51,6 +51,8 @@ sum_stats_dat <- fread(args$sum_stats_file, sep = '\t', header = T, select = c(a
 
 hoeffding_res <- run_hoeffding(sum_stats_dat, args$trait_A, args$trait_B)
 
+print(hoeffding_res)
+
 res_dat <- data.table(t(unlist(hoeffding_res[c('n', 'Dn', 'scaled', 'p.value')])))
 
 res_dat[, `:=` (trait_A = args$trait_A, trait_B = args$trait_B)]

@@ -104,7 +104,7 @@ rule merge_pid_and_ukbb_sum_stats:
         pid_file = "resources/pid.tsv.gz"
     output:
         merged_file = "resources/merged_pid_ukbb_sum_stats.tsv.gz",
-        temp_files = [temp("resources/%s.temp" % x) for x in glob_wildcards("resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv").id]+["resources/pid.temp"]
+        temp_files = ["resources/%s.temp" % x for x in glob_wildcards("resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv").id]+["resources/pid.temp"]
     threads: 8
     shell:
       """
@@ -528,13 +528,14 @@ rule plot_rg_gps_heatmap:
 
 rule compute_hoeffdings_for_trait_pair:
     input:
-        ancient("resources/{trait_A}.temp"),
-        ancient("resources/{trait_B}.temp"),
+# TODO fix this
+#        ancient("resources/{trait_A}.temp"),
+#        ancient("resources/{trait_B}.temp"),
         sum_stats_file = ancient("resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv"),
     output:
-        temp("results/{join}/{trait_A}-{trait_B}_hoeffdings.tsv")
+        "results/{join}/{trait_A}-{trait_B}_hoeffdings.tsv"
     shell:
-        "Rscript scripts/compute_hoeffdings.R -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
+        "Rscript scripts/compute_hoeffdings.R -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output} -nt 1"
 
 rule collate_hoeffdings_results:
     input:
@@ -809,3 +810,15 @@ rule add_trait_labels_to_hoeffdings_results:
         "results/hoeffdings_results_with_labels.tsv"
     shell:
         "Rscript scripts/add_trait_labels_to_hoeffdings_results.R -r {input.results_file} -l {input.lookup_file} -o {output}"
+
+rule plot_rg_hoeffdings_heatmap:
+    input:
+        hoeffdings_file = "results/hoeffdings_results_with_labels.tsv",
+        rg_file = "resources/rg_values.tsv",
+    params:
+        # traits argument allows me to set order of traits in matrix
+        traits = "bipolar disorder,glaucoma,MD,depression,schizophrenia,leiomyoma,emphysema/chronic bronchitis,hypercholesterolaemia,osteoarthritis,IHD,diverticulosis,cholelithiasis,IBS,CD,UC,diabetes,hayfever,asthma,eczema/derm,rheumatoid arthritis,lupus,hypothyroidism,pid"
+    output:
+        "results/plots/rg_vs_hoeffdings.png"
+    shell:
+        "Rscript scripts/rg_vs_hoeffdings_heatmap.R -f {input.hoeffdings_file} -r {input.rg_file} -t '{params.traits}' -o {output}"

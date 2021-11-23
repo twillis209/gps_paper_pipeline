@@ -41,4 +41,4 @@ for(i in 1:length(args$traits)) {
 
 neg_log10_gps_rg_mat <- -log10(gps_rg_mat)
 
-pheatmap(apply(apply(neg_log10_gps_rg_mat, 2, cut, breaks = seq(0,10, by = 2), labels = c(0,2,4,6,8)), 2, as.integer), breaks = seq(0, 10, length.out = 101), cluster_rows = F, cluster_cols = F, fontsize = 13, filename = args$output_path, display_numbers = F, number_format = "%.1f", labels_row = rownames(neg_log10_gps_rg_mat), labels_col = colnames(neg_log10_gps_rg_mat))
+pheatmap(neg_log10_gps_rg_mat, breaks = seq(0, 10, length.out = 101), cluster_rows = F, cluster_cols = F, fontsize = 13, filename = args$output_path, display_numbers = F, number_format = "%.1f", labels_row = rownames(neg_log10_gps_rg_mat), labels_col = colnames(neg_log10_gps_rg_mat))
