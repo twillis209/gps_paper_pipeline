@@ -19,7 +19,9 @@ library(ggpubr)
 parser <- ArgumentParser(description = 'Plot GPS null distribution using specified null permutations file')
 parser$add_argument('-f', '--fitdist_file', type = 'character', help = 'Path to fitted parameters file')
 parser$add_argument('-p', '--perm_file', type = 'character', help = 'Path to file contained permuted null GPS statistics')
-parser$add_argument('-o', '--output_path', type = 'character', help = 'Path to output plot file', required = T)
+parser$add_argument('-a', '--exp1_null', type = 'character', help = 'Path to exp1 output plot file', required = T)
+parser$add_argument('-b', '--gev_null', type = 'character', help = 'Path to gev output plot file', required = T)
+parser$add_argument('-c', '--exp1_gev_combined', type = 'character', help = 'Path to combined output plot file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
 args <- parser$parse_args()
@@ -41,6 +43,8 @@ pl_exp1_pvals_hist <- ggplot(data = data.frame(p = exp1_pvals))+
   scale_x_continuous(limits = c(0,1))+
   ylim(0,0.1)
 
+ggsave(plot = pl_exp1_pvals_hist, file = args$exp1_null, units = "in", width = 2.7, height = 3)
+
 pl_gev_pvals_hist <- ggplot(data = data.frame(p = gev_pvals))+
   geom_histogram(aes(x = p, y = ..count../sum(..count..)), colour = 'black', fill = 'gray', breaks = seq(0, 1, length.out = 21))+
   geom_hline(yintercept = 0.05, linetype = "dashed", col = "blue")+
@@ -50,4 +54,6 @@ pl_gev_pvals_hist <- ggplot(data = data.frame(p = gev_pvals))+
   scale_x_continuous(limits = c(0,1))+
   ylim(0,0.1)
 
-ggsave(plot = ggarrange(plotlist = list(pl_exp1_pvals_hist, pl_gev_pvals_hist), ncol = 2, nrow = 1), file = args$output_path, units = "in", width = 5.4, height = 3)
+ggsave(plot = pl_gev_pvals_hist, file = args$gev_null, units = "in", width = 2.7, height = 3)
+
+ggsave(plot = ggarrange(plotlist = list(pl_exp1_pvals_hist, pl_gev_pvals_hist), ncol = 2, nrow = 1), file = args$exp1_gev_combined, units = "in", width = 5.4, height = 3)

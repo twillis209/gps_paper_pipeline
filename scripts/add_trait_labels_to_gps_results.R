@@ -12,10 +12,10 @@ pvalue_dat <- fread(args$pvalue_file, sep = '\t', header = T)
 
 lookup_dat <- fread(args$lookup_file, sep = '\t', header = T)
 
-pvalue_dat <- merge(pvalue_dat, lookup_dat[,.(code, abbrv)], all.x = T, by.x = 'trait_A', by.y = 'code')
-setnames(pvalue_dat, "abbrv", "abbrv_A")
-pvalue_dat <- merge(pvalue_dat, lookup_dat[,.(code, abbrv)], all.x = T, by.x = 'trait_B', by.y = 'code')
-setnames(pvalue_dat, "abbrv", "abbrv_B")
+pvalue_dat <- merge(pvalue_dat, lookup_dat[,.(code, long_abbrv)], all.x = T, by.x = 'trait_A', by.y = 'code')
+setnames(pvalue_dat, "long_abbrv", "abbrv_A")
+pvalue_dat <- merge(pvalue_dat, lookup_dat[,.(code, long_abbrv)], all.x = T, by.x = 'trait_B', by.y = 'code')
+setnames(pvalue_dat, "long_abbrv", "abbrv_B")
 
 pvalue_dat <- pvalue_dat[, .(trait_A, trait_B, abbrv_A, abbrv_B, gps, n, loc, loc.sd, scale, scale.sd, shape, shape.sd, pval)]
 

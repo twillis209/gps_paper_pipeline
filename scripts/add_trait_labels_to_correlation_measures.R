@@ -12,9 +12,9 @@ corr_dat <- fread(args$corr_file, sep = '\t', header = T)
 
 lookup_dat <- fread(args$lookup_file, sep = '\t', header = T)
 
-corr_dat <- merge(corr_dat, lookup_dat[,.(code, abbrv)], all.x = T, by.x = 'trait_A', by.y = 'code')
-setnames(corr_dat, "abbrv", "abbrv_A")
-corr_dat <- merge(corr_dat, lookup_dat[,.(code, abbrv)], all.x = T, by.x = 'trait_B', by.y = 'code')
-setnames(corr_dat, "abbrv", "abbrv_B")
+corr_dat <- merge(corr_dat, lookup_dat[,.(code, long_abbrv)], all.x = T, by.x = 'trait_A', by.y = 'code')
+setnames(corr_dat, "long_abbrv", "abbrv_A")
+corr_dat <- merge(corr_dat, lookup_dat[,.(code, long_abbrv)], all.x = T, by.x = 'trait_B', by.y = 'code')
+setnames(corr_dat, "long_abbrv", "abbrv_B")
 
 fwrite(corr_dat, file = args$output_path, sep = '\t', col.names = T, row.names = F)
