@@ -546,16 +546,40 @@ rule add_trait_labels_to_gps_results:
     shell:
       "Rscript scripts/add_trait_labels_to_gps_results.R -p {input.pvalue_file} -l {input.lookup_file} -o {output}"
 
-rule plot_rg_gps_heatmap:
+rule plot_gps_heatmaps:
+    input:
+        gps_file = "results/combined_pvalues_with_labels.tsv"
+    params:
+        # traits argument allows ordering of traits in matrix
+        traits = "bipolar disorder,glaucoma,MD,depression,schizophrenia,leiomyoma,emphysema/chronic bronchitis,hypercholesterolaemia,osteoarthritis,IHD,diverticulosis,cholelithiasis,IBS,CD,UC,hayfever,asthma,eczema/derm,rheumatoid arthritis,lupus,hypothyroidism,T1D"
+    output:
+        "results/plots/gps_pval_heatmap.png",
+    shell:
+        "Rscript scripts/gps_heatmaps.R -i {input.gps_file} -t '{params.traits}' -o {output}"
+
+rule plot_exemplar_rg_gps_heatmap:
     input:
       pvalue_file = "results/combined_pvalues_with_labels.tsv",
-      rg_file = "resources/rg_values.tsv",
+      rg_file = "resources/exemplar_rg_values.tsv",
     params:
       # traits argument allows ordering of traits in matrix
-      traits = "bipolar disorder,glaucoma,MD,depression,schizophrenia,leiomyoma,emphysema/chronic bronchitis,hypercholesterolaemia,osteoarthritis,IHD,diverticulosis,cholelithiasis,IBS,CD,UC,hayfever,asthma,eczema/derm,rheumatoid arthritis,lupus,hypothyroidism,pid"
+      traits = "bipolar disorder,glaucoma,MD,depression,schizophrenia,leiomyoma,emphysema/chronic bronchitis,hypercholesterolaemia,osteoarthritis,IHD,diverticulosis,cholelithiasis,IBS,CD,UC,hayfever,asthma,eczema/derm,rheumatoid arthritis,lupus,hypothyroidism"
     output:
-        rg_pvalue_file = "results/plots/rg_pval_vs_gps.png",
-        rg_estimate_file = "results/plots/rg_estimate_vs_gps.png"
+        rg_pvalue_file = "results/plots/exemplar_rg_pval_vs_gps.png",
+        rg_estimate_file = "results/plots/exemplar_rg_estimate_vs_gps.png"
+    shell:
+        "Rscript scripts/rg_vs_gps_heatmap.R -p {input.pvalue_file} -r {input.rg_file} -t '{params.traits}' --rg_pvalue_output {output.rg_pvalue_file} --rg_estimate_output {output.rg_estimate_file}"
+
+rule plot_ukbb_rg_gps_heatmap:
+    input:
+        pvalue_file = "results/combined_pvalues_with_labels.tsv",
+        rg_file = "resources/ukbb_rg_values.tsv",
+    params:
+        # traits argument allows ordering of traits in matrix
+        traits = "bipolar disorder,glaucoma,MD,depression,schizophrenia,leiomyoma,emphysema/chronic bronchitis,hypercholesterolaemia,osteoarthritis,IHD,diverticulosis,cholelithiasis,IBS,CD,UC,hayfever,asthma,eczema/derm,rheumatoid arthritis,lupus,hypothyroidism"
+    output:
+        rg_pvalue_file = "results/plots/ukbb_rg_pval_vs_gps.png",
+        rg_estimate_file = "results/plots/ukbb_rg_estimate_vs_gps.png"
     shell:
         "Rscript scripts/rg_vs_gps_heatmap.R -p {input.pvalue_file} -r {input.rg_file} -t '{params.traits}' --rg_pvalue_output {output.rg_pvalue_file} --rg_estimate_output {output.rg_estimate_file}"
 
@@ -582,8 +606,8 @@ rule compute_hoeffdings_for_trait_pair:
 
 rule collate_hoeffdings_results:
     input:
-        ["results/ukbb/%s_hoeffdings.tsv" % x for x in ukbb_trait_pairs]+
-        ["results/pid_ukbb/%s_hoeffdings.tsv" % x for x in pid_ukbb_trait_pairs]
+      ["results/ukbb/%s_hoeffdings.tsv" % x for x in ukbb_trait_pairs]+
+      ["results/pid_ukbb/%s_hoeffdings.tsv" % x for x in pid_ukbb_trait_pairs]
     output:
       "results/hoeffdings_results.tsv"
     shell:
@@ -603,16 +627,16 @@ rule add_trait_labels_to_hoeffdings_results:
     shell:
         "Rscript scripts/add_trait_labels_to_hoeffdings_results.R -r {input.results_file} -l {input.lookup_file} -o {output}"
 
-rule plot_rg_hoeffdings_heatmap:
+rule plot_exemplar_rg_hoeffdings_heatmaps:
     input:
         hoeffdings_file = "results/hoeffdings_results_with_labels.tsv",
-        rg_file = "resources/rg_values.tsv",
+        rg_file = "resources/exemplar_rg_values.tsv",
     params:
         # traits argument allows me to set order of traits in matrix
-        traits = "bipolar disorder,glaucoma,MD,depression,schizophrenia,leiomyoma,emphysema/chronic bronchitis,hypercholesterolaemia,osteoarthritis,IHD,diverticulosis,cholelithiasis,IBS,CD,UC,hayfever,asthma,eczema/derm,rheumatoid arthritis,lupus,hypothyroidism,pid"
+        traits = "bipolar disorder,glaucoma,MD,depression,schizophrenia,leiomyoma,emphysema/chronic bronchitis,hypercholesterolaemia,osteoarthritis,IHD,diverticulosis,cholelithiasis,IBS,CD,UC,hayfever,asthma,eczema/derm,rheumatoid arthritis,lupus,hypothyroidism"
     output:
-        rg_pvalue_file = "results/plots/rg_pval_vs_hoeffdings.png",
-        rg_estimate_file = "results/plots/rg_estimate_vs_hoeffdings.png"
+        rg_pvalue_file = "results/plots/exemplar_rg_pval_vs_hoeffdings.png",
+        rg_estimate_file = "results/plots/exemplar_rg_estimate_vs_hoeffdings.png"
     shell:
         "Rscript scripts/rg_vs_hoeffdings_heatmap.R -f {input.hoeffdings_file} -r {input.rg_file} -t '{params.traits}' --rg_pvalue_output {output.rg_pvalue_file} --rg_estimate_output {output.rg_estimate_file}"
 
@@ -679,51 +703,17 @@ rule plot_all_gof_plots:
         ["results/plots/ukbb/%s_gof_plots.png" % x for x in ukbb_trait_pairs]+
         ["results/plots/pid_ukbb/%s_gof_plots.png" % x for x in pid_ukbb_trait_pairs]
 
-rule add_missing_E4_DM1:
+# TODO remove me
+rule write_freq_map:
     input:
-        "results/ukbb/20002_1220-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1289-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1286-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1291-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/I9_IHD-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1464-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1381-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1111-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/22126-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1462-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/K51-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1465-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1473-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/K57-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/K80-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1452-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1154-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/D25-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/6148_2-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1113-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/6148_5-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/20002_1226-E4_DM1_gps_pvalue.tsv",
-        "results/pid_ukbb/pid-E4_DM1_gps_pvalue.tsv",
-        "results/ukbb/permutations/20002_1220-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1289-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1286-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1291-E4_DM1.tsv",
-        "results/ukbb/permutations/I9_IHD-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1464-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1381-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1111-E4_DM1.tsv",
-        "results/ukbb/permutations/22126-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1462-E4_DM1.tsv",
-        "results/ukbb/permutations/K51-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1465-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1473-E4_DM1.tsv",
-        "results/ukbb/permutations/K57-E4_DM1.tsv",
-        "results/ukbb/permutations/K80-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1452-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1154-E4_DM1.tsv",
-        "results/ukbb/permutations/D25-E4_DM1.tsv",
-        "results/ukbb/permutations/6148_2-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1113-E4_DM1.tsv",
-        "results/ukbb/permutations/6148_5-E4_DM1.tsv",
-        "results/ukbb/permutations/20002_1226-E4_DM1.tsv",
-        "results/pid_ukbb/permutations/pid-E4_DM1.tsv"
+        ancient("resources/{trait}.temp"),
+        sum_stats_file = ancient("resources/pruned_sum_stats/{join}/pruned_merged_sum_stats.tsv"),
+    output:
+        "results/{join}/freq_map/add_epsilon/{trait}.tsv"
+    shell:
+        "scripts/gps_cpp/build/apps/writeFreqMapCLI -i {input.sum_stats_file} -a {wildcards.trait} -b {output}"
+
+# TODO remove me
+rule freq_maps:
+    input:
+        ["results/ukbb/freq_map/add_epsilon/%s.tsv" % x for x in ukbb_trait_codes]
