@@ -5,3 +5,4 @@ resources
 .snakemake
 logs
 submit_with*
+Rplots.pdf

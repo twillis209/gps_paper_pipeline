@@ -2,7 +2,6 @@ library(argparse)
 library(data.table)
 library(evd)
 library(fitdistrplus)
-setDTthreads(8)
 
 parser <- ArgumentParser(description = 'Computes p-value for GPS statistic using permuted data')
 parser$add_argument('-g', '--gps_file', type = 'character', help = 'Path to file containing GPS value', required = T)
