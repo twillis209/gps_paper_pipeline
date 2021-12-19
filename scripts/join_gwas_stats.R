@@ -38,7 +38,7 @@ dat_b <- na.omit(dat_b)
 
 merged_dat <- merge(dat_a, dat_b, by.x = c(args$chr_a, args$bp_a), by.y = c(args$chr_b, args$bp_b), suffixes = c('', '.y'))
 
-merged_dat <- merged_dat[!(get(args$chr_a) == 6 & get(args$bp_a) %in% c(24e6, 45e6))]
+merged_dat <- merged_dat[!(get(args$chr_a) == 6 & get(args$bp_a) %between% c(24e6, 45e6))]
 
 ref_a <- args$ref_a
 alt_a <- args$alt_a

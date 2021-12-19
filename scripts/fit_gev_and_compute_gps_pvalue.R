@@ -18,7 +18,17 @@ gps <- gps_dat[Trait_A == args$trait_a & Trait_B == args$trait_b, GPS]
 
 perm_dat <- fread(args$perm_file, sep = '\t', header = T)
 
-fgev.fit <- fgev(perm_dat$GPS)
+fgev.fit <- tryCatch(
+   fgev(perm_dat$GPS),
+  error = function(c) {
+    msg <- conditionMessage(c)
+    if(msg == "observed information matrix is singular; use std.err = FALSE"){
+      fgev(perm_dat$GPS, std.err = F)
+    } else {
+      stop(msg)
+      }
+    }
+)
 
 fgev.fitdist <- fitdist(perm_dat$GPS, 'gev', start = list(loc = fgev.fit$estimate[['loc']], scale = fgev.fit$estimate[['scale']], shape = fgev.fit$estimate[['shape']]))
 

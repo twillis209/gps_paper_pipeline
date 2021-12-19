@@ -16,7 +16,7 @@ def get_permute_time(wildcards, threads):
 ukbb_trait_codes = ["20002_1220","20002_1289","20002_1286","20002_1291","I9_IHD","20002_1464","20002_1381","20002_1111","22126","20002_1462","K51","20002_1465","20002_1473","K57","K80","20002_1452","20002_1154","D25","6148_2","20002_1113","6148_5","20002_1226","E4_DM1"]
 
 # TODO implement for production version
-#ukbb_trait_pairs = list(chain(*[[ukbb_trait_codes[i]+'-'+ukbb_trait_codes[j] for j in range(i+1,len(ukbb_trait_codes))] for i in range(len(ukbb_trait_codes))]))
+ukbb_trait_pairs_new = list(chain(*[[ukbb_trait_codes[i]+'-'+ukbb_trait_codes[j] for j in range(i+1,len(ukbb_trait_codes))] for i in range(len(ukbb_trait_codes))]))
 
 ukbb_trait_pairs = ["20002_1111-22126",
 "20002_1473-I9_IHD",
@@ -500,10 +500,19 @@ rule downsample_pruned_merged_sum_stats:
     input:
      ancient("resources/pruned_sum_stats/{join}/all_pruned_snps/pruned_merged_sum_stats.tsv")
     output:
-     "resources/pruned_sum_stats/{join}/{no_snps}_snps/pruned_merged_sum_stats.tsv"
+     temp("resources/pruned_sum_stats/{join}/{no_snps}_snps/pruned_merged_sum_stats.tsv")
     threads: 8
     shell:
      "Rscript scripts/downsample_sum_stats.R -i {input} -n {wildcards.no_snps} -o {output} -nt {threads}"
+
+rule excise_mhc_from_pruned_merged_sum_stats:
+    input:
+        ancient("resources/pruned_sum_stats/{join}/all_pruned_snps/pruned_merged_sum_stats.tsv")
+    output:
+        "resources/pruned_sum_stats/{join}/sans_mhc/pruned_merged_sum_stats.tsv"
+    threads: 8
+    shell:
+        "Rscript scripts/excise_mhc_from_sum_stats.R -i {input} -o {output} -nt {threads}"
 
 rule compute_gps_for_trait_pair:
     input:
@@ -529,14 +538,14 @@ rule permute_trait_pair:
     shell:
       "scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {threads} -n {wildcards.draws}"
 
-rule compute_gps_pvalue_for_trait_pair:
+rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
     input:
       gps_file = "results/{join}/{snp_set}/{trait_A}-{trait_B}_gps_value.tsv",
       perm_file = "results/{join}/{snp_set}/{draws}_permutations/{trait_A}-{trait_B}.tsv"
     output:
       "results/{join}/{snp_set}/{trait_A}-{trait_B}_{draws}_permutations_gps_pvalue.tsv"
     shell:
-      "Rscript scripts/compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
+      "Rscript scripts/fit_gev_and_compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
 
 rule collate_gps_pvalue_data:
     input:
@@ -551,9 +560,26 @@ rule collate_gps_pvalue_data:
                 with open(x, 'r') as infile:
                     data_line = infile.readlines()[1]
 
-                m = re.match("results/(pid_){0,1}ukbb/(\w+)-(\w+)_gps_pvalue.tsv", x)
+                m = re.match("results/(pid_){0,1}ukbb/all_pruned_snps/(\w+)-(\w+)_gps_pvalue.tsv", x)
 
                 outfile.write(("\t".join([m[2], m[3], data_line])))
+
+rule collate_sans_mhc_gps_pvalue_data:
+    input:
+        ["results/ukbb/sans_mhc/%s_3000_permutations_gps_pvalue.tsv" % x for x in ukbb_trait_pairs_new]+
+        ["results/pid_ukbb/sans_mhc/%s_3000_permutations_gps_pvalue.tsv" % x for x in pid_ukbb_trait_pairs]
+    output:
+        "results/sans_mhc/combined_pvalues.tsv"
+    run:
+        with open(output[0], 'w') as outfile:
+            outfile.write(("\t".join(["trait_A", "trait_B", "gps", "n", "loc", "loc.sd", "scale", "scale.sd", "shape", "shape.sd", "pval"]))+"\n")
+            for i,x in enumerate(input):
+                with open(x, 'r') as infile:
+                    data_line = infile.readlines()[1]
+
+                    m = re.match("results/(pid_){0,1}ukbb/sans_mhc/(\w+)-(\w+)_3000_permutations_gps_pvalue.tsv", x)
+
+                    outfile.write(("\t".join([m[2], m[3], data_line])))
 
 rule add_trait_labels_to_gps_results:
     input:
@@ -769,9 +795,20 @@ rule plot_gev_estimates_for_increasing_n_for_selected_ukbb_trait_pairs:
     input:
         ["results/plots/ukbb/all_pruned_snps/%s_1000-10000_permutations_estimates.png" % x for x in trait_pairs_for_increasing_perm_fits]
 
-# TODO Find a way to use the existing rules to produce
-#rule:
+#rule fit_gev_to_increasing_no_snps_for_selected_ukbb_trait_pairs:
 #    input:
-#      ["results/{join}/%s_snps/3000_permutations/{trait_A}-{trait_B}.tsv" % x for x in [10000, 50000, 100000, 200000, 300000, 400000]]
-#    output:
+#        list(chain(*[["results/ukbb/%s_snps/%s_3000_permutations_estimates.tsv" % (x,y) for y in trait_pairs_for_increasing_perm_fits] for x in [10000, 50000, 100000, 200000, 300000, 400000]]))
 
+rule plot_gev_estimates_for_increasing_no_snps:
+    input:
+        ["results/{join}/%s_snps/{trait_A}-{trait_B}_{draws}_permutations_estimates.tsv" % x for x in [10000, 50000, 100000, 200000, 300000, 400000]]
+    output:
+        "results/plots/{join}/{trait_A}-{trait_B}_{draws}_permutations_variable_no_snps_estimates.png"
+    params:
+     fit_file_string = " ".join(["results/{join}/%s_snps/{trait_A}-{trait_B}_{draws}_permutations_estimates.tsv" % x for x in [10000, 50000, 100000, 200000, 300000, 400000]])
+    shell:
+      "Rscript scripts/plot_gev_estimates_for_increasing_no_snps.R -i {params.fit_file_string} -n 10000 50000 100000 200000 300000 400000 -o {output}"
+
+rule plot_gev_estimates_for_increasing_no_snps_for_selected_ukbb_traits:
+    input:
+     ["results/plots/ukbb/%s_3000_permutations_variable_no_snps_estimates.png" % x for x in trait_pairs_for_increasing_perm_fits]
