@@ -520,7 +520,7 @@ rule compute_gps_for_trait_pair:
       ancient("resources/{trait_B}.temp"),
       sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/pruned_merged_sum_stats.tsv"),
     output:
-      temp("results/{join}/{snp_set}/{trait_A}-{trait_B}_gps_value.tsv")
+      temp("results/{join}/{snp_set}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.tsv")
     shell:
       "scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -o {output}"
 
@@ -540,8 +540,8 @@ rule permute_trait_pair:
 
 rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
     input:
-      gps_file = "results/{join}/{snp_set}/{trait_A}-{trait_B}_gps_value.tsv",
-      perm_file = "results/{join}/{snp_set}/{draws}_permutations/{trait_A}-{trait_B}.tsv"
+      gps_file = "results/{join}/{snp_set}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.tsv",
+      perm_file = ancient("results/{join}/{snp_set}/{draws}_permutations/{trait_A}-{trait_B}.tsv")
     output:
       "results/{join}/{snp_set}/{trait_A}-{trait_B}_{draws}_permutations_gps_pvalue.tsv"
     shell:
@@ -549,46 +549,22 @@ rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
 
 rule collate_gps_pvalue_data:
     input:
-        ["results/ukbb/all_pruned_snps/%s_3000_permutations_gps_pvalue.tsv" % x for x in ukbb_trait_pairs]+
-        ["results/pid_ukbb/all_pruned_snps/%s_3000_permutations_gps_pvalue.tsv" % x for x in pid_ukbb_trait_pairs]
+        pvalue_files = ["results/ukbb/{snp_set}/%s_{draws}_permutations_gps_pvalue.tsv" % x for x in ukbb_trait_pairs]+
+        ["results/pid_ukbb/{snp_set}/%s_{draws}_permutations_gps_pvalue.tsv" % x for x in pid_ukbb_trait_pairs],
+        lookup_file = "resources/ukbb_sum_stats/trait_metadata.tsv"
     output:
-        "results/combined_pvalues.tsv"
+        "results/combined_pvalues_{snp_set}_{draws}_permutations_with_labels.tsv"
     run:
         with open(output[0], 'w') as outfile:
             outfile.write(("\t".join(["trait_A", "trait_B", "gps", "n", "loc", "loc.sd", "scale", "scale.sd", "shape", "shape.sd", "pval"]))+"\n")
-            for i,x in enumerate(input):
+            for i,x in enumerate(input.pvalue_files):
                 with open(x, 'r') as infile:
                     data_line = infile.readlines()[1]
 
-                m = re.match("results/(pid_){0,1}ukbb/all_pruned_snps/(\w+)-(\w+)_gps_pvalue.tsv", x)
+                m = re.match("results/(pid_){0,1}ukbb/%s/(\w+)-(\w+)_%s_permutations_gps_pvalue.tsv" % (wildcards.snp_set, wildcards.draws), x)
 
                 outfile.write(("\t".join([m[2], m[3], data_line])))
-
-rule collate_sans_mhc_gps_pvalue_data:
-    input:
-        ["results/ukbb/sans_mhc/%s_3000_permutations_gps_pvalue.tsv" % x for x in ukbb_trait_pairs_new]+
-        ["results/pid_ukbb/sans_mhc/%s_3000_permutations_gps_pvalue.tsv" % x for x in pid_ukbb_trait_pairs]
-    output:
-        "results/sans_mhc/combined_pvalues.tsv"
-    run:
-        with open(output[0], 'w') as outfile:
-            outfile.write(("\t".join(["trait_A", "trait_B", "gps", "n", "loc", "loc.sd", "scale", "scale.sd", "shape", "shape.sd", "pval"]))+"\n")
-            for i,x in enumerate(input):
-                with open(x, 'r') as infile:
-                    data_line = infile.readlines()[1]
-
-                    m = re.match("results/(pid_){0,1}ukbb/sans_mhc/(\w+)-(\w+)_3000_permutations_gps_pvalue.tsv", x)
-
-                    outfile.write(("\t".join([m[2], m[3], data_line])))
-
-rule add_trait_labels_to_gps_results:
-    input:
-      pvalue_file = "results/combined_pvalues.tsv",
-      lookup_file = "resources/ukbb_sum_stats/trait_metadata.tsv"
-    output:
-      "results/combined_pvalues_with_labels.tsv"
-    shell:
-      "Rscript scripts/add_trait_labels_to_gps_results.R -p {input.pvalue_file} -l {input.lookup_file} -o {output}"
+        shell("Rscript scripts/add_trait_labels_to_gps_results.R -p {output} -l {input.lookup_file} -o {output}")
 
 rule plot_gps_heatmaps:
     input:
@@ -644,16 +620,16 @@ rule compute_hoeffdings_for_trait_pair:
     input:
         sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/pruned_merged_sum_stats.tsv"),
     output:
-        "results/{join}/{snp_set}/{trait_A}-{trait_B}_hoeffdings.tsv"
+      "results/{join}/{snp_set}/{trait_A}-{trait_B}_hoeffdings.tsv"
     shell:
         "Rscript scripts/compute_hoeffdings.R -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output} -nt 1"
 
 rule collate_hoeffdings_results:
     input:
-      ["results/ukbb/all_pruned_snps/%s_hoeffdings.tsv" % x for x in ukbb_trait_pairs]+
-      ["results/pid_ukbb/all_pruned_snps/%s_hoeffdings.tsv" % x for x in pid_ukbb_trait_pairs]
+      ["results/ukbb/{snp_set}/%s_hoeffdings.tsv" % x for x in ukbb_trait_pairs]+
+      ["results/pid_ukbb/{snp_set}/%s_hoeffdings.tsv" % x for x in pid_ukbb_trait_pairs]
     output:
-      "results/hoeffdings_results.tsv"
+      "results/{snp_set}/hoeffdings_results.tsv"
     shell:
        """
        echo -e 'trait_A\ttrait_B\tn\tDn\tscaled\tp.value' >> {output}
@@ -664,10 +640,10 @@ rule collate_hoeffdings_results:
 
 rule add_trait_labels_to_hoeffdings_results:
     input:
-        results_file = "results/hoeffdings_results.tsv",
+        results_file = "results/{snp_set}/hoeffdings_results.tsv",
         lookup_file = "resources/ukbb_sum_stats/trait_metadata.tsv"
     output:
-        "results/hoeffdings_results_with_labels.tsv"
+        "results/{snp_set}/hoeffdings_results_with_labels.tsv"
     shell:
         "Rscript scripts/add_trait_labels_to_hoeffdings_results.R -r {input.results_file} -l {input.lookup_file} -o {output}"
 
