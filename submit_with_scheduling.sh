@@ -61,6 +61,8 @@ echo -e "\nExecuting command:\n==================\n\n"
 
 # Needed to run the code written to .bashrc by the conda init program
 source  /home/tw395/.bashrc
+# Needed to use my libs
+source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 

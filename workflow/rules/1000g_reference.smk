@@ -32,6 +32,7 @@ rule vcf_to_bed:
   shell:
     "plink --memory {resources.mem_mb} --threads {threads} --vcf resources/1000g/{wildcards.chr}.vcf.gz --make-bed --out resources/1000g/{wildcards.chr}"
 
+# NB: Removes related individuals, so we have 498 of 503 Europeans left
 rule make_euro_fam:
   input:
       panel = "resources/1000g/integrated_call_samples_v3.20130502.ALL.panel.txt",
