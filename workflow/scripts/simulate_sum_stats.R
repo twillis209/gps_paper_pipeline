@@ -6,36 +6,21 @@ parser <- ArgumentParser(description = 'Uses simGWAS to simulate GWAS summary st
 parser$add_argument('--hap_file', type = 'character', help = 'Path to haplotype file')
 parser$add_argument('--leg_file', type = 'character', help = 'Path to legend file')
 parser$add_argument('--bim_file', type = 'character', help = 'Path to bim file')
-parser$add_argument('--block_file', type = 'character', help = 'Path to block file')
 parser$add_argument('--ld_mats_file', type = 'character', help = 'Path to file containing LD matrices')
-parser$add_argument('-s', '--no_snps', type = 'integer', help = 'Number of SNPs on chromosome 21 to simulate', default = 2e4)
-parser$add_argument('-c', '--no_causal_variants', type = 'integer', help = 'Number of causal variants', required = T)
-parser$add_argument('-n', '--causal_variant_ind', type = 'integer', nargs = '*', help = 'Indices of causal variants. If omitted, random indices will be selected.', required = F)
-parser$add_argument('-r', '--odds_ratios', type = 'double', nargs = '+', help = 'Odds ratios for specified causal variants', default = c(1.1, 1.3, 1.5))
+parser$add_argument('--block_file', type = 'character', help = 'Path to block file')
+parser$add_argument('--no_blocks', type = 'integer', help = 'Number of LD blocks on chromosome 21 to simulate')
+parser$add_argument('--causal_variant_ind', type = 'integer', nargs = '*', help = 'Indices of causal variants with each LD block.')
+parser$add_argument('--odds_ratios', type = 'double', nargs = '+', help = 'Odds ratios for specified causal variants', default = c(1.1, 1.3, 1.5))
 parser$add_argument('--no_controls', type = 'integer', help = 'No. of controls', default = 1e4)
 parser$add_argument('--no_cases', type = 'integer', help = 'No. of cases', default = 1e4)
 parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates', default = 1)
 parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21_with_meta_eur.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21.legend.gz', '--bim_file', 'resources/1000g/chr21.bim', '--block_file', 'resources/ldetect/blocks.txt', '--no_snps', 10000, '--no_causal_variants', 1, '--odds_ratios', 3, '-o', 'test.tsv', '--no_of_threads', 8)
+test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21_with_meta_eur.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21.legend.gz', '--bim_file', 'resources/1000g/chr21.bim', '--block_file', 'resources/ldetect/blocks.txt', '--ld_mats_file', 'results/simgwas/chr21_block_ld_matrices.RData', '--no_blocks', 1, '--causal_variant_ind', 2000, 2000, '--odds_ratios', 3, '--output_file', 'test.tsv.gz', '--no_of_threads', 8, '--no_reps', 2)
 args <- parser$parse_args(test_args)
 
 args <- parser$parse_args()
-
-if(!is.null(args$causal_variant_ind)) {
-  if(args$no_causal_variants != length(args$causal_variant_ind)) {
-    stop("Must specify indices for all causal variants")
-  }
-}
-
-if(args$no_causal_variants > length(args$odds_ratios)) {
-    args$odds_ratios <- c(args$odds_ratios, sample(args$odds_ratios, size = args$no_causal_variants-length(args$odds_ratios), replace = T))
-}
-
-if(args$no_causal_variants < length(args$odds_ratios)) {
-  args$odds_ratios <- sample(args$odds_ratios, size = args$no_causal_variants, replace = T)
-}
 
 setDTthreads(args$no_of_threads)
 
@@ -43,6 +28,26 @@ leg_dat <- fread(file = args$leg_file, sep = ' ', header = T)
 hap_dat <- fread(file = args$hap_file, sep = ' ', header = F)
 bim_dat <- fread(file = args$bim_file, sep = '\t', header = F, col.names = c('chr', 'rsID', 'Cm', 'bp', 'A1', 'A2'))
 block_dat <- fread(file = args$block_file, sep = ' ', header = F, col.names = c('block', 'chr', 'start', 'stop'))
+load(file = args$ld_mats_file)
+
+if(!is.null(args$causal_variant_ind)) {
+  args$causal_variant_ind <- integer()
+
+  for(i in 1:args$no_blocks) {
+    args$causal_variant_ind[i] <- sample(1:ncol(ld_mats[[i]]), size = 1)
+  }
+}
+
+if(length(args$causal_variant_ind) < length(args$no_blocks)) {
+
+  for(i in (length(args$causal_variant_ind)+1):args$no_blocks) {
+    args$causal_variant_ind[i] <- sample(1:ncol(ld_mats[[i]]))
+  }
+}
+
+if(length(args$no_blocks) > length(args$odds_ratios)) {
+  stop("Need to specify odds ratios for every block's causal variant.")
+}
 
 # Drop metadata rows
 hap_dat <- hap_dat[5:nrow(hap_dat)]
@@ -85,66 +90,72 @@ rm(hap_mat)
 
 colnames(freq_dat) <- hap_meta_dat$rs
 
-block_snps <- table(leg_dat$block)
-
-last_block_ind <- min(which(cumsum(block_snps) >= args$no_snps))
-
-# ld_mats
-# Allegedly all positive-definite
-load(file = args$ld_mats_file)
-
+# Required by the make_GenoProbList function below (at least)
 freq_dat[, Probability := 1/.N]
 
-if(is.null(args$causal_variant_ind)) {
-  args$causal_variant_ind <- sample(1:nrow(chosen_snp_dat[EUR %between% c(0.2, 0.8)]), size = args$no_causal_variants)
-}
+ld_mats <- ld_mats[1:args$no_blocks]
 
-# Genotype probabilities at each SNP conditional on genotypes at causal variants
-geno_probs <- make_GenoProbList(snps = chosen_snp_dat$rs,
-                                W = chosen_snp_dat$rs[args$causal_variant_ind],
-                                freq = freq_dat)
+result_dat_list <- mclapply(seq_along(ld_mats), function(i) {
+  ld_mat <- ld_mats[[i]]
 
-zexp <- expected_z_score(N0 = args$no_controls, # number of controls
-                    N1 = args$no_cases, # number of cases
-                    snps = chosen_snp_dat$rs, # column names in freq of SNPs for which Z scores should be generated
-                    W = chosen_snp_dat$rs[args$causal_variant_ind], # causal variants, subset of snps
-                    gamma.W = log(args$odds_ratios), # odds ratios
-                    freq = freq_dat, # reference haplotypes
-                    GenoProbList = geno_probs)
+  chosen_snps <- colnames(ld_mat)
 
-# NB: Taken from the simGWAS intro vignette; some of the functions have changed, I know Chris has developed simGWAS since the paper
-zsim <- simulated_z_score(N0 = args$no_controls,
-                          N1 = args$no_cases,
-                          snps = chosen_snp_dat$rs,
-                          W = chosen_snp_dat$rs[args$causal_variant_ind],
-                          gamma.W = log(args$odds_ratio),
-                          freq = freq_dat,
-                          nrep = args$no_reps)
+  cv_ind <- args$causal_variant_ind[i]
 
-vbetasim <- simulated_vbeta(N0= args$no_controls,
-                            N1= args$no_cases,
-                            snps = chosen_snp_dat$rs,
-                            W = chosen_snp_dat$rs[args$causal_variant_ind],
-                            gamma.W = log(args$odds_ratio),
-                            freq = freq_dat,
-                            nrep = args$no_reps)
+  cv_snp <- chosen_snps[cv_ind]
 
-betasim <- zsim * sqrt(vbetasim)
+  or <- args$odds_ratios[i]
 
-if(args$no_reps == 1 ) {
-  res_dat <- data.table(chosen_snp_dat[, .(id, position, a0, a1, TYPE, EUR)], zexp, zsim, vbetasim = t(vbetasim), betasim = t(betasim))
-  res_dat[, p := 2*pnorm(abs(zsim), lower.tail = F)]
-} else {
-  # Add p-values for multiple reps
-  res_dat <- data.table(chosen_snp_dat[, .(id, position, a0, a1, TYPE, EUR)], zexp, t(zsim), t(vbetasim), t(betasim))
-}
+  sub_freq_dat <- freq_dat[, c(colnames(ld_mat), 'Probability'), with = F]
 
-res_dat[args$causal_variant_ind, chosen_or := args$odds_ratios]
+  geno_probs <- make_GenoProbList(snps = colnames(ld_mat),
+                                  W = colnames(ld_mat)[cv_ind],
+                                  freq = sub_freq_dat)
+
+  zexp <- expected_z_score(N0 = args$no_controls,
+                           N1 = args$no_cases,
+                           snps = chosen_snps,
+                           W = cv_snp,
+                           gamma.W = log(or),
+                           freq = sub_freq_dat,
+                           GenoProbList = geno_probs)
+
+  zsim <- simulated_z_score_par(exp_z_score = zexp, ld_mat = ld_mat, nrep = args$no_reps, ncores = args$no_of_threads %/% args$no_blocks)
+
+  vbetasim <- simulated_vbeta(N0 = args$no_controls,
+                              N1 = args$no_cases,
+                              snps = chosen_snps,
+                              W = cv_snp,
+                              gamma.W = log(or),
+                              freq = sub_freq_dat,
+                              nrep = args$no_reps)
+
+  betasim <- zsim * sqrt(vbetasim)
+
+  if(args$no_reps == 1 ) {
+    result_dat <- data.table(leg_dat[rs %in% chosen_snps, .(id, position, a0, a1, TYPE, EUR)], zexp, zsim, vbetasim = t(vbetasim), betasim = t(betasim))
+  } else {
+    # Add p-values for multiple reps
+    result_dat <- data.table(leg_dat[rs %in% chosen_snps, .(id, position, a0, a1, TYPE, EUR)], zexp, t(zsim), t(vbetasim), t(betasim))
+  }
+
+  for(j in 1:args$no_reps) {
+    result_dat[, c(paste0('p.', j)) := 2*pnorm(abs(result_dat_list[[i]][[7+j]]), lower.tail = F)]
+  }
+
+  result_dat[, block := names(ld_mats)[[i]]]
+  result_dat[id == cv_snp, or := or]
+}, mc.cores = args$no_blocks)
+
+res_dat <- rbindlist(result_dat_list)
 
 names(res_dat) <- c('id', 'position', 'a0', 'a1', 'TYPE', 'EUR', 'zexp',
                     paste0('zsim.', 1:args$no_reps),
                     paste0('vbetasim.', 1:args$no_reps),
-                    paste0('betasim.', 1:args$no_reps), 'chosen_or')
+                    paste0('betasim.', 1:args$no_reps),
+                    paste0('p.', 1:args$no_reps),
+                    'block',
+                    'chosen_or')
 
 res_dat[, `:=` (ncases = args$no_cases, ncontrols = args$no_controls)]
 
