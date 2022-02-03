@@ -1,13 +1,14 @@
 library(data.table)
 library(simGWAS)
 library(argparse)
+library(parallel)
 
 parser <- ArgumentParser(description = 'Uses simGWAS to simulate GWAS summary statistics for SNPs on chromosome 21')
 parser$add_argument('--hap_file', type = 'character', help = 'Path to haplotype file')
 parser$add_argument('--leg_file', type = 'character', help = 'Path to legend file')
 parser$add_argument('--bim_file', type = 'character', help = 'Path to bim file')
 parser$add_argument('--ld_mats_file', type = 'character', help = 'Path to file containing LD matrices')
-parser$add_argument('--block_file', type = 'character', help = 'Path to block file')
+parser$add_argument('-b', '--block_file', type = 'character', help = 'Path to block file')
 parser$add_argument('--no_blocks', type = 'integer', help = 'Number of LD blocks on chromosome 21 to simulate')
 parser$add_argument('--causal_variant_ind', type = 'integer', nargs = '*', help = 'Indices of causal variants with each LD block.')
 parser$add_argument('--odds_ratios', type = 'double', nargs = '+', help = 'Odds ratios for specified causal variants', default = c(1.1, 1.3, 1.5))
@@ -17,8 +18,8 @@ parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates', d
 parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21_with_meta_eur.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21.legend.gz', '--bim_file', 'resources/1000g/chr21.bim', '--block_file', 'resources/ldetect/blocks.txt', '--ld_mats_file', 'results/simgwas/chr21_block_ld_matrices.RData', '--no_blocks', 1, '--causal_variant_ind', 2000, 2000, '--odds_ratios', 3, '--output_file', 'test.tsv.gz', '--no_of_threads', 8, '--no_reps', 2)
-args <- parser$parse_args(test_args)
+#test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21_with_meta_eur.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21.legend.gz', '--bim_file', 'resources/1000g/chr21.bim', '--block_file', 'resources/ldetect/blocks.txt', '--ld_mats_file', 'results/simgwas/chr21_block_ld_matrices.RData', '--no_blocks', 1, '--causal_variant_ind', 2000, 2000, '--odds_ratios', 3, '--output_file', 'test.tsv.gz', '--no_of_threads', 8, '--no_reps', 2)
+#args <- parser$parse_args(test_args)
 
 args <- parser$parse_args()
 
@@ -36,17 +37,15 @@ if(!is.null(args$causal_variant_ind)) {
   for(i in 1:args$no_blocks) {
     args$causal_variant_ind[i] <- sample(1:ncol(ld_mats[[i]]), size = 1)
   }
-}
-
-if(length(args$causal_variant_ind) < length(args$no_blocks)) {
+} else if(length(args$causal_variant_ind) < length(args$no_blocks)) {
 
   for(i in (length(args$causal_variant_ind)+1):args$no_blocks) {
-    args$causal_variant_ind[i] <- sample(1:ncol(ld_mats[[i]]))
+    args$causal_variant_ind[i] <- sample(1:ncol(ld_mats[[i]]), size = 1)
   }
 }
 
-if(length(args$no_blocks) > length(args$odds_ratios)) {
-  stop("Need to specify odds ratios for every block's causal variant.")
+if(length(args$odds_ratios) < length(args$causal_variant_ind)) {
+  args$odds_ratios <- c(args$odds_ratios, sample(1:ncol(ld_mats[[i]]), size = length(args$causal_variant_ind)-length(args$odds_ratios)))
 }
 
 # Drop metadata rows
@@ -120,7 +119,7 @@ result_dat_list <- mclapply(seq_along(ld_mats), function(i) {
                            freq = sub_freq_dat,
                            GenoProbList = geno_probs)
 
-  zsim <- simulated_z_score_par(exp_z_score = zexp, ld_mat = ld_mat, nrep = args$no_reps, ncores = args$no_of_threads %/% args$no_blocks)
+  zsim <- simulated_z_score_par(exp_z_score = zexp, ld_mat = ld_mat, nrep = args$no_reps, ncores = min(args$no_reps, args$no_of_threads %/% args$no_blocks))
 
   vbetasim <- simulated_vbeta(N0 = args$no_controls,
                               N1 = args$no_cases,
@@ -140,11 +139,13 @@ result_dat_list <- mclapply(seq_along(ld_mats), function(i) {
   }
 
   for(j in 1:args$no_reps) {
-    result_dat[, c(paste0('p.', j)) := 2*pnorm(abs(result_dat_list[[i]][[7+j]]), lower.tail = F)]
+    result_dat[, c(paste0('p.', j)) := 2*pnorm(abs(result_dat[[7+j]]), lower.tail = F)]
   }
 
   result_dat[, block := names(ld_mats)[[i]]]
   result_dat[id == cv_snp, or := or]
+
+  result_dat
 }, mc.cores = args$no_blocks)
 
 res_dat <- rbindlist(result_dat_list)

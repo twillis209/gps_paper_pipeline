@@ -22,14 +22,14 @@ rule run_simgwas:
      block_file = "resources/ldetect/blocks.txt",
      ld_mats_file = "results/simgwas/chr21_block_ld_matrices.RData"
     output:
-     "results/simgwas/simulated_sum_stats/{no_blocks}_blocks_{no_cv}_cv_sum_stats.tsv.gz"
+        "results/simgwas/simulated_sum_stats/{no_blocks}_blocks_sum_stats.tsv.gz"
     benchmark:
-        "results/benchmark/simgwas/{no_blocks}_blocks_{no_cv}_cv_benchmark.tsv"
+        "results/benchmark/simgwas/{no_blocks}_blocks_benchmark.tsv"
     threads: 8
     resources:
         time = "1:00:00"
     shell:
-        "Rscript workflow/scripts/simulate_sum_stats.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} --bim_file {input.bim_file} --ld_mats_file {input.ld_mats_file} --block-file {input.block_file} --no_blocks {wildcards.no_blocks} --causal_variant_ind 2000 --odds_ratios 1.3 --no_controls 10000 --no_cases 10000 --no_reps 1 -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simulate_sum_stats.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} --bim_file {input.bim_file} --ld_mats_file {input.ld_mats_file} -b {input.block_file} --no_blocks {wildcards.no_blocks} --causal_variant_ind 2000 2000 --odds_ratios 1.3 1.3 --no_controls 10000 --no_cases 10000 --no_reps 1 -o {output} -nt {threads}"
 
 rule prune_simulated_sum_stats:
     input:
