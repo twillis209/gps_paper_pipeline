@@ -39,6 +39,8 @@ leg_dat <- leg_dat[!is.na(block)]
 
 hap_dat <- hap_dat[rs %in% leg_dat$rs]
 
+hap_dat[, block := leg_dat$block]
+
 hap_dat <- hap_dat[block == args$block_no]
 
 leg_dat <- leg_dat[block == args$block_no]
