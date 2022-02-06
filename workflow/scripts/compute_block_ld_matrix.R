@@ -12,7 +12,7 @@ parser$add_argument('--chr_no', type = 'integer', help = 'Number of chromosome')
 parser$add_argument('--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-test_args <- c('--hap_file', "resources/simgwas/1000g/1000GP_Phase3_chr1_with_meta_eur.hap.gz", '--leg_file', "resources/simgwas/1000g/1000GP_Phase3_chr1.legend.gz", '--output_file',            "results/simgwas/chr1_ld_matrices/chr1_block_21_ld_matrix.RData", '-nt', 4, '--block_file', 'resources/ldetect/blocks.txt', '--chr_no', 1, '--block_no', 21)
+test_args <- c('--hap_file', "resources/simgwas/1000g/1000GP_Phase3_chr1_with_meta_eur_common_maf.hap.gz", '--leg_file', "resources/simgwas/1000g/1000GP_Phase3_chr1_eur_common_maf.legend.gz", '--output_file',            "results/simgwas/chr1_ld_matrices/chr1_block_46_ld_matrix.RData", '-nt', 4, '--block_file', 'resources/ldetect/blocks.txt', '--chr_no', 1, '--block_no', 46)
 args <- parser$parse_args(test_args)
 
 args <- parser$parse_args()
