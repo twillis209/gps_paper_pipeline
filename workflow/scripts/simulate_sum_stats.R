@@ -3,35 +3,45 @@ library(simGWAS)
 library(argparse)
 library(parallel)
 
-parser <- ArgumentParser(description = 'Uses simGWAS to simulate GWAS summary statistics for SNPs on chromosome 21')
+simulated_z_score_par <- function(exp_z_score, ld_mat, nrep=1, ncores = 1){
+    sim_z_score <- mvnfast::rmvn(n = nrep, mu = exp_z_score, sigma = ld_mat, ncores 
+= ncores)
+    if(nrep==1)
+        return(c(sim_z_score))
+    sim_z_score
+}
+
+parser <- ArgumentParser(description = 'Uses simGWAS to simulate GWAS summary statistics')
 parser$add_argument('--hap_file', type = 'character', help = 'Path to haplotype file')
 parser$add_argument('--leg_file', type = 'character', help = 'Path to legend file')
 parser$add_argument('--bim_file', type = 'character', help = 'Path to bim file')
 parser$add_argument('--ld_mats_file', type = 'character', help = 'Path to file containing LD matrices')
 parser$add_argument('-b', '--block_file', type = 'character', help = 'Path to block file')
-parser$add_argument('--no_blocks', type = 'integer', help = 'Number of LD blocks on chromosome 21 to simulate')
+parser$add_argument('--no_blocks', type = 'integer', help = 'Number of LD blocks to simulate')
+parser$add_argument('--chr_no', type = 'integer', help = 'Number of chromosome')
 parser$add_argument('--causal_variant_ind', type = 'integer', nargs = '*', help = 'Indices of causal variants with each LD block.')
-parser$add_argument('--odds_ratios', type = 'double', nargs = '+', help = 'Odds ratios for specified causal variants', default = c(1.1, 1.3, 1.5))
-parser$add_argument('--no_controls', type = 'integer', help = 'No. of controls', default = 1e4)
-parser$add_argument('--no_cases', type = 'integer', help = 'No. of cases', default = 1e4)
+parser$add_argument('--odds_ratios', type = 'double', nargs = '+', help = 'Odds ratios for specified causal variants', required = F)
+parser$add_argument('--no_controls', type = 'integer', help = 'No. of controls', default = 10000)
+parser$add_argument('--no_cases', type = 'integer', help = 'No. of cases', default = 10000)
 parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates', default = 1)
 parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-#test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21_with_meta_eur.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21.legend.gz', '--bim_file', 'resources/1000g/chr21.bim', '--block_file', 'resources/ldetect/blocks.txt', '--ld_mats_file', 'results/simgwas/chr21_block_ld_matrices.RData', '--no_blocks', 1, '--causal_variant_ind', 2000, 2000, '--odds_ratios', 3, '--output_file', 'test.tsv.gz', '--no_of_threads', 8, '--no_reps', 2)
-#args <- parser$parse_args(test_args)
+test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21_with_meta_eur.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr21.legend.gz', '--bim_file', 'resources/1000g/chr21.bim', '-b', 'resources/ldetect/blocks.txt', '--ld_mats_file', 'results/simgwas/chr21_block_ld_matrices.RData', '--no_blocks', 1, '--causal_variant_ind', 2000, 2000, '--odds_ratios', 1.3, 1.3, '--output_file', 'test.tsv.gz', '--no_of_threads', 8, '--no_reps', 1)
+args <- parser$parse_args(test_args)
 
 args <- parser$parse_args()
 
 setDTthreads(args$no_of_threads)
 
 leg_dat <- fread(file = args$leg_file, sep = ' ', header = T)
-hap_dat <- fread(file = args$hap_file, sep = ' ', header = F)
+# Skip leading metadata rows
+hap_dat <- fread(file = args$hap_file, sep = ' ', header = F, skip = 4)
 bim_dat <- fread(file = args$bim_file, sep = '\t', header = F, col.names = c('chr', 'rsID', 'Cm', 'bp', 'A1', 'A2'))
 block_dat <- fread(file = args$block_file, sep = ' ', header = F, col.names = c('block', 'chr', 'start', 'stop'))
 load(file = args$ld_mats_file)
 
-if(!is.null(args$causal_variant_ind)) {
+if(is.null(args$causal_variant_ind)) {
   args$causal_variant_ind <- integer()
 
   for(i in 1:args$no_blocks) {
@@ -44,21 +54,19 @@ if(!is.null(args$causal_variant_ind)) {
   }
 }
 
-if(length(args$odds_ratios) < length(args$causal_variant_ind)) {
-  args$odds_ratios <- c(args$odds_ratios, sample(1:ncol(ld_mats[[i]]), size = length(args$causal_variant_ind)-length(args$odds_ratios)))
+odds_ratios <- c(1.2, 1.4, 1.6)
+
+if(is.null(args$odds_ratios)) {
+  args$odds_ratios <- sample(odds_ratios, size = length(args$causal_variant_ind), replace = T)
+} else if(length(args$odds_ratios) < length(args$causal_variant_ind)) {
+  args$odds_ratios <- c(args$odds_ratios, sample(odds_ratios, size = length(args$causal_variant_ind)-length(args$odds_ratios), replace = F))
 }
 
-# Drop metadata rows
-hap_dat <- hap_dat[5:nrow(hap_dat)]
+block_dat <- block_dat[chr == args$chr_no]
 
-# Only using data from chr21
-block_dat <- block_dat[chr == 21]
-
-leg_dat[, rs := make.names(leg_dat$id)]
+leg_dat[, rs := make.names(id)]
 
 hap_dat[, rs := leg_dat$rs]
-
-leg_dat <- leg_dat[EUR %between% c(0.01, 0.99)]
 
 for(i in 1:nrow(block_dat)) {
    leg_dat[position %between% c(block_dat[i, start], block_dat[i, stop]), block := (i-1)]
@@ -119,7 +127,7 @@ result_dat_list <- mclapply(seq_along(ld_mats), function(i) {
                            freq = sub_freq_dat,
                            GenoProbList = geno_probs)
 
-  zsim <- simulated_z_score_par(exp_z_score = zexp, ld_mat = ld_mat, nrep = args$no_reps, ncores = min(args$no_reps, args$no_of_threads %/% args$no_blocks))
+  zsim <- simulated_z_score_par(exp_z_score = zexp, ld_mat = ld_mat, nrep = args$no_reps, ncores = min(args$no_reps, max(args$no_of_threads %/% args$no_blocks, 1)))
 
   vbetasim <- simulated_vbeta(N0 = args$no_controls,
                               N1 = args$no_cases,
@@ -145,7 +153,7 @@ result_dat_list <- mclapply(seq_along(ld_mats), function(i) {
   result_dat[, block := names(ld_mats)[[i]]]
   result_dat[id == cv_snp, or := or]
 
-  result_dat
+  return(result_dat)
 }, mc.cores = args$no_blocks)
 
 res_dat <- rbindlist(result_dat_list)
@@ -166,6 +174,6 @@ res_dat <- res_dat[(a0 == A2 & a1 == A1) | (a0 == A1 & a1 == A2)]
 
 res_dat[, c("A1", "A2", "id") := NULL]
 
-res_dat[, chr := 21]
+res_dat[, chr := args$chr_no]
 
 fwrite(res_dat, file = args$output_file, sep = '\t')

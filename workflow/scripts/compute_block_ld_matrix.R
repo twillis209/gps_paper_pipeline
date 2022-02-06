@@ -3,18 +3,17 @@ library(simGWAS)
 library(argparse)
 library(parallel)
 
-parser <- ArgumentParser(description = 'Computes blockwise LD matrices for specified chromosome.')
+parser <- ArgumentParser(description = 'Computes blockwise LD matrix for specified chromosome and LD block.')
 parser$add_argument('--hap_file', type = 'character', help = 'Path to haplotype file')
 parser$add_argument('--leg_file', type = 'character', help = 'Path to legend file')
 parser$add_argument('--block_file', type = 'character', help = 'Path to block file')
+parser$add_argument('--block_no', type = 'integer', help = 'LD block number')
 parser$add_argument('--chr_no', type = 'integer', help = 'Number of chromosome')
 parser$add_argument('--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-#test_args <- c("--hap_file", "resources/simgwas/1000g/1000GP_Phase3_chr21_with_meta_eur.hap.gz", "--leg_file", "resources/simgwas/1000g/1000GP_Phase3_chr21.legend.gz", "--output_file", "results/simgwas/chr21_block_ld_matrices_test.RData", "-nt", 8, "--block_file", "resources/ldetect/blocks.txt", '--chr_no', 21)
-#
-#test_args <- c("--hap_file", "resources/simgwas/1000g/1000GP_Phase3_chr1_with_meta_eur.hap.gz", "--leg_file", "resources/simgwas/1000g/1000GP_Phase3_chr1.legend.gz", "--output_file", "results/simgwas/chr1_block_ld_matrices_test.RData", "-nt", 8, "--block_file", "resources/ldetect/blocks.txt", '--chr_no', 1)
-#args <- parser$parse_args(test_args)
+test_args <- c('--hap_file', "resources/simgwas/1000g/1000GP_Phase3_chr1_with_meta_eur.hap.gz", '--leg_file', "resources/simgwas/1000g/1000GP_Phase3_chr1.legend.gz", '--output_file',            "results/simgwas/chr1_ld_matrices/chr1_block_21_ld_matrix.RData", '-nt', 4, '--block_file', 'resources/ldetect/blocks.txt', '--chr_no', 1, '--block_no', 21)
+args <- parser$parse_args(test_args)
 
 args <- parser$parse_args()
 
@@ -40,7 +39,9 @@ leg_dat <- leg_dat[!is.na(block)]
 
 hap_dat <- hap_dat[rs %in% leg_dat$rs]
 
-hap_dat[, block := leg_dat$block]
+hap_dat <- hap_dat[block == args$block_no]
+
+leg_dat <- leg_dat[block == args$block_no]
 
 hap_dat <- hap_dat[, c(seq(1, ncol(hap_dat)-3, by = 2), seq(2, ncol(hap_dat)-2, by = 2), ncol(hap_dat)-1, ncol(hap_dat)), with = F]
 
@@ -58,18 +59,6 @@ freq_dat[, Probability := 1/.N]
 
 rm(hap_dat, hap_mat)
 
-blocks <- sort(unique(leg_dat$block))
+ld_mat <- corpcor::make.positive.definite(simGWAS:::wcor2(as.matrix(freq_dat[,setdiff(colnames(freq_dat),"Probability"), with = F][, leg_dat$rs, with = F]), freq_dat$Probability))
 
-ld_mat_rsIDs <- lapply(blocks, function(i) leg_dat[block == i, rs])
-
-rm(leg_dat)
-
-compute_ld_matrix <- function(freq, rsIDs) {
-  corpcor::make.positive.definite(simGWAS:::wcor2(as.matrix(freq[,setdiff(colnames(freq),"Probability"), with = F][, rsIDs, with = F]), freq$Probability))
-}
-
-ld_mats <- mclapply(ld_mat_rsIDs, compute_ld_matrix, freq = freq_dat, mc.cores = args$no_of_threads)
-
-names(ld_mats) <- as.character(blocks)
-
-save(ld_mats, file = args$output_file)
+save(ld_mat, file = args$output_file)
