@@ -20,14 +20,14 @@ parser$add_argument('-b', '--block_file', type = 'character', help = 'Path to bl
 parser$add_argument('--ld_mat_file', type = 'character', help = 'Path to LD matrix file')
 parser$add_argument('--chr_no', type = 'integer', help = 'Number of chromosome')
 parser$add_argument('--causal_variant_ind', type = 'integer', nargs = '*', help = 'Indices of causal variants within LD block.')
-parser$add_argument('--odds_ratios', type = 'double', nargs = '+', help = 'Odds ratios for specified causal variants', required = F)
+parser$add_argument('--effect_size', type = 'character', help = 'Determines odds ratios for causal variants', required = T)
 parser$add_argument('--no_controls', type = 'integer', help = 'No. of controls', default = 10000)
 parser$add_argument('--no_cases', type = 'integer', help = 'No. of cases', default = 10000)
 parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates', default = 1)
 parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_with_meta_eur_common_maf.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_eur_common_maf.legend.gz', '--bim_file', 'resources/1000g/chr1.bim', '-b', 'resources/ldetect/blocks.txt', '--block_no', 20, '--ld_mat_file', 'results/simgwas/chr1_ld_matrices/chr1_block_20_ld_matrix.RData', '--chr_no', 1, '--causal_variant_ind', 2000, '--odds_ratios', 1.3, '--output_file', 'chr1_block_20.tsv.gz', '--no_of_threads', 8, '--no_reps', 1)
+test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_with_meta_eur_common_maf.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_eur_common_maf.legend.gz', '--bim_file', 'resources/1000g/chr1.bim', '-b', 'resources/ldetect/blocks.txt', '--block_no', 40, '--ld_mat_file', 'results/simgwas/chr1_ld_matrices/chr1_block_40_ld_matrix.RData', '--chr_no', 1, '--causal_variant_ind', 2000, '--effect_size', 'null', '--output_file', 'chr1_block_40.tsv.gz', '--no_of_threads', 8, '--no_reps', 1)
 args <- parser$parse_args(test_args)
 
 args <- parser$parse_args()
@@ -42,24 +42,22 @@ block_dat <- fread(file = args$block_file, sep = ' ', header = F, col.names = c(
 load(file = args$ld_mat_file)
 
 if(is.null(args$causal_variant_ind)) {
-  args$causal_variant_ind <- integer()
-
-  for(i in 1:args$no_blocks) {
-    args$causal_variant_ind[i] <- sample(1:ncol(ld_mat), size = 1)
-  }
-} else if(length(args$causal_variant_ind) < length(args$no_blocks)) {
-
-  for(i in (length(args$causal_variant_ind)+1):args$no_blocks) {
-    args$causal_variant_ind[i] <- sample(1:ncol(ld_mat), size = 1)
-  }
+  args$causal_variant_ind <- sample(1:ncol(ld_mat), size = 1)
 }
 
-odds_ratios <- c(1.2, 1.4, 1.6)
+odds_ratios <- list('null' = 1,
+                    'small' = c(1.1, 1.2, 1.3),
+                    'medium' = c(1.5, 1.6, 1.7),
+                    'large' = c(2, 2.1, 2.2))
 
-if(is.null(args$odds_ratios)) {
-  args$odds_ratios <- sample(odds_ratios, size = length(args$causal_variant_ind), replace = T)
-} else if(length(args$odds_ratios) < length(args$causal_variant_ind)) {
-  args$odds_ratios <- c(args$odds_ratios, sample(odds_ratios, size = length(args$causal_variant_ind)-length(args$odds_ratios), replace = F))
+if(!(args$effect_size %in% names(odds_ratios))) {
+  stop(sprintf("Effect size %s must be one of the following: '%s.", args$effect_size, paste(names(odds_ratios), collapse = ',')))
+}
+
+args$odds_ratios <- sample(odds_ratios[[args$effect_size]], size = length(args$causal_variant_ind), replace = T)
+
+if(args$causal_variant_ind > ncol(ld_mat)) {
+  args$causal_variant_ind <- ncol(ld_mat)/2
 }
 
 block_dat <- block_dat[chr == args$chr_no]
@@ -105,8 +103,6 @@ cv_ind <- args$causal_variant_ind
 
 cv_snp <- chosen_snps[cv_ind]
 
-or <- args$odds_ratios
-
 sub_freq_dat <- freq_dat[, c(colnames(ld_mat), 'Probability'), with = F]
 
 geno_probs <- make_GenoProbList(snps = colnames(ld_mat),
@@ -117,7 +113,7 @@ zexp <- expected_z_score(N0 = args$no_controls,
                           N1 = args$no_cases,
                           snps = chosen_snps,
                           W = cv_snp,
-                          gamma.W = log(or),
+                          gamma.W = log(args$odds_ratios),
                           freq = sub_freq_dat,
                           GenoProbList = geno_probs)
 
@@ -127,7 +123,7 @@ vbetasim <- simulated_vbeta(N0 = args$no_controls,
                             N1 = args$no_cases,
                             snps = chosen_snps,
                             W = cv_snp,
-                            gamma.W = log(or),
+                            gamma.W = log(args$odds_ratios),
                             freq = sub_freq_dat,
                             nrep = args$no_reps)
 
@@ -145,7 +141,7 @@ for(j in 1:args$no_reps) {
 
   result_dat[, block := args$block_no]
   result_dat[, or := 0]
-  result_dat[id == cv_snp, or := or]
+  result_dat[cv_ind, or := args$odds_ratios]
 }
 
 names(result_dat) <- c('id', 'position', 'a0', 'a1', 'TYPE', 'EUR', 'zexp',

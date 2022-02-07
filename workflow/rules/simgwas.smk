@@ -2,6 +2,7 @@
 chr1_ld_matrices = ["results/simgwas/chr1_ld_matrices/chr1_block_%d_ld_matrix.RData" % i for i in range(122)]
 chr21_ld_matrices = ["results/simgwas/chr21_ld_matrices/chr21_block_%d_ld_matrix.RData" % i for i in range(23)]
 
+"""
 rule compute_block_ld_matrix:
     input:
         haplotype_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap.gz",
@@ -15,6 +16,7 @@ rule compute_block_ld_matrix:
         mem_mb=get_mem_mb
     shell:
         "Rscript workflow/scripts/compute_block_ld_matrix.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} --output_file {output} -nt {threads} --block_file {input.block_file} --chr_no {wildcards.ch} --block_no {wildcards.block}"
+"""
 
 rule simulate_sum_stats_by_ld_block:
     input:
@@ -24,16 +26,16 @@ rule simulate_sum_stats_by_ld_block:
         block_file = "resources/ldetect/blocks.txt",
         ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/chr{ch}_block_{block}_ld_matrix.RData")
     output:
-        "results/simgwas/simulated_sum_stats/chr{ch}_block_{block}_sum_stats.tsv.gz"
+        "results/simgwas/simulated_sum_stats/chr{ch}/{effect_size}/block_{block}_sum_stats.tsv.gz"
     threads: 2
     resources:
         mem_mb=get_mem_mb
     shell:
-        "Rscript workflow/scripts/simulate_sum_stats_by_ld_block.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} -b {input.block_file} --block_no {wildcards.block} --chr_no {wildcards.ch} --causal_variant_ind 2000 --no_controls 10000 --no_cases 10000 --no_reps 1 -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simulate_sum_stats_by_ld_block.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} -b {input.block_file} --block_no {wildcards.block} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls 10000 --no_cases 10000 --no_reps 1 -o {output} -nt {threads}"
 
-rule simulate_chr1_by_ld_block:
+rule simulate_null_chr1_by_ld_block:
     input:
-        ["results/simgwas/simulated_sum_stats/chr1_block_%d_sum_stats.tsv.gz" % i for i in range(122)]
+        ["results/simgwas/simulated_sum_stats/chr1/null/block_%d_sum_stats.tsv.gz" % i for i in range(122)]
 
 
 """
