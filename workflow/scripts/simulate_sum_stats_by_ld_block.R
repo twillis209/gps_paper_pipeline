@@ -46,9 +46,9 @@ if(is.null(args$causal_variant_ind)) {
 }
 
 odds_ratios <- list('null' = 1,
-                    'small' = c(1.1, 1.2, 1.3),
-                    'medium' = c(1.5, 1.6, 1.7),
-                    'large' = c(2, 2.1, 2.2))
+                    'small' = 1.05,
+                    'medium' = 1.2,
+                    'large' = 1.4)
 
 if(!(args$effect_size %in% names(odds_ratios))) {
   stop(sprintf("Effect size %s must be one of the following: '%s.", args$effect_size, paste(names(odds_ratios), collapse = ',')))
