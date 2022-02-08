@@ -51,26 +51,14 @@ rule combine_null_block_sum_stats:
                 shell("zcat %s | tail -n +2  >> %s" % (x, output[0].replace('.gz', '')))
         shell("gzip %s" % output[0].replace('.gz', ''))
 
+# TODO some functions to determine the right null and effect block files, need to process the effect block wildcard in each function to determine which files we need
+# TODO maybe even s[0-9]+, m[0-9]+, l[0-9]+ to encode the effect size in each block in the filename?
 rule combine_block_sum_stats:
     input:
         null_block_files = lambda wildcards: ["results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/block_%d_sum_stats.tsv.gz" % i for i in range(int(wildcards.first), int(wildcards.last)+1) if i != int(wildcards.effect_block)],
-        effect_block_file = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/block_{effect_block}_sum_stats.tsv.gz"
+        effect_block_files = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/block_{effect_block,[0-9]+(:[0-9]+)*}_sum_stats.tsv.gz"
     output:
-        "results/simgwas/simulated_sum_stats/chr{ch}/whole_chr_sum_stats/{effect_size}/blocks_{first}_{last}_effect_{effect_block}_sum_stats.tsv.gz"
-    run:
-        for i,x in enumerate(input):
-            if i == 0:
-                shell("zcat %s >> %s" % (x, output[0].replace('.gz', '')))
-            else:
-                shell("zcat %s | tail -n +2  >> %s" % (x, output[0].replace('.gz', '')))
-        shell("gzip %s" % output[0].replace('.gz', ''))
-
-# TODO remove me
-rule combine_block_sum_stats_block_20_small:
-    input:
-        block_files = ["results/simgwas/simulated_sum_stats/chr1/null/block_%d_sum_stats.tsv.gz" % i for i in range(20)]+["results/simgwas/simulated_sum_stats/chr1/small/block_20_sum_stats.tsv.gz"]+["results/simgwas/simulated_sum_stats/chr1/null/block_%d_sum_stats.tsv.gz" % i for i in range(21,122)]
-    output:
-        "results/simgwas/simulated_sum_stats/chr1/mixed/block_20_small_sum_stats.tsv.gz"
+        "results/simgwas/simulated_sum_stats/chr{ch}/whole_chr_sum_stats/{effect_size}/blocks_{first}_{last}_effect_{effect_block,[0-9]+(:[0-9]+)*}_sum_stats.tsv.gz"
     run:
         for i,x in enumerate(input):
             if i == 0:
