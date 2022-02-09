@@ -20,12 +20,12 @@ rule extract_ld_scores:
 # TODO do something about the $ldsc environment variable; ldsc as a submodule?
 rule munge_sum_stats:
     input:
-        "results/simgwas/simulated_sum_stats/chr{ch}/whole_chr_sum_stats/{effect_size}/blocks_{first}_{last}_effect_{effect_block}_sum_stats.tsv.gz"
+        "results/simgwas/simulated_sum_stats/chr{ch}/whole_chr_sum_stats/blocks_{first}_{last}_{effect_block,[smlv]\d+(:[smlv]\d+)*}_sum_stats.tsv.gz"
     output:
         # NB: Awkward output filename due to the way the LDSC script works
-        "results/ldsc/munged_sum_stats/chr{ch}/{effect_size}/blocks_{first}_{last}_effect_{effect_block}.tsv.sumstats.gz"
+        temp("results/ldsc/munged_sum_stats/chr{ch}/blocks_{first}_{last}_{effect_block,[smlv]\d+(:[smlv]\d+)*}.tsv.sumstats.gz")
     params:
-        output_filename = "results/ldsc/munged_sum_stats/chr{ch}/{effect_size}/blocks_{first}_{last}_effect_{effect_block}.tsv"
+        output_filename = "results/ldsc/munged_sum_stats/chr{ch}/blocks_{first}_{last}_{effect_block,[smlv]\d+(:[smlv]\d+)*}.tsv"
     conda:
         "envs/ldsc.yaml"
     shell:
@@ -35,11 +35,11 @@ rule estimate_h2:
     input:
         ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
         ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
-        sum_stats = "results/ldsc/munged_sum_stats/chr{ch}/{effect_size}/blocks_{first}_{last}_effect_{effect_block}.tsv.sumstats.gz"
+        sum_stats = "results/ldsc/munged_sum_stats/chr{ch}/blocks_{first}_{last}_{effect_block,[smlv]\d+(:[smlv]\d+)*}.tsv.sumstats.gz"
     output:
-        sum_stats = "results/ldsc/h2/chr{ch}/{effect_size}/blocks_{first}_{last}_effect_{effect_block}.log"
+        "results/ldsc/h2/chr{ch}/blocks_{first}_{last}_{effect_block,[smlv]\d+(:[smlv]\d+)*}.log"
     params:
-        log_file_par = "results/ldsc/h2/chr{ch}/{effect_size}/blocks_{first}_{last}_effect_{effect_block}",
+        log_file_par = "results/ldsc/h2/chr{ch}/blocks_{first}_{last}_{effect_block,[smlv]\d+(:[smlv]\d+)*}",
         # NB: Trailing '/' is needed in ld_score_root
         ld_score_root = "resources/ldsc/eur_w_ld_chr/"
     conda:

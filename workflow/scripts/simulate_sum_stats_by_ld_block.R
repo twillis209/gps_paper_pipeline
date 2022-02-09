@@ -27,7 +27,7 @@ parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates', d
 parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_with_meta_eur_common_maf.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_eur_common_maf.legend.gz', '--bim_file', 'resources/1000g/chr1.bim', '-b', 'resources/ldetect/blocks.txt', '--block_no', 40, '--ld_mat_file', 'results/simgwas/chr1_ld_matrices/chr1_block_40_ld_matrix.RData', '--chr_no', 1, '--causal_variant_ind', 2000, '--effect_size', 'null', '--output_file', 'chr1_block_40.tsv.gz', '--no_of_threads', 8, '--no_reps', 1)
+test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_with_meta_eur_common_maf.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_eur_common_maf.legend.gz', '--bim_file', 'resources/1000g/chr1.bim', '-b', 'resources/ldetect/blocks.txt', '--block_no', 40, '--ld_mat_file', 'results/simgwas/chr1_ld_matrices/chr1_block_40_ld_matrix.RData', '--chr_no', 1, '--causal_variant_ind', 2000, '--effect_size', 'medium', '--output_file', 'chr1_block_40.tsv.gz', '--no_of_threads', 8, '--no_reps', 1)
 args <- parser$parse_args(test_args)
 
 args <- parser$parse_args()
@@ -48,14 +48,18 @@ if(is.null(args$causal_variant_ind)) {
 odds_ratios <- list('null' = 1,
                     'small' = 1.05,
                     'medium' = 1.2,
-                    'large' = 1.4)
+                    'large' = 1.4,
+                    'vlarge' = 2)
 
 if(!(args$effect_size %in% names(odds_ratios))) {
   stop(sprintf("Effect size %s must be one of the following: '%s.", args$effect_size, paste(names(odds_ratios), collapse = ',')))
 }
 
-args$odds_ratios <- sample(odds_ratios[[args$effect_size]], size = length(args$causal_variant_ind), replace = T)
+# TODO does not work, do not reimplement without fixing
+#args$odds_ratios <- sample(odds_ratios[[args$effect_size]], size = length(args$causal_variant_ind), replace = T)
 
+args$odds_ratios <- odds_ratios[[args$effect_size]]
+  
 if(args$causal_variant_ind > ncol(ld_mat)) {
   args$causal_variant_ind <- ncol(ld_mat)/2
 }
