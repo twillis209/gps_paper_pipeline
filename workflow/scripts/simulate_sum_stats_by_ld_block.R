@@ -15,8 +15,6 @@ parser <- ArgumentParser(description = 'Uses simGWAS to simulate GWAS summary st
 parser$add_argument('--hap_file', type = 'character', help = 'Path to haplotype file')
 parser$add_argument('--leg_file', type = 'character', help = 'Path to legend file')
 parser$add_argument('--bim_file', type = 'character', help = 'Path to bim file')
-parser$add_argument('--block_no', type = 'integer', help = 'Block number')
-parser$add_argument('-b', '--block_file', type = 'character', help = 'Path to block file')
 parser$add_argument('--ld_mat_file', type = 'character', help = 'Path to LD matrix file')
 parser$add_argument('--chr_no', type = 'integer', help = 'Number of chromosome')
 parser$add_argument('--causal_variant_ind', type = 'integer', nargs = '*', help = 'Indices of causal variants within LD block.')
@@ -27,7 +25,7 @@ parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates', d
 parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-test_args <- c('--hap_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_with_meta_eur_common_maf.hap.gz', '--leg_file', 'resources/simgwas/1000g/1000GP_Phase3_chr1_eur_common_maf.legend.gz', '--bim_file', 'resources/1000g/chr1.bim', '-b', 'resources/ldetect/blocks.txt', '--block_no', 40, '--ld_mat_file', 'results/simgwas/chr1_ld_matrices/chr1_block_40_ld_matrix.RData', '--chr_no', 1, '--causal_variant_ind', 2000, '--effect_size', 'medium', '--output_file', 'chr1_block_40.tsv.gz', '--no_of_threads', 8, '--no_reps', 1)
+test_args <- c('--hap_file', 'resources/simgwas/1000g/blockwise/chr1/block_0.hap.gz', '--leg_file', 'resources/simgwas/1000g/blockwise/chr1/block_0.legend.gz', '--bim_file', 'resources/1000g/chr1.bim', '--ld_mat_file', 'results/simgwas/chr1_ld_matrices/chr1_block_0_ld_matrix.RData', '--chr_no', 1, '--causal_variant_ind', 2000, '--effect_size', 'null', '--output_file', 'chr1_block_0_sum_stats.tsv.gz', '--no_of_threads', 1, '--no_reps', 2, '--no_controls', 40000, '--no_cases', 40000)
 args <- parser$parse_args(test_args)
 
 args <- parser$parse_args()
@@ -36,9 +34,8 @@ setDTthreads(args$no_of_threads)
 
 leg_dat <- fread(file = args$leg_file, sep = ' ', header = T)
 # Skip leading metadata rows
-hap_dat <- fread(file = args$hap_file, sep = ' ', header = F, skip = 4)
+hap_dat <- fread(file = args$hap_file, sep = ' ', header = F)
 bim_dat <- fread(file = args$bim_file, sep = '\t', header = F, col.names = c('chr', 'rsID', 'Cm', 'bp', 'A1', 'A2'))
-block_dat <- fread(file = args$block_file, sep = ' ', header = F, col.names = c('block', 'chr', 'start', 'stop'))
 load(file = args$ld_mat_file)
 
 if(is.null(args$causal_variant_ind)) {
@@ -59,28 +56,10 @@ if(!(args$effect_size %in% names(odds_ratios))) {
 #args$odds_ratios <- sample(odds_ratios[[args$effect_size]], size = length(args$causal_variant_ind), replace = T)
 
 args$odds_ratios <- odds_ratios[[args$effect_size]]
-  
+
 if(args$causal_variant_ind > ncol(ld_mat)) {
   args$causal_variant_ind <- ncol(ld_mat)/2
 }
-
-block_dat <- block_dat[chr == args$chr_no]
-
-leg_dat[, rs := make.names(id)]
-
-hap_dat[, rs := leg_dat$rs]
-
-for(i in 1:nrow(block_dat)) {
-   leg_dat[position %between% c(block_dat[i, start], block_dat[i, stop]), block := (i-1)]
-}
-
-leg_dat <- leg_dat[block == args$block_no]
-
-hap_dat <- hap_dat[rs %in% leg_dat$rs]
-
-hap_dat[, block := leg_dat$block]
-
-hap_dat <- hap_dat[, c(seq(1, ncol(hap_dat)-3, by = 2), seq(2, ncol(hap_dat)-2, by = 2), ncol(hap_dat)-1, ncol(hap_dat)), with = F]
 
 for(j in 1:(ncol(hap_dat)-2)) {
   set(hap_dat, j = j, value = as.numeric(hap_dat[[j]]))
@@ -89,6 +68,8 @@ for(j in 1:(ncol(hap_dat)-2)) {
 hap_mat <- as.matrix(hap_dat[,1:(ncol(hap_dat)-2)])
 
 hap_meta_dat <- hap_dat[, (ncol(hap_dat)-1):ncol(hap_dat)]
+
+names(hap_meta_dat) <- c('rs', 'block')
 
 rm(hap_dat)
 
@@ -123,8 +104,9 @@ zexp <- expected_z_score(N0 = args$no_controls,
 
 zsim <- simulated_z_score_par(exp_z_score = zexp, ld_mat = ld_mat, nrep = args$no_reps, ncores = args$no_of_threads)
 
-vbetasim <- simulated_vbeta(N0 = args$no_controls,
-                            N1 = args$no_cases,
+# Both vbetasim and betasim overflow if passed as integers
+vbetasim <- simulated_vbeta(N0 = as.numeric(args$no_controls),
+                            N1 = as.numeric(args$no_cases),
                             snps = chosen_snps,
                             W = cv_snp,
                             gamma.W = log(args$odds_ratios),
@@ -134,27 +116,24 @@ vbetasim <- simulated_vbeta(N0 = args$no_controls,
 betasim <- zsim * sqrt(vbetasim)
 
 if(args$no_reps == 1 ) {
-  result_dat <- data.table(leg_dat[rs %in% chosen_snps, .(id, position, a0, a1, TYPE, EUR)], zexp, zsim, vbetasim = t(vbetasim), betasim = t(betasim))
+  result_dat <- data.table(leg_dat[rs %in% chosen_snps, .(id, position, block, a0, a1, TYPE, EUR)], zexp, zsim, vbetasim = t(vbetasim), betasim = t(betasim))
 } else {
   # Add p-values for multiple reps
-  result_dat <- data.table(leg_dat[rs %in% chosen_snps, .(id, position, a0, a1, TYPE, EUR)], zexp, t(zsim), t(vbetasim), t(betasim))
+  result_dat <- data.table(leg_dat[rs %in% chosen_snps, .(id, position, block, a0, a1, TYPE, EUR)], zexp, t(zsim), t(vbetasim), t(betasim))
 }
+
+names(result_dat) <- c('id', 'position', 'block', 'a0', 'a1', 'TYPE', 'EUR', 'zexp',
+                       paste0('zsim.', 1:args$no_reps),
+                       paste0('vbetasim.', 1:args$no_reps),
+                       paste0('betasim.', 1:args$no_reps))
 
 for(j in 1:args$no_reps) {
-  result_dat[, c(paste0('p.', j)) := 2*pnorm(abs(result_dat[[7+j]]), lower.tail = F)]
-
-  result_dat[, block := args$block_no]
-  result_dat[, or := 0]
-  result_dat[cv_ind, or := args$odds_ratios]
+  result_dat[, c(paste0('p.', j)) := 2*pnorm(abs(get(paste0('zsim.', j))), lower.tail = F)]
 }
 
-names(result_dat) <- c('id', 'position', 'a0', 'a1', 'TYPE', 'EUR', 'zexp',
-                    paste0('zsim.', 1:args$no_reps),
-                    paste0('vbetasim.', 1:args$no_reps),
-                    paste0('betasim.', 1:args$no_reps),
-                    paste0('p.', 1:args$no_reps),
-                    'block',
-                    'chosen_or')
+result_dat[, or := 0]
+result_dat[cv_ind, or := args$odds_ratios]
+setnames(result_dat, 'or', 'chosen_or')
 
 result_dat[, `:=` (ncases = args$no_cases, ncontrols = args$no_controls)]
 

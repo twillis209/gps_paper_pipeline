@@ -303,6 +303,7 @@ include: "rules/gps.smk"
 include: "rules/hoeffdings.smk"
 include: "rules/simgwas.smk"
 include: "rules/ldsc.smk"
+include: "rules/gps_for_simgwas.smk"
 
 rule download_ukbb_sum_stats:
     output:
