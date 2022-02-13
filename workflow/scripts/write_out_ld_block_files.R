@@ -6,7 +6,6 @@ parser$add_argument('--hap_file', type = 'character', help = 'Path to haplotype 
 parser$add_argument('--leg_file', type = 'character', help = 'Path to legend file')
 parser$add_argument('-b', '--block_file', type = 'character', help = 'Path to block file')
 parser$add_argument('--chr_no', type = 'integer', help = 'Number of chromosome')
-parser$add_argument('--block_no', type = 'integer', help = 'Block number')
 parser$add_argument('-o', '--output_root', type = 'character', help = 'Path to output directory', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
@@ -33,10 +32,9 @@ hap_dat <- hap_dat[rs %in% leg_dat$rs]
 
 hap_dat[, block := leg_dat$block]
 
-leg_dat <- leg_dat[block == args$block_no]
-hap_dat <- hap_dat[block == args$block_no]
-
 hap_dat <- hap_dat[, c(seq(1, ncol(hap_dat)-3, by = 2), seq(2, ncol(hap_dat)-2, by = 2), ncol(hap_dat)-1, ncol(hap_dat)), with = F]
 
-fwrite(leg_dat, file = file.path(args$output_root, sprintf('block_%s.legend.gz', args$block_no)), sep = ' ')
-fwrite(hap_dat, file = file.path(args$output_root, sprintf('block_%s.hap.gz', args$block_no)), sep = ' ', col.names = F)
+for(i in sort(unique(hap_dat$block))) {
+  fwrite(leg_dat[block == i], file = file.path(args$output_root, sprintf('block_%s.legend.gz', i)), sep = ' ')
+  fwrite(hap_dat[block == i], file = file.path(args$output_root, sprintf('block_%s.hap.gz', i)), sep = ' ', col.names = F)
+}

@@ -33,7 +33,6 @@ args <- parser$parse_args()
 setDTthreads(args$no_of_threads)
 
 leg_dat <- fread(file = args$leg_file, sep = ' ', header = T)
-# Skip leading metadata rows
 hap_dat <- fread(file = args$hap_file, sep = ' ', header = F)
 bim_dat <- fread(file = args$bim_file, sep = '\t', header = F, col.names = c('chr', 'rsID', 'Cm', 'bp', 'A1', 'A2'))
 load(file = args$ld_mat_file)

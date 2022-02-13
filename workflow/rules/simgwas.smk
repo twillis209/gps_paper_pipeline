@@ -1,16 +1,22 @@
 import re as re
+import pandas as pd
 
 # NB: Doesn't work when I specify the chromosome no. wildcard as '{chr}'
 chr1_ld_matrices = ["results/simgwas/chr1_ld_matrices/chr1_block_%d_ld_matrix.RData" % i for i in range(122)]
 chr21_ld_matrices = ["results/simgwas/chr21_ld_matrices/chr21_block_%d_ld_matrix.RData" % i for i in range(23)]
 
-blocks = {'chr1': range(122), 'chr21': range(23)}
+block_daf = pd.read_csv("resources/ldetect/blocks.txt", sep = " ", names = ["chr_block", "chr", "start", "stop"])
 
-def get_block_hap_files(wildcards):
-    return ["resources/simgwas/1000g/blockwise/chr{ch}/block_%s.hap.gz" % i for i in range(blocks[wildcards.ch])],
+block_dict = {}
 
-def get_block_leg_files(wildcards):
-    return ["resources/simgwas/1000g/blockwise/chr{ch}/block_%s.legend.gz" % i for i in range(blocks[wildcards.ch])],
+for i in range(1,23):
+    block_dict[i] = list(block_daf[block_daf["chr"] == i]["chr_block"].apply(lambda x: int(x.split('_block')[1])))
+
+#def get_block_hap_files(wildcards):
+#    return ["resources/simgwas/1000g/blockwise/chr{ch}/block_%s.hap.gz" % i for i in block_dict[wildcards.ch]]
+#
+#def get_block_leg_files(wildcards):
+#    return ["resources/simgwas/1000g/blockwise/chr{ch}/block_%s.legend.gz" % i for i in block_dict[wildcards.ch]]
 
 def get_null_block_files(wildcards):
     return ["results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/{ncases}_{ncontrols}/block_%d_sum_stats.tsv.gz" % i for i in range(int(wildcards.first), int(wildcards.last)+1) if i not in [int(x[1:]) for x in wildcards.effect_block.split(':')]]
@@ -26,6 +32,7 @@ def get_effect_block_files(wildcards):
 
     return ["results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz" % (effect_size_dict[x.group(1)], x.group(2)) for x in matches]
 
+# TODO make the legend and hap whole files temp
 rule get_legend_files_with_euro_common_maf:
     input:
         "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.legend.gz"
@@ -45,66 +52,74 @@ rule get_euro_hap_files_with_metadata:
         hap_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.hap.gz",
         samples_file = "resources/simgwas/1000g/chr{ch}.samples"
     output:
-        "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur.hap.gz"
+        output_hap_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap.gz",
     params:
-        temp_hap_file = lambda wildcards: "resources/simgwas/1000g/1000GP_Phase3_chr%s_with_meta.hap" % wildcards.ch,
-        temp_eur_cols_file = lambda wildcards: "resources/simgwas/1000g/EUR_cols.csv",
-        uncomp_hap_file = lambda wildcards: "resources/simgwas/1000g/1000GP_Phase3_chr%s_with_meta_eur.hap" % wildcards.ch
+        uncomp_hap_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap",
+        temp_hap_with_maf_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_eur_maf.hap",
+        temp_hap_filtered_maf_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_filtered_eur_maf.hap",
+        temp_hap_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta.hap",
+        temp_eur_cols_file =  "resources/simgwas/1000g/chr{ch}_EUR_cols.csv"
     shell:
         """
-        # TODO use `paste` to add EUR column from legend file
-        #paste -d' ' <(zcat 1000GP_Phase3_chr20.hap.gz) <(zcat 1000GP_Phase3_chr20.legend.gz | cut -d' ' -f9 | tail -n +2)  >test_paste_hap_legend.tsv
+        paste -d' ' <(zcat {input.hap_file}) <(zcat {input.legend_file} | cut -d' ' -f9 | tail -n +2)  >{params.temp_hap_with_maf_file}
+
+        awk -F' ' '$5009 >= 0.01 && $5009 <= 0.99' {params.temp_hap_with_maf_file} | cut -d' ' -f1-5008  >>{params.temp_hap_filtered_maf_file}
 
         for j in {{1..4}}; do
             for i in $(tail -n +2 {input.samples_file} | cut -f"$j" -d' ' | tr '\n' ' '); do echo -n "$i $i "; done >>{params.temp_hap_file}
         echo "" >>{params.temp_hap_file};
         done
 
-        zcat {input.hap_file} >> {params.temp_hap_file};
+        cat {params.temp_hap_filtered_maf_file} >>{params.temp_hap_file}
 
         head -n 3 {params.temp_hap_file} | tail -n 1 | awk -F' ' '{{for(i=1; i<=NF; i++){{ if($i == "EUR") {{printf "%s ", i}} }}}}'| sed 's/ /,/g' | sed 's/,$//g' > {params.temp_eur_cols_file}
 
-        cut -d' ' -f $(cat {params.temp_eur_cols_file}) {params.temp_hap_file} >{params.uncomp_hap_file}; gzip {params.uncomp_hap_file};
+        cut -d' ' -f$(cat {params.temp_eur_cols_file}) {params.temp_hap_file} >{params.uncomp_hap_file}; gzip {params.uncomp_hap_file};
 
-        # TODO filter by MAF
-        rm {params.temp_hap_file} {params.temp_eur_cols_file} {params.uncomp_hap_file}
+        rm {params.temp_eur_cols_file} {params.temp_hap_file} {params.temp_hap_filtered_maf_file} {params.temp_hap_with_maf_file}
         """
 
-"""
-# TODO reenable this for release version, tagging the matrix files with ancient is not sufficient to prevent their being recalculated
+# After https://stackoverflow.com/a/49004234
+for chrom, blocks in block_dict.items():
+    rule:
+        input:
+            haplotype_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap.gz".format(ch = chrom),
+            legend_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend.gz".format(ch = chrom),
+            block_file = "resources/ldetect/blocks.txt"
+        output:
+            ["resources/simgwas/1000g/blockwise/chr{ch}/block_{block_no}.hap.gz".format(ch = chrom, block_no = x) for x in blocks],
+            ["resources/simgwas/1000g/blockwise/chr{ch}/block_{block_no}.legend.gz".format(ch = chrom, block_no = x) for x in blocks]
+        params:
+            output_root = "resources/simgwas/1000g/blockwise/chr{ch}".format(ch = chrom),
+            chr_no = chrom
+        threads: 4
+        shell:
+            "Rscript workflow/scripts/write_out_ld_block_files.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} -b {input.block_file} --chr_no {params.chr_no} -o {params.output_root} -nt {threads}"
+
+rule produce_all_blocks:
+    input:
+        ["resources/simgwas/1000g/blockwise/chr%d/block_0.hap.gz" % i for i in range(1,23)]
+
 rule compute_block_ld_matrix:
     input:
-        haplotype_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap.gz",
-        legend_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend.gz",
-        block_file = "resources/ldetect/blocks.txt",
+        block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.hap.gz"),
+        block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
+        block_file = "resources/ldetect/blocks.txt"
     output:
-        "results/simgwas/chr{ch}_ld_matrices/chr{ch}_block_{block}_ld_matrix.RData"
+        "results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData"
     threads: 4
     resources:
         time = "4:00:00",
         mem_mb=get_mem_mb
     shell:
-        "Rscript workflow/scripts/compute_block_ld_matrix.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} --output_file {output} -nt {threads} --block_file {input.block_file} --chr_no {wildcards.ch} --block_no {wildcards.block}"
-"""
-
-rule write_out_ld_block_files:
-    input:
-        haplotype_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap.gz",
-        legend_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend.gz",
-        block_file = "resources/ldetect/blocks.txt",
-    output:
-        block_hap_file = "resources/simgwas/1000g/blockwise/chr{ch}/block_{block_no}.hap.gz",
-        block_leg_file = "resources/simgwas/1000g/blockwise/chr{ch}/block_{block_no}.legend.gz"
-    threads: 4
-    shell:
-        "Rscript workflow/scripts/write_out_ld_block_files.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} -b {input.block_file} --chr_no {wildcards.ch} --block_no {wildcards.block_no} -o resources/simgwas/1000g/blockwise/chr{wildcards.ch} -nt {threads}"
+        "Rscript workflow/scripts/compute_block_ld_matrix.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --output_file {output} -nt {threads}"
 
 rule simulate_sum_stats_by_ld_block:
     input:
         bim_file = ancient("resources/1000g/chr{ch}.bim"),
         block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.hap.gz"),
         block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
-        ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/chr{ch}_block_{block}_ld_matrix.RData")
+        ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
         "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.tsv.gz"
     threads: 2
