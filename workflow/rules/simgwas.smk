@@ -12,6 +12,14 @@ block_dict = {}
 for i in range(1,23):
     block_dict[i] = list(block_daf[block_daf["chr"] == i]["chr_block"].apply(lambda x: int(x.split('_block')[1])))
 
+# No SNPs in chr5:block108
+block_dict[5] = range(108)
+# No SNPs?
+block_dict[17].remove(42)
+block_dict[18].remove(45)
+block_dict[18].remove(46)
+block_dict[20].remove(35)
+
 #def get_block_hap_files(wildcards):
 #    return ["resources/simgwas/1000g/blockwise/chr{ch}/block_%s.hap.gz" % i for i in block_dict[wildcards.ch]]
 #
@@ -19,7 +27,7 @@ for i in range(1,23):
 #    return ["resources/simgwas/1000g/blockwise/chr{ch}/block_%s.legend.gz" % i for i in block_dict[wildcards.ch]]
 
 def get_null_block_files(wildcards):
-    return ["results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/{ncases}_{ncontrols}/block_%d_sum_stats.tsv.gz" % i for i in range(int(wildcards.first), int(wildcards.last)+1) if i not in [int(x[1:]) for x in wildcards.effect_block.split(':')]]
+    return ["results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/{ncases}_{ncontrols}/block_%d_sum_stats.tsv.gz" % i for i in block_dict[int(wildcards.ch)] if i not in [int(x[1:]) for x in wildcards.effect_block.split(':')]]
 
 def get_effect_block_files(wildcards):
     effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge'}
@@ -37,7 +45,7 @@ rule get_legend_files_with_euro_common_maf:
     input:
         "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.legend.gz"
     output:
-        "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend.gz"
+        temp("resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend.gz")
     params:
         "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend"
     shell:
@@ -52,7 +60,7 @@ rule get_euro_hap_files_with_metadata:
         hap_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.hap.gz",
         samples_file = "resources/simgwas/1000g/chr{ch}.samples"
     output:
-        output_hap_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap.gz",
+        output_hap_file = temp("resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap.gz")
     params:
         uncomp_hap_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap",
         temp_hap_with_maf_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_eur_maf.hap",
@@ -96,6 +104,7 @@ for chrom, blocks in block_dict.items():
         shell:
             "Rscript workflow/scripts/write_out_ld_block_files.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} -b {input.block_file} --chr_no {params.chr_no} -o {params.output_root} -nt {threads}"
 
+# TODO remove me
 rule produce_all_blocks:
     input:
         ["resources/simgwas/1000g/blockwise/chr%d/block_0.hap.gz" % i for i in range(1,23)]
@@ -129,6 +138,12 @@ rule simulate_sum_stats_by_ld_block:
     shell:
         "Rscript workflow/scripts/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 2 -o {output} -nt {threads}"
 
+"""
+rule simulate_all_null_blocks:
+    input:
+        [["results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/10000_10000/block_{block}_sum_stats.tsv.gz".format(ch = x, block = y) for y in block_dict[x]] for x in range(1,23)]
+"""
+
 rule combine_block_sum_stats:
     input:
         null_block_files = ancient(get_null_block_files),
@@ -154,6 +169,7 @@ rule merge_simulated_sum_stats:
     shell:
         "Rscript workflow/scripts/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps 2 -o {output} -nt {threads}"
 
+# TODO generate new prune files specific to simulated sum stats
 rule prune_merged_sim_sum_stats:
     input:
       bim_file = ancient("resources/1000g/euro/qc/chr{ch_A}_qc.bim"),
