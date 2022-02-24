@@ -22,10 +22,10 @@ block_dict[20].remove(35)
 # Can't compute this one inside four hours
 block_dict[6].remove(25)
 
-def get_whole_genome_null_block_files(wildcards):
-    effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge'}
+effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge'}
 
-    block_file_format_str = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block_no}_sum_stats.tsv.gz"
+def get_whole_genome_null_block_files(wildcards):
+    null_block_file_format = "results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
 
     effect_block_files = get_whole_genome_effect_block_files(wildcards)
 
@@ -34,7 +34,7 @@ def get_whole_genome_null_block_files(wildcards):
     null_block_files = []
 
     for chrom, blocks in block_dict.items():
-        null_block_files += ["results/simgwas/simulated_sum_stats/chr%s/block_sum_stats/null/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz" % (chrom, y) for y in blocks]
+        null_block_files += [null_block_file_format % (chrom, y) for y in blocks]
 
     for x in null_block_files_to_omit:
         if x in null_block_files:
@@ -43,35 +43,57 @@ def get_whole_genome_null_block_files(wildcards):
     return null_block_files
 
 def get_whole_genome_effect_block_files(wildcards):
-    effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge'}
+    block_file_format = "results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
 
-    block_file_format_str = "results/simgwas/simulated_sum_stats/chr%s/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
-
-    # TODO should throw an exception if the {effect_blocks} pattern does not match the regular expression '(_?\d+-([smlv]\d+)(:[smlv]\d+)*)'
     effect_block_files = []
 
-    for x in wildcards.effect_blocks.split('_'):
-        chrom = int(x.split('-')[0])
+    for x in wildcards.effect_blocks.split(';'):
+        tokens = x.split('-')
 
-        effect_blocks = x.split('-')[1].split(':')
+        chrom = int(tokens[0])
 
-        effect_block_files += [block_file_format_str % (chrom, effect_size_dict[y[0]], y[1:]) for y in effect_blocks]
+        if ':' in tokens[1]:
+            range_match = re.match('([smlvh])(\d+):(\d+)', tokens[1])
+
+            effect = effect_size_dict[range_match.group(1)]
+
+            effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
+        else:
+            singleton_match = re.match('([smlvh])(\d+)', tokens[1])
+
+            effect = effect_size_dict[singleton_match.group(1)]
+
+            effect_block_files.append(block_file_format % (effect, int(singleton_match.group(2))))
+
+    return effect_block_files
+
+def get_effect_block_files(wildcards):
+    block_file_format = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
+
+    effect_block_files = []
+
+    for x in wildcards.effect_blocks.split(';'):
+        if ':' in x:
+            range_match = re.match('([smlvh])(\d+):(\d+)', x)
+
+            effect = effect_size_dict[range_match.group(1)]
+
+            effect_block_files += [block_file_format % (effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
+        else:
+            singleton_match = re.match('([smlvh])(\d+)', x)
+
+            effect = effect_size_dict[singleton_match.group(1)]
+
+            effect_block_files.append(block_file_format % (effect, int(singleton_match.group(2))))
 
     return effect_block_files
 
 def get_null_block_files(wildcards):
-    return ["results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/{ncases}_{ncontrols}/block_%d_sum_stats.tsv.gz" % i for i in block_dict[int(wildcards.ch)] if i not in [int(x[1:]) for x in wildcards.effect_block.split(':')]]
+    null_block_file_format = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/{ncases}_{ncontrols}/block_%d_sum_stats.tsv.gz"
 
-def get_effect_block_files(wildcards):
-    effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge'}
+    effect_block_numbers = [int(re.search('block_(\d+)_sum_stats.tsv.gz', x).group(1)) for x in get_effect_block_files(wildcards)]
 
-    token_re = re.compile('((\d{1,2})-[smlv])(\d+)')
-
-    tokens = wildcards.effect_block.split(':')
-
-    matches = [token_re.match(x) for x in tokens]
-
-    return ["results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz" % (effect_size_dict[x.group(1)], x.group(2)) for x in matches]
+    return [null_block_file_format % i for i in block_dict[int(wildcards.ch)] if i not in effect_block_numbers]
 
 # TODO make the legend and hap whole files temp
 rule get_legend_files_with_euro_common_maf:
@@ -120,6 +142,7 @@ rule get_euro_hap_files_with_metadata:
         rm {params.temp_eur_cols_file} {params.temp_hap_file} {params.temp_hap_filtered_maf_file} {params.temp_hap_with_maf_file}
         """
 
+# Generates rules to generate LD block files for whole genome
 # After https://stackoverflow.com/a/49004234
 for chrom, blocks in block_dict.items():
     rule:
@@ -136,11 +159,6 @@ for chrom, blocks in block_dict.items():
         threads: 4
         shell:
             "Rscript workflow/scripts/write_out_ld_block_files.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} -b {input.block_file} --chr_no {params.chr_no} -o {params.output_root} -nt {threads}"
-
-# TODO remove me
-rule produce_all_blocks:
-    input:
-        ["resources/simgwas/1000g/blockwise/chr%d/block_0.hap.gz" % i for i in range(1,23)]
 
 rule compute_block_ld_matrix:
     input:
@@ -164,26 +182,19 @@ rule simulate_sum_stats_by_ld_block:
         ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
         "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.tsv.gz"
-    threads: 2
+    threads: 5
     resources:
         mem_mb=get_mem_mb,
         time = "00:15:00"
     shell:
         "Rscript workflow/scripts/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 5 -o {output} -nt {threads}"
 
-"""
-# TODO remove me
-rule simulate_all_null_blocks:
-    input:
-        [["results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/10000_10000/block_{block}_sum_stats.tsv.gz".format(ch = x, block = y) for y in block_dict[x]] for x in range(1,23)]
-"""
-
 rule combine_block_sum_stats_for_single_chr:
     input:
-        null_block_files = ancient(get_null_block_files),
-        effect_block_files = ancient(get_effect_block_files)
+        null_block_files = get_null_block_files,
+        effect_block_files = get_effect_block_files
     output:
-        temp("results/simgwas/simulated_sum_stats/chr{ch}/whole_chr_sum_stats/{ncases}_{ncontrols}/blocks_{first}_{last}_{effect_block}_sum_stats.tsv.gz")
+        temp("results/simgwas/simulated_sum_stats/chr{ch}/whole_chr_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_sum_stats.tsv.gz")
     run:
         for i,x in enumerate(input):
             if i == 0:
@@ -209,22 +220,22 @@ rule combine_block_sum_stats_whole_genome:
 # TODO finish me then change the prune rule
 rule merge_simulated_sum_stats:
     input:
-        sum_stats_file_A = "results/simgwas/simulated_sum_stats/chr{ch_A}/whole_chr_sum_stats/{ncases_A}_{ncontrols_A}/blocks_{first_A}_{last_A}_{effect_block_A}_sum_stats.tsv.gz",
-        sum_stats_file_B = "results/simgwas/simulated_sum_stats/chr{ch_B}/whole_chr_sum_stats/{ncases_B}_{ncontrols_B}/blocks_{first_B}_{last_B}_{effect_block_B}_sum_stats.tsv.gz"
+        sum_stats_file_A = "results/simgwas/simulated_sum_stats/chr{ch_A}/whole_chr_sum_stats/{ncases_A}_{ncontrols_A}/{effect_blocks_A}_sum_stats.tsv.gz",
+        sum_stats_file_B = "results/simgwas/simulated_sum_stats/chr{ch_B}/whole_chr_sum_stats/{ncases_B}_{ncontrols_B}/{effect_blocks_B}_sum_stats.tsv.gz"
     output:
-        temp("results/simgwas/simulated_sum_stats/merged/chr{ch_A}_{ch_B}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/blocks_{first_A}_{last_A}_{effect_block_A}_{first_B}_{last_B}_{effect_block_B}_sum_stats.tsv")
+        temp("results/simgwas/simulated_sum_stats/merged/chr{ch_A}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
     threads: 4
     shell:
-        "Rscript workflow/scripts/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps 2 -o {output} -nt {threads}"
+        "Rscript workflow/scripts/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps 5 -o {output} -nt {threads}"
 
 # TODO generate new prune files specific to simulated sum stats
 rule prune_merged_sim_sum_stats:
     input:
       bim_file = ancient("resources/1000g/euro/qc/chr{ch_A}_qc.bim"),
       pruned_range_file = ancient("resources/plink_ranges/ukbb/pruned_ranges/window_{window}_step_{step}/all.prune.in"),
-      sum_stats_file = "results/simgwas/simulated_sum_stats/merged/chr{ch_A}_{ch_B}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/blocks_{first_A}_{last_A}_{effect_block_A}_{first_B}_{last_B}_{effect_block_B}_sum_stats.tsv"
+      sum_stats_file = "results/simgwas/simulated_sum_stats/merged/chr{ch_A}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv"
     output:
-        temp("results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/chr{ch_A}_{ch_B}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/blocks_{first_A}_{last_A}_{effect_block_A}_{first_B}_{last_B}_{effect_block_B}_sum_stats.tsv")
+        temp("results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/chr{ch_A}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
     threads: 4
     shell:
       "Rscript workflow/scripts/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
