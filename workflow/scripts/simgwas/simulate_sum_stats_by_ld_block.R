@@ -2,6 +2,7 @@ library(data.table)
 library(simGWAS)
 library(argparse)
 library(parallel)
+library(magrittr)
 
 simulated_z_score_par <- function(exp_z_score, ld_mat, nrep=1, ncores = 1){
     sim_z_score <- mvnfast::rmvn(n = nrep, mu = exp_z_score, sigma = ld_mat, ncores 
@@ -47,17 +48,25 @@ odds_ratios <- list('null' = 1,
                     'large' = 1.4,
                     'vlarge' = 2)
 
-if(!(args$effect_size %in% names(odds_ratios))) {
-  stop(sprintf("Effect size %s must be one of the following: '%s.", args$effect_size, paste(names(odds_ratios), collapse = ',')))
-}
+
 
 # TODO does not work, do not reimplement without fixing
 #args$odds_ratios <- sample(odds_ratios[[args$effect_size]], size = length(args$causal_variant_ind), replace = T)
 
-args$odds_ratios <- odds_ratios[[args$effect_size]]
-
 if(args$causal_variant_ind > ncol(ld_mat)) {
   args$causal_variant_ind <- ncol(ld_mat)/2
+}
+
+if(args$effect_size %in% names(odds_ratios)) {
+  args$odds_ratios <- odds_ratios[[args$effect_size]]
+} else if(startsWith(args$effect_size, 'random_')) {
+  stringr::str_match(args$effect_size, '(\\d+)-(\\d+)')[1,2:3] %>%
+    paste(., collapse = '.') %>%
+    as.numeric -> h2_M
+  cv_maf <- leg_dat[args$causal_variant_ind, EUR]
+  args$odds_ratios <- abs(rnorm(length(args$causal_variant_ind), mean = 0, sd = sqrt(h2_M/2*(cv_maf*(1-cv_maf)))))
+} else {
+  stop(sprintf("Effect size %s must be one of the following: '%s.", args$effect_size, paste(names(odds_ratios), collapse = ',')))
 }
 
 for(j in 1:(ncol(hap_dat)-2)) {

@@ -72,13 +72,32 @@ rule estimate_single_chr_h2:
     shell:
         "python $ldsc/ldsc.py --h2 {input.sum_stats} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence} --pop-prev {params.population_prevalence}"
 
+rule estimate_single_chr_h2_B0_1:
+    input:
+        ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
+        ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
+        sum_stats = "results/ldsc/munged_sum_stats/chr{ch}/{ncases}_{ncontrols}/{effect_blocks}_{tag}.tsv.sumstats.gz"
+    output:
+        "results/ldsc/h2/chr{ch}/{ncases}_{ncontrols}/B0_1/{effect_blocks}_{tag,[abcde]}.log"
+    params:
+        log_file_par = "results/ldsc/h2/chr{ch}/{ncases}_{ncontrols}/B0_1/{effect_blocks}_{tag,[abcde]}",
+        # NB: Trailing '/' is needed in ld_score_root
+        ld_score_root = "resources/ldsc/eur_w_ld_chr/",
+        population_prevalence = 0.02,
+        sample_prevalence = 0.5,
+        intercept = 1
+    conda:
+        "envs/ldsc.yaml"
+    shell:
+        "python $ldsc/ldsc.py --h2 {input.sum_stats} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence} --pop-prev {params.population_prevalence} --intercept-h2 {params.intercept}"
+
 rule estimate_whole_genome_h2:
     input:
         ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
         ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
         sum_stats = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_{tag}.tsv.sumstats.gz"
     output:
-        "results/ldsc/h2/whole_genome/{ncases}_{ncontrols}/{effect_blocks}_{tag,[abcde]}.log"
+        "results/ldsc/h2/whole_genome/{ncases,\d+}_{ncontrols,\d+}/{effect_blocks,[^/]+}_{tag,[abcde]}.log"
     params:
         log_file_par = "results/ldsc/h2/whole_genome/{ncases}_{ncontrols}/{effect_blocks}_{tag,[abcde]}",
         # NB: Trailing '/' is needed in ld_score_root
@@ -89,6 +108,25 @@ rule estimate_whole_genome_h2:
         "envs/ldsc.yaml"
     shell:
         "python $ldsc/ldsc.py --h2 {input.sum_stats} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence} --pop-prev {params.population_prevalence}"
+
+rule estimate_whole_genome_h2_B0_1:
+    input:
+        ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
+        ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
+        sum_stats = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_{tag}.tsv.sumstats.gz"
+    output:
+        "results/ldsc/h2/whole_genome/{ncases,\d+}_{ncontrols,\d+}/B0_1/{effect_blocks,[^/]+}_{tag,[abcde]}.log"
+    params:
+        log_file_par = "results/ldsc/h2/whole_genome/{ncases}_{ncontrols}/B0_1/{effect_blocks}_{tag,[abcde]}",
+        # NB: Trailing '/' is needed in ld_score_root
+        ld_score_root = "resources/ldsc/eur_w_ld_chr/",
+        population_prevalence = 0.02,
+        sample_prevalence = 0.5,
+        intercept = 1
+    conda:
+        "envs/ldsc.yaml"
+    shell:
+        "python $ldsc/ldsc.py --h2 {input.sum_stats} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence} --pop-prev {params.population_prevalence} --intercept-h2 {params.intercept}"
 
 rule estimate_single_chr_rg:
     input:

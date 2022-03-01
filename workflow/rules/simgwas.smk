@@ -22,14 +22,14 @@ block_dict[20].remove(35)
 # Can't compute this one inside four hours
 block_dict[6].remove(25)
 
-effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge'}
+effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random'}
 
 def get_whole_genome_null_block_files(wildcards):
     null_block_file_format = "results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
 
     effect_block_files = get_whole_genome_effect_block_files(wildcards)
 
-    null_block_files_to_omit = [re.sub('small|medium|large|vlarge|huge', 'null', x) for x in effect_block_files]
+    null_block_files_to_omit = [re.sub('small|medium|large|vlarge|huge|random_\d+-\d+', 'null', x) for x in effect_block_files]
 
     null_block_files = []
 
@@ -47,44 +47,64 @@ def get_whole_genome_effect_block_files(wildcards):
 
     effect_block_files = []
 
-    for x in wildcards.effect_blocks.split(';'):
-        tokens = x.split('-')
+    for x in wildcards.effect_blocks.split('/')[-1].split(';'):
+        block_match = re.match('^(\d+)-(.+)', x)
 
-        chrom = int(tokens[0])
+        chrom = int(block_match.group(1))
 
-        if ':' in tokens[1]:
-            range_match = re.match('([smlvh])(\d+):(\d+)', tokens[1])
+        if ':' in block_match.group(2):
+            range_match = re.match('([smlvh]|r\d+-\d+-)(\d+):(\d+)', block_match.group(2))
 
-            effect = effect_size_dict[range_match.group(1)]
+            if 'r' in range_match.group(1):
+                effect = 'random_' + range_match.group(1)[1:-1]
 
-            effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
+                effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
+            else:
+                effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
         else:
-            singleton_match = re.match('([smlvh])(\d+)', tokens[1])
+            singleton_match = re.match('([smlvh]|r\d+-\d+-)(\d+)', x)
 
-            effect = effect_size_dict[singleton_match.group(1)]
+            if 'r' in x:
+                effect = 'random_' + singleton_match.group(1)[1:-1]
 
-            effect_block_files.append(block_file_format % (effect, int(singleton_match.group(2))))
+                effect_block_files += [block_file_format % (chrom, effect, int(singleton_match.group(2)))]
+
+            else:
+                effect = effect_size_dict[singleton_match.group(1)]
+
+                effect_block_files.append(block_file_format % (chrom, effect, int(singleton_match.group(2))))
 
     return effect_block_files
 
+# TODO add check for overlap in effect blocks, e.g. r3-123-1\;r1-0-2
 def get_effect_block_files(wildcards):
     block_file_format = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
 
     effect_block_files = []
 
-    for x in wildcards.effect_blocks.split(';'):
+    for x in wildcards.effect_blocks.split('/')[-1].split(';'):
         if ':' in x:
-            range_match = re.match('([smlvh])(\d+):(\d+)', x)
+            range_match = re.match('([smlvh]|r\d+-\d+-)(\d+):(\d+)', x)
 
-            effect = effect_size_dict[range_match.group(1)]
+            if 'r' in x:
+                effect = 'random_' + range_match.group(1)[1:-1]
 
-            effect_block_files += [block_file_format % (effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
+                effect_block_files += [block_file_format % (effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
+
+            else:
+                effect_block_files += [block_file_format % (effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
         else:
-            singleton_match = re.match('([smlvh])(\d+)', x)
+            singleton_match = re.match('([smlvh]|r\d+-\d+-)(\d+)', x)
 
-            effect = effect_size_dict[singleton_match.group(1)]
+            if 'r' in x:
+                effect = 'random_' + singleton_match.group(1)[1:-1]
 
-            effect_block_files.append(block_file_format % (effect, int(singleton_match.group(2))))
+                effect_block_files += [block_file_format % (effect, int(singleton_match.group(2)))]
+
+            else:
+                effect = effect_size_dict[singleton_match.group(1)]
+
+                effect_block_files.append(block_file_format % (effect, int(singleton_match.group(2))))
 
     return effect_block_files
 
@@ -158,7 +178,7 @@ for chrom, blocks in block_dict.items():
             chr_no = chrom
         threads: 4
         shell:
-            "Rscript workflow/scripts/write_out_ld_block_files.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} -b {input.block_file} --chr_no {params.chr_no} -o {params.output_root} -nt {threads}"
+            "Rscript workflow/scripts/simgwas/write_out_ld_block_files.R --hap_file {input.haplotype_file} --leg_file {input.legend_file} -b {input.block_file} --chr_no {params.chr_no} -o {params.output_root} -nt {threads}"
 
 rule compute_block_ld_matrix:
     input:
@@ -172,7 +192,7 @@ rule compute_block_ld_matrix:
         time = "8:00:00",
         mem_mb=get_mem_mb
     shell:
-        "Rscript workflow/scripts/compute_block_ld_matrix.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --output_file {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/compute_block_ld_matrix.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --output_file {output} -nt {threads}"
 
 rule simulate_sum_stats_by_ld_block:
     input:
@@ -187,7 +207,7 @@ rule simulate_sum_stats_by_ld_block:
         mem_mb=get_mem_mb,
         time = "00:15:00"
     shell:
-        "Rscript workflow/scripts/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 5 -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 5 -o {output} -nt {threads}"
 
 rule combine_block_sum_stats_for_single_chr:
     input:
@@ -226,7 +246,7 @@ rule merge_simulated_sum_stats:
         temp("results/simgwas/simulated_sum_stats/merged/chr{ch_A}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
     threads: 4
     shell:
-        "Rscript workflow/scripts/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps 5 -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps 5 -o {output} -nt {threads}"
 
 # TODO generate new prune files specific to simulated sum stats
 rule prune_merged_sim_sum_stats:
@@ -238,4 +258,4 @@ rule prune_merged_sim_sum_stats:
         temp("results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/chr{ch_A}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
     threads: 4
     shell:
-      "Rscript workflow/scripts/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
+      "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
