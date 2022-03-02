@@ -60,6 +60,8 @@ def get_whole_genome_effect_block_files(wildcards):
 
                 effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
             else:
+                effect = effect_size_dict[range_match.group(1)]
+
                 effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
         else:
             singleton_match = re.match('([smlvh]|r\d+-\d+-)(\d+)', x)
@@ -92,6 +94,7 @@ def get_effect_block_files(wildcards):
                 effect_block_files += [block_file_format % (effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
 
             else:
+                effect = effect_size_dict[range_match.group(1)]
                 effect_block_files += [block_file_format % (effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
         else:
             singleton_match = re.match('([smlvh]|r\d+-\d+-)(\d+)', x)

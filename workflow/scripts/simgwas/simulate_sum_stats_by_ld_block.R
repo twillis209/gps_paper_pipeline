@@ -58,13 +58,13 @@ if(args$causal_variant_ind > ncol(ld_mat)) {
 }
 
 if(args$effect_size %in% names(odds_ratios)) {
-  args$odds_ratios <- odds_ratios[[args$effect_size]]
+  args$odds_ratios <- log(odds_ratios[[args$effect_size]])
 } else if(startsWith(args$effect_size, 'random_')) {
   stringr::str_match(args$effect_size, '(\\d+)-(\\d+)')[1,2:3] %>%
     paste(., collapse = '.') %>%
     as.numeric -> h2_M
   cv_maf <- leg_dat[args$causal_variant_ind, EUR]
-  args$odds_ratios <- abs(rnorm(length(args$causal_variant_ind), mean = 0, sd = sqrt(h2_M/2*(cv_maf*(1-cv_maf)))))
+  args$odds_ratios <- rnorm(length(args$causal_variant_ind), mean = 0, sd = sqrt(h2_M/(2*(cv_maf*(1-cv_maf)))))
 } else {
   stop(sprintf("Effect size %s must be one of the following: '%s.", args$effect_size, paste(names(odds_ratios), collapse = ',')))
 }
@@ -106,7 +106,7 @@ zexp <- expected_z_score(N0 = args$no_controls,
                           N1 = args$no_cases,
                           snps = chosen_snps,
                           W = cv_snp,
-                          gamma.W = log(args$odds_ratios),
+                          gamma.W = args$odds_ratios,
                           freq = sub_freq_dat,
                           GenoProbList = geno_probs)
 
@@ -117,7 +117,7 @@ vbetasim <- simulated_vbeta(N0 = as.numeric(args$no_controls),
                             N1 = as.numeric(args$no_cases),
                             snps = chosen_snps,
                             W = cv_snp,
-                            gamma.W = log(args$odds_ratios),
+                            gamma.W = args$odds_ratios,
                             freq = sub_freq_dat,
                             nrep = args$no_reps)
 

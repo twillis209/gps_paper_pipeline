@@ -54,6 +54,10 @@ rule compile_swept_chr1_B0_1_h2_parameters:
                             break
                 outfile.write("%d\t%d\t%.2f\t0-%d\t%s\t%.4f\t%.4f\n" % (ncases, ncontrols, odds_ratio, last_block, tag, h2, se))
 
+rule new_chr1_random_effect_h2_jobs:
+    input:
+        ["results/ldsc/h2/chr1/10000_10000/r0-02-0:9_a.log"]
+
 rule compile_swept_chr1_random_effect_h2_parameters:
     input:
         [[[["results/ldsc/h2/chr1/%d_%d/%s0:%d_%s.log" % (i, i, z, j, k) for i in [10000, 50000, 100000, 250000]] for j in range(1,10)] for z in ["r"]] for k in ["a"]]
