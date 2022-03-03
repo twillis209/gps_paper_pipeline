@@ -19,7 +19,7 @@ block_dict[17].remove(42)
 block_dict[18].remove(45)
 block_dict[18].remove(46)
 block_dict[20].remove(35)
-# Can't compute this one inside four hours
+# Can't compute this one inside four hours; maybe it's the MHC?
 block_dict[6].remove(25)
 
 effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random'}
@@ -47,7 +47,7 @@ def get_whole_genome_effect_block_files(wildcards):
 
     effect_block_files = []
 
-    for x in wildcards.effect_blocks.split('/')[-1].split(';'):
+    for x in wildcards.effect_blocks.split('/')[-1].split('+'):
         block_match = re.match('^(\d+)-(.+)', x)
 
         chrom = int(block_match.group(1))
@@ -78,13 +78,13 @@ def get_whole_genome_effect_block_files(wildcards):
 
     return effect_block_files
 
-# TODO add check for overlap in effect blocks, e.g. r3-123-1\;r1-0-2
+# TODO add check for overlap in effect blocks, e.g. r3-123-1\+r1-0-2
 def get_effect_block_files(wildcards):
     block_file_format = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
 
     effect_block_files = []
 
-    for x in wildcards.effect_blocks.split('/')[-1].split(';'):
+    for x in wildcards.effect_blocks.split('/')[-1].split('+'):
         if ':' in x:
             range_match = re.match('([smlvh]|r\d+-\d+-)(\d+):(\d+)', x)
 

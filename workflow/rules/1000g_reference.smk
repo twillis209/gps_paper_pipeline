@@ -21,11 +21,11 @@ rule download_1000g_sample_metadata:
 
 rule vcf_to_bed:
   input:
-    "resources/1000g/{chr}.vcf.gz"
+    ancient("resources/1000g/{chr}.vcf.gz")
   output:
-    "resources/1000g/{chr}.bed",
-    "resources/1000g/{chr}.bim",
-    "resources/1000g/{chr}.fam"
+    temp("resources/1000g/{chr}.bed"),
+    temp("resources/1000g/{chr}.bim"),
+    temp("resources/1000g/{chr}.fam")
   threads: 8
   resources:
       mem_mb=get_mem_mb
@@ -49,9 +49,9 @@ rule get_euro_samples:
     "resources/1000g/{chr}.fam",
     "resources/1000g/euro.fam"
   output:
-    "resources/1000g/euro/{chr}_euro.bed",
-    "resources/1000g/euro/{chr}_euro.bim",
-    "resources/1000g/euro/{chr}_euro.fam"
+    temp("resources/1000g/euro/{chr}_euro.bed"),
+    temp("resources/1000g/euro/{chr}_euro.bim"),
+    temp("resources/1000g/euro/{chr}_euro.fam")
   threads: 8
   resources:
       mem_mb=get_mem_mb
