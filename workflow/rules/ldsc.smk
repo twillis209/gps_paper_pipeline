@@ -20,6 +20,35 @@ rule extract_ld_scores:
     shell:
         "tar -xjf {input} -C {params.output_root}"
 
+rule calculate_theoretical_h2:
+    input:
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{effect_blocks}_sum_stats.tsv.gz"
+    output:
+        "results/ldsc/h2/whole_genome/{effect_blocks}_theo_h2.tsv"
+    params:
+        population_prevalence = 0.02,
+        sample_prevalence = 0.5
+    threads: 4
+    shell:
+        "Rscript workflow/scripts/ldsc/calculate_theoretical_h2.R --sum_stats_file {input} -P {params.sample_prevalence} -K {params.population_prevalence} -o {output} -nt {threads}"
+
+rule calculate_theoretical_rg:
+    input:
+        "results/simgwas/combined_causal_variants.tsv"
+    output:
+        "results/ldsc/rg/whole_genome/{effect_blocks_A}_{effect_blocks_B}_theo_rg.tsv"
+    params:
+        population_prevalence_A = 0.02,
+        sample_prevalence_A = 0.5,
+        population_prevalence_B = 0.02,
+        sample_prevalence_B = 0.5,
+        # TODO handle null and non-uniform effect cases
+        odds_ratio_a = lambda wildcards: odds_ratio_dict[re.search("[smlvhin]", wildcards.effect_blocks_A).group()],
+        odds_ratio_b = lambda wildcards: odds_ratio_dict[re.search("[smlvhin]", wildcards.effect_blocks_B).group()]
+    threads: 4
+    shell:
+        "Rscript workflow/scripts/ldsc/calculate_theoretical_rg.R --cv_file {input} --effect_blocks_a {wildcards.effect_blocks_A} --effect_blocks_b {wildcards.effect_blocks_B} --odds_ratio_a {params.odds_ratio_a} --odds_ratio_b {params.odds_ratio_b} --P_a {params.sample_prevalence_A} --P_b {params.sample_prevalence_B} --K_a {params.population_prevalence_A} --K_b {params.population_prevalence_B} -o {output} -nt {threads}"
+
 rule munge_single_chr_sum_stats:
     input:
         "results/simgwas/simulated_sum_stats/chr{ch}/whole_chr_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_sum_stats.tsv.gz"
@@ -164,4 +193,4 @@ rule estimate_whole_genome_rg:
     conda:
         "envs/ldsc.yaml"
     shell:
-        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence} --pop-prev {params.population_prevalence}"
+        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} --intercept-h2 1,1"

@@ -24,13 +24,17 @@ rule vcf_to_bed:
     ancient("resources/1000g/{chr}.vcf.gz")
   output:
     temp("resources/1000g/{chr}.bed"),
-    temp("resources/1000g/{chr}.bim"),
+    "resources/1000g/{chr}.bim",
     temp("resources/1000g/{chr}.fam")
   threads: 8
   resources:
       mem_mb=get_mem_mb
   shell:
     "plink --memory {resources.mem_mb} --threads {threads} --vcf resources/1000g/{wildcards.chr}.vcf.gz --make-bed --out resources/1000g/{wildcards.chr}"
+
+rule get_bim_files:
+    input:
+        ["resources/1000g/chr%d.bim" % x for x in range(1,23)]
 
 # NB: Removes related individuals, so we have 498 of 503 Europeans left
 rule make_euro_fam:

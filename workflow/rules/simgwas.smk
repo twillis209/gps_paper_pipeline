@@ -22,14 +22,14 @@ block_dict[20].remove(35)
 # Can't compute this one inside four hours; maybe it's the MHC?
 block_dict[6].remove(25)
 
-effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random'}
+effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'intermediate'}
 
 def get_whole_genome_null_block_files(wildcards):
     null_block_file_format = "results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
 
     effect_block_files = get_whole_genome_effect_block_files(wildcards)
 
-    null_block_files_to_omit = [re.sub('small|medium|large|vlarge|huge|random_\d+-\d+', 'null', x) for x in effect_block_files]
+    null_block_files_to_omit = [re.sub('small|medium|large|vlarge|huge|intermediate|random_\d+-\d+', 'null', x) for x in effect_block_files]
 
     null_block_files = []
 
@@ -47,76 +47,40 @@ def get_whole_genome_effect_block_files(wildcards):
 
     effect_block_files = []
 
+    if wildcards.effect_blocks == 'null':
+        return []
+
     for x in wildcards.effect_blocks.split('/')[-1].split('+'):
         block_match = re.match('^(\d+)-(.+)', x)
 
         chrom = int(block_match.group(1))
 
         if ':' in block_match.group(2):
-            range_match = re.match('([smlvh]|r\d+-\d+-)(\d+):(\d+)', block_match.group(2))
+            range_match = re.match('([smlvhi]|r\d+-\d+-)(\d+):(\d+)', block_match.group(2))
 
             if 'r' in range_match.group(1):
                 effect = 'random_' + range_match.group(1)[1:-1]
 
-                effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
+                effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1) if y in block_dict[chrom]]
             else:
                 effect = effect_size_dict[range_match.group(1)]
 
-                effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
+                effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1) if y in block_dict[chrom]]
         else:
-            singleton_match = re.match('([smlvh]|r\d+-\d+-)(\d+)', x)
+            singleton_match = re.match('([smlvhi]|r\d+-\d+-)(\d+)', x)
 
             if 'r' in x:
                 effect = 'random_' + singleton_match.group(1)[1:-1]
 
-                effect_block_files += [block_file_format % (chrom, effect, int(singleton_match.group(2)))]
-
+                if int(singleton_match.group(2)) in block_dict[chrom]:
+                    effect_block_files += [block_file_format % (chrom, effect, int(singleton_match.group(2)))]
             else:
                 effect = effect_size_dict[singleton_match.group(1)]
 
-                effect_block_files.append(block_file_format % (chrom, effect, int(singleton_match.group(2))))
+                if int(singleton_match.group(2)) in block_dict[chrom]:
+                    effect_block_files.append(block_file_format % (chrom, effect, int(singleton_match.group(2))))
 
     return effect_block_files
-
-# TODO add check for overlap in effect blocks, e.g. r3-123-1\+r1-0-2
-def get_effect_block_files(wildcards):
-    block_file_format = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
-
-    effect_block_files = []
-
-    for x in wildcards.effect_blocks.split('/')[-1].split('+'):
-        if ':' in x:
-            range_match = re.match('([smlvh]|r\d+-\d+-)(\d+):(\d+)', x)
-
-            if 'r' in x:
-                effect = 'random_' + range_match.group(1)[1:-1]
-
-                effect_block_files += [block_file_format % (effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
-
-            else:
-                effect = effect_size_dict[range_match.group(1)]
-                effect_block_files += [block_file_format % (effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1)]
-        else:
-            singleton_match = re.match('([smlvh]|r\d+-\d+-)(\d+)', x)
-
-            if 'r' in x:
-                effect = 'random_' + singleton_match.group(1)[1:-1]
-
-                effect_block_files += [block_file_format % (effect, int(singleton_match.group(2)))]
-
-            else:
-                effect = effect_size_dict[singleton_match.group(1)]
-
-                effect_block_files.append(block_file_format % (effect, int(singleton_match.group(2))))
-
-    return effect_block_files
-
-def get_null_block_files(wildcards):
-    null_block_file_format = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/{ncases}_{ncontrols}/block_%d_sum_stats.tsv.gz"
-
-    effect_block_numbers = [int(re.search('block_(\d+)_sum_stats.tsv.gz', x).group(1)) for x in get_effect_block_files(wildcards)]
-
-    return [null_block_file_format % i for i in block_dict[int(wildcards.ch)] if i not in effect_block_numbers]
 
 # TODO make the legend and hap whole files temp
 rule get_legend_files_with_euro_common_maf:
@@ -212,19 +176,20 @@ rule simulate_sum_stats_by_ld_block:
     shell:
         "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 5 -o {output} -nt {threads}"
 
-rule combine_block_sum_stats_for_single_chr:
+rule get_causal_variant_by_ld_block:
     input:
-        null_block_files = get_null_block_files,
-        effect_block_files = get_effect_block_files
+        bim_file = ancient("resources/1000g/chr{ch}.bim"),
+        block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.hap.gz"),
+        block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
+        ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        temp("results/simgwas/simulated_sum_stats/chr{ch}/whole_chr_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_sum_stats.tsv.gz")
-    run:
-        for i,x in enumerate(input):
-            if i == 0:
-                shell("zcat %s >> %s" % (x, output[0].replace('.gz', '')))
-            else:
-                shell("zcat %s | tail -n +2  >> %s" % (x, output[0].replace('.gz', '')))
-        shell("gzip %s" % output[0].replace('.gz', ''))
+        "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/10000_10000/block_{block}_causal_variant.tsv"
+    threads: 4
+    resources:
+        mem_mb=get_mem_mb,
+        time = "00:01:00"
+    shell:
+        "Rscript workflow/scripts/simgwas/get_causal_variant_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 -o {output} -nt {threads}"
 
 rule combine_block_sum_stats_whole_genome:
     input:
@@ -262,3 +227,15 @@ rule prune_merged_sim_sum_stats:
     threads: 4
     shell:
       "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
+
+rule get_causal_variants:
+    input:
+        [["results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/10000_10000/block_%d_causal_variant.tsv" % (x,y) for y in block_dict[x]] for x in range(1,23)]
+    output:
+        "results/simgwas/combined_causal_variants.tsv"
+    run:
+        for i,x in enumerate(input):
+            if i == 0:
+                shell("cat %s > %s" % (x, output[0]))
+            else:
+                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))

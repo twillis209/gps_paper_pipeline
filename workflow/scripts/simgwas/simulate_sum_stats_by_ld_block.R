@@ -26,8 +26,8 @@ parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates', d
 parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-test_args <- c('--hap_file', 'resources/simgwas/1000g/blockwise/chr1/block_0.hap.gz', '--leg_file', 'resources/simgwas/1000g/blockwise/chr1/block_0.legend.gz', '--bim_file', 'resources/1000g/chr1.bim', '--ld_mat_file', 'results/simgwas/chr1_ld_matrices/chr1_block_0_ld_matrix.RData', '--chr_no', 1, '--causal_variant_ind', 2000, '--effect_size', 'null', '--output_file', 'chr1_block_0_sum_stats.tsv.gz', '--no_of_threads', 1, '--no_reps', 2, '--no_controls', 40000, '--no_cases', 40000)
-args <- parser$parse_args(test_args)
+#test_args <- c('--hap_file', 'resources/simgwas/1000g/blockwise/chr1/block_0.hap.gz', '--leg_file', 'resources/simgwas/1000g/blockwise/chr1/block_0.legend.gz', '--bim_file', 'resources/1000g/chr1.bim', '--ld_mat_file', 'results/simgwas/chr1_ld_matrices/chr1_block_0_ld_matrix.RData', '--chr_no', 1, '--causal_variant_ind', 2000, '--effect_size', 'null', '--output_file', 'chr1_block_0_sum_stats.tsv.gz', '--no_of_threads', 1, '--no_reps', 2, '--no_controls', 40000, '--no_cases', 40000)
+#args <- parser$parse_args(test_args)
 
 args <- parser$parse_args()
 
@@ -43,7 +43,9 @@ if(is.null(args$causal_variant_ind)) {
 }
 
 odds_ratios <- list('null' = 1,
+                    'tiny' = 1.02,
                     'small' = 1.05,
+                    'intermediate' = 1.1,
                     'medium' = 1.2,
                     'large' = 1.4,
                     'vlarge' = 2)
@@ -139,8 +141,8 @@ for(j in 1:args$no_reps) {
   result_dat[, c(paste0('p.', j)) := 2*pnorm(abs(get(paste0('zsim.', j))), lower.tail = F)]
 }
 
-result_dat[, or := 0]
-result_dat[cv_ind, or := args$odds_ratios]
+result_dat[, or := 1]
+result_dat[cv_ind, or := exp(args$odds_ratios)]
 setnames(result_dat, 'or', 'chosen_or')
 
 result_dat[, `:=` (ncases = args$no_cases, ncontrols = args$no_controls)]
