@@ -205,25 +205,35 @@ rule combine_block_sum_stats_whole_genome:
                 shell("zcat %s | tail -n +2  >> %s" % (x, output[0].replace('.gz', '')))
         shell("gzip %s" % output[0].replace('.gz', ''))
 
-# TODO finish me then change the prune rule
-rule merge_simulated_sum_stats:
+rule make_simgwas_plink_ranges:
     input:
-        sum_stats_file_A = "results/simgwas/simulated_sum_stats/chr{ch_A}/whole_chr_sum_stats/{ncases_A}_{ncontrols_A}/{effect_blocks_A}_sum_stats.tsv.gz",
-        sum_stats_file_B = "results/simgwas/simulated_sum_stats/chr{ch_B}/whole_chr_sum_stats/{ncases_B}_{ncontrols_B}/{effect_blocks_B}_sum_stats.tsv.gz"
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/10000_10000/null_sum_stats.tsv.gz",
+        bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
     output:
-        temp("results/simgwas/simulated_sum_stats/merged/chr{ch_A}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
+        [("resources/plink_ranges/simgwas/chr%d.txt" % x for x in range(1,23))]
     threads: 4
     shell:
-        "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps 5 -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/make_simgwas_plink_ranges.R --sum_stats_file {input.sum_stats_file} --input_bim_file {input.bim_file} --output_range_files {output} -nt {threads}"
 
-# TODO generate new prune files specific to simulated sum stats
+rule merge_simulated_sum_stats:
+    input:
+        sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A}_{ncontrols_A}/{effect_blocks_A}_sum_stats.tsv.gz",
+        sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_B}_{ncontrols_B}/{effect_blocks_B}_sum_stats.tsv.gz"
+    output:
+        temp("results/simgwas/simulated_sum_stats/merged/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv.gz")
+    params:
+        no_reps = 5
+    threads: 4
+    shell:
+        "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps {params.no_reps} -o {output} -nt {threads}"
+
 rule prune_merged_sim_sum_stats:
     input:
-      bim_file = ancient("resources/1000g/euro/qc/chr{ch_A}_qc.bim"),
-      pruned_range_file = ancient("resources/plink_ranges/ukbb/pruned_ranges/window_{window}_step_{step}/all.prune.in"),
-      sum_stats_file = "results/simgwas/simulated_sum_stats/merged/chr{ch_A}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv"
+      bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
+      pruned_range_file = "resources/plink_ranges/simgwas/pruned_ranges/window_{window}_step_{step}/all.prune.in",
+      sum_stats_file = "results/simgwas/simulated_sum_stats/merged/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv.gz"
     output:
-        temp("results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/chr{ch_A}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
+        temp("results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
     threads: 4
     shell:
       "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"

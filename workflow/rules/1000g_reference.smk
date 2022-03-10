@@ -1,6 +1,6 @@
 rule download_1000g_genotype_data:
   output:
-    "resources/1000g/{chr}.vcf.gz"
+      "resources/1000g/{chr}.vcf.gz"
   run:
     if wildcards.chr == 'chrX':
         shell("wget -O resources/1000g/{wildcards.chr}.vcf.gz       http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.{wildcards.chr}.phase3_shapeit2_mvncall_integrated_v1c.20130502.genotypes.vcf.gz")
@@ -21,7 +21,7 @@ rule download_1000g_sample_metadata:
 
 rule vcf_to_bed:
   input:
-    ancient("resources/1000g/{chr}.vcf.gz")
+    "resources/1000g/{chr}.vcf.gz"
   output:
     temp("resources/1000g/{chr}.bed"),
     "resources/1000g/{chr}.bim",
@@ -30,11 +30,7 @@ rule vcf_to_bed:
   resources:
       mem_mb=get_mem_mb
   shell:
-    "plink --memory {resources.mem_mb} --threads {threads} --vcf resources/1000g/{wildcards.chr}.vcf.gz --make-bed --out resources/1000g/{wildcards.chr}"
-
-rule get_bim_files:
-    input:
-        ["resources/1000g/chr%d.bim" % x for x in range(1,23)]
+      "plink2 --memory {resources.mem_mb} --threads {threads} --vcf resources/1000g/{wildcards.chr}.vcf.gz --make-bed --out resources/1000g/{wildcards.chr} --set-all-var-ids @:#:\$r:\$a --max-alleles 2 --new-id-max-allele-len 20 'truncate'"
 
 # NB: Removes related individuals, so we have 498 of 503 Europeans left
 rule make_euro_fam:
@@ -60,7 +56,7 @@ rule get_euro_samples:
   resources:
       mem_mb=get_mem_mb
   shell:
-    "plink --memory {resources.mem_mb} --threads {threads} --bfile resources/1000g/{wildcards.chr} --keep resources/1000g/euro.fam --make-bed --silent --out resources/1000g/euro/{wildcards.chr}_euro"
+    "plink2 --memory {resources.mem_mb} --threads {threads} --bfile resources/1000g/{wildcards.chr} --keep resources/1000g/euro.fam --make-bed --silent --out resources/1000g/euro/{wildcards.chr}_euro"
 
 rule qc:
     input:
@@ -76,6 +72,15 @@ rule qc:
         mem_mb=get_mem_mb
     shell:
         "plink --memory {resources.mem_mb} --threads {threads} --bfile resources/1000g/euro/{wildcards.chr}_euro --geno 0.1 --mind 0.1 --maf 0.005 --hwe 1e-50 --make-bed --silent --out resources/1000g/euro/qc/{wildcards.chr}_qc"
+
+rule concatenate_qc_bim_files:
+    input:
+        ["resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)]
+    output:
+        "resources/1000g/euro/qc/chr1-22_qc.bim"
+    run:
+        for i,x in enumerate(input):
+            shell("cat %s >> %s" % (x, output[0]))
 
 # NB: 'make_pruned_ranges' handles a subset of 1kGP SNPs, this prunes all QC-passing 1kGP SNPs for use with simGWAS
 rule make_1000g_pruned_ranges:
