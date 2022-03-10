@@ -22,15 +22,16 @@ rule extract_ld_scores:
 
 rule calculate_theoretical_h2:
     input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{effect_blocks}_sum_stats.tsv.gz"
+        "results/simgwas/combined_causal_variants.tsv"
     output:
         "results/ldsc/h2/whole_genome/{effect_blocks}_theo_h2.tsv"
     params:
         population_prevalence = 0.02,
-        sample_prevalence = 0.5
+        sample_prevalence = 0.5,
+        odds_ratio = lambda wildcards: odds_ratio_dict[re.search("[smlvhin]", wildcards.effect_blocks).group()],
     threads: 4
     shell:
-        "Rscript workflow/scripts/ldsc/calculate_theoretical_h2.R --sum_stats_file {input} -P {params.sample_prevalence} -K {params.population_prevalence} -o {output} -nt {threads}"
+        "Rscript workflow/scripts/ldsc/calculate_theoretical_h2.R --cv_file {input} --effect_blocks {wildcards.effect_blocks} --odds_ratio {params.odds_ratio} -P {params.sample_prevalence} -K {params.population_prevalence} -o {output} -nt {threads}"
 
 rule calculate_theoretical_rg:
     input:

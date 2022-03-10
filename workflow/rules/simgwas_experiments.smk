@@ -39,6 +39,39 @@ rule whole_genome_B0_1_h2_chr1_7_sweep:
                             break
                 outfile.write("%d\t%d\t%.2f\t%d\t%s\t%s\t%.4f\t%.4f\n" % (ncases, ncontrols, odds_ratio, no_blocks, chroms, tag, h2, se))
 
+rule compile_small_h2_theo_calculations:
+    input:
+        ["results/ldsc/h2/whole_genome/1-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
+        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 139]],
+        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
+        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 118]],
+        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:118+5-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 107]],
+        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:118+5-s0:107+6-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 105]],
+        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:118+5-s0:107+6-s0:105+7-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 91]],
+    output:
+        "results/ldsc/h2/whole_genome/compiled_s_theo_h2.tsv"
+    run:
+        for i,x in enumerate(input):
+            if i == 0:
+                shell("cat %s > %s" % (x, output[0]))
+            else:
+                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
+
+rule compile_medium_h2_theo_calculations:
+    input:
+        ["results/ldsc/h2/whole_genome/1-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
+        ["results/ldsc/h2/whole_genome/1-m0:119+2-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 139]],
+        ["results/ldsc/h2/whole_genome/1-m0:119+2-m0:139+3-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
+        ["results/ldsc/h2/whole_genome/1-m0:119+2-m0:139+3-m0:119+4-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 118]]
+    output:
+        "results/ldsc/h2/whole_genome/compiled_m_theo_h2.tsv"
+    run:
+        for i,x in enumerate(input):
+            if i == 0:
+                shell("cat %s > %s" % (x, output[0]))
+            else:
+                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
+
 rule compile_small_rg_theo_calculations:
     input:
         "results/ldsc/rg/whole_genome/1-s0:119+2-s0:139+3-s0:119_5-s0:108+6-s0:105+7-s0:91+8-s0:72_theo_rg.tsv",
@@ -63,7 +96,13 @@ rule compile_medium_theo_rg_calculations:
         "results/ldsc/rg/whole_genome/1-m0:49_1-m30:79_theo_rg.tsv",
         "results/ldsc/rg/whole_genome/1-m0:49_1-m20:69_theo_rg.tsv",
         "results/ldsc/rg/whole_genome/1-m0:49_1-m10:59_theo_rg.tsv",
-        "results/ldsc/rg/whole_genome/1-m0:49_1-m0:49_theo_rg.tsv"
+        "results/ldsc/rg/whole_genome/1-m0:49_1-m0:49_theo_rg.tsv",
+        "results/ldsc/rg/whole_genome/1-m0:24_1-m25:49_theo_rg.tsv",
+        "results/ldsc/rg/whole_genome/1-m0:24_1-m20:44_theo_rg.tsv",
+        "results/ldsc/rg/whole_genome/1-m0:24_1-m15:39_theo_rg.tsv",
+        "results/ldsc/rg/whole_genome/1-m0:24_1-m10:34_theo_rg.tsv",
+        "results/ldsc/rg/whole_genome/1-m0:24_1-m5:29_theo_rg.tsv",
+        "results/ldsc/rg/whole_genome/1-m0:24_1-m0:24_theo_rg.tsv"
     output:
         "results/ldsc/rg/whole_genome/compiled_m_theo_rg.tsv"
     run:
@@ -172,15 +211,20 @@ rule compile_small_rg_estimates:
 
                     outfile.write("%d\t%d\t%d\t%d\t%s\t%s\t%s\t%s\t%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n" % (ncases_A, ncontrols_A, ncases_B, ncontrols_B, odds_ratios_A, odds_ratios_B, effect_blocks_wc_A, effect_blocks_wc_B, no_shared_blocks, h2_A, h2_A_se, h2_B, h2_B_se, rg, rg_se))
 
-rule compile_rg_estimates:
+rule compile_medium_rg_estimates:
     input:
-#        ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/null_null.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
         ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:49_1-m50:99.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
         ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:49_1-m40:89.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
         ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:49_1-m30:79.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
         ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:49_1-m20:69.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
         ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:49_1-m10:59.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
-        ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:49_1-m0:49.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]]
+        ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:49_1-m0:49.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
+        ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:24_1-m25:49.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
+        ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:24_1-m20:44.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
+        ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:24_1-m15:39.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
+        ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:24_1-m10:34.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
+        ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:24_1-m5:29.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]],
+        ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/1-m0:24_1-m0:24.log" % (i,i,i,i) for i in [10000, 50000, 100000, 250000]]
     output:
         "results/ldsc/rg/whole_genome/compiled_m_rg_estimates.tsv"
     run:
