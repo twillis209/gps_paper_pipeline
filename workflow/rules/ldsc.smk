@@ -1,3 +1,4 @@
+tags = ["a", "b", "c", "d", "e"]
 tag_pvalue_dict = {"a": "p.1", "b": "p.2", "c": "p.3", "d": "p.4", "e": "p.5"}
 tag_signed_sumstats_dict = {"a": "betasim.1,18", "b": "betasim.2,19", "c": "betasim.3,20", "d": "betasim.4,21", "e": "betasim.5,22"}
 
@@ -20,6 +21,7 @@ rule extract_ld_scores:
     shell:
         "tar -xjf {input} -C {params.output_root}"
 
+# TODO Fix like I fixed theoretical rg
 rule calculate_theoretical_h2:
     input:
         "results/simgwas/combined_causal_variants.tsv"
@@ -33,9 +35,11 @@ rule calculate_theoretical_h2:
     shell:
         "Rscript workflow/scripts/ldsc/calculate_theoretical_h2.R --cv_file {input} --effect_blocks {wildcards.effect_blocks} --odds_ratio {params.odds_ratio} -P {params.sample_prevalence} -K {params.population_prevalence} -o {output} -nt {threads}"
 
+        # TODO some of the variants specified seems to be missing from the cv_dat, 1_100, 5_108, 6_6, 6_25, 6_38, 8_22
 rule calculate_theoretical_rg:
     input:
-        "results/simgwas/combined_causal_variants.tsv"
+        cv_file = "results/simgwas/combined_causal_variants.tsv",
+        available_blocks_file = "resources/simgwas/available_blocks.tsv"
     output:
         "results/ldsc/rg/whole_genome/{effect_blocks_A}_{effect_blocks_B}_theo_rg.tsv"
     params:
@@ -48,7 +52,7 @@ rule calculate_theoretical_rg:
         odds_ratio_b = lambda wildcards: odds_ratio_dict[re.search("[smlvhin]", wildcards.effect_blocks_B).group()]
     threads: 4
     shell:
-        "Rscript workflow/scripts/ldsc/calculate_theoretical_rg.R --cv_file {input} --effect_blocks_a {wildcards.effect_blocks_A} --effect_blocks_b {wildcards.effect_blocks_B} --odds_ratio_a {params.odds_ratio_a} --odds_ratio_b {params.odds_ratio_b} --P_a {params.sample_prevalence_A} --P_b {params.sample_prevalence_B} --K_a {params.population_prevalence_A} --K_b {params.population_prevalence_B} -o {output} -nt {threads}"
+        "Rscript workflow/scripts/ldsc/calculate_theoretical_rg.R --cv_file {input.cv_file} --blocks_file {input.available_blocks_file} --effect_blocks_a {wildcards.effect_blocks_A} --effect_blocks_b {wildcards.effect_blocks_B} --odds_ratio_a {params.odds_ratio_a} --odds_ratio_b {params.odds_ratio_b} --P_a {params.sample_prevalence_A} --P_b {params.sample_prevalence_B} --K_a {params.population_prevalence_A} --K_b {params.population_prevalence_B} -o {output} -nt {threads}"
 
 rule munge_single_chr_sum_stats:
     input:
@@ -77,6 +81,8 @@ rule munge_whole_genome_sum_stats:
          output_filename = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_{tag}.tsv",
          signed_sumstats_col = lambda wildcards: tag_signed_sumstats_dict[wildcards.tag],
          pvalue_col = lambda wildcards: tag_pvalue_dict[wildcards.tag]
+    resources:
+        disk_mb = 2048
     conda:
         "envs/ldsc.yaml"
     shell:
@@ -116,6 +122,8 @@ rule estimate_single_chr_h2_B0_1:
         population_prevalence = 0.02,
         sample_prevalence = 0.5,
         intercept = 1
+    resources:
+        disk_mb = 2048
     conda:
         "envs/ldsc.yaml"
     shell:
@@ -134,6 +142,8 @@ rule estimate_whole_genome_h2:
         ld_score_root = "resources/ldsc/eur_w_ld_chr/",
         population_prevalence = 0.02,
         sample_prevalence = 0.5
+    resources:
+        disk_mb = 2048
     conda:
         "envs/ldsc.yaml"
     shell:
@@ -153,6 +163,8 @@ rule estimate_whole_genome_h2_B0_1:
         population_prevalence = 0.02,
         sample_prevalence = 0.5,
         intercept = 1
+    resources:
+        disk_mb = 2048
     conda:
         "envs/ldsc.yaml"
     shell:
@@ -181,12 +193,12 @@ rule estimate_whole_genome_rg:
     input:
         ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
         ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
-        sum_stats_A = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases_A}_{ncontrols_A}/{effect_blocks_A}_a.tsv.sumstats.gz",
-        sum_stats_B = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases_B}_{ncontrols_B}/{effect_blocks_B}_b.tsv.sumstats.gz",
+        sum_stats_A = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases_A}_{ncontrols_A}/{effect_blocks_A}_{tag_A}.tsv.sumstats.gz",
+        sum_stats_B = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases_B}_{ncontrols_B}/{effect_blocks_B}_{tag_B}.tsv.sumstats.gz",
     output:
-        "results/ldsc/rg/whole_genome/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}.log"
+        "results/ldsc/rg/whole_genome/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{tag_A,[abcde]}{tag_B,[abcde]}.log"
     params:
-        log_file_par = "results/ldsc/rg/whole_genome/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}",
+        log_file_par = "results/ldsc/rg/whole_genome/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{tag_A}{tag_B}",
         # NB: Trailing '/' is needed in ld_score_root
         ld_score_root = "resources/ldsc/eur_w_ld_chr/",
         population_prevalence = 0.02,

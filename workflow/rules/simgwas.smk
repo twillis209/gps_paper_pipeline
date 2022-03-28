@@ -1,10 +1,6 @@
 import re as re
 import pandas as pd
 
-# NB: Doesn't work when I specify the chromosome no. wildcard as '{chr}'
-chr1_ld_matrices = ["results/simgwas/chr1_ld_matrices/chr1_block_%d_ld_matrix.RData" % i for i in range(122)]
-chr21_ld_matrices = ["results/simgwas/chr21_ld_matrices/chr21_block_%d_ld_matrix.RData" % i for i in range(23)]
-
 block_daf = pd.read_csv("resources/ldetect/blocks.txt", sep = " ", names = ["chr_block", "chr", "start", "stop"])
 
 block_dict = {}
@@ -12,15 +8,25 @@ block_dict = {}
 for i in range(1,23):
     block_dict[i] = list(block_daf[block_daf["chr"] == i]["chr_block"].apply(lambda x: int(x.split('_block')[1])))
 
-# No SNPs in chr5:block108
+# Following blocks can't be used, either because their LD matrix could not be computed or I could not obtain the 2000th SNP as a causal variant
+block_dict[1].remove(100)
+block_dict[4].remove(21)
 block_dict[5] = range(108)
-# No SNPs?
+block_dict[6].remove(6)
+block_dict[6].remove(25)
+block_dict[6].remove(38)
+block_dict[8].remove(22)
+block_dict[11].remove(31)
+block_dict[11].remove(73)
+block_dict[12].remove(53)
+block_dict[16].remove(0)
 block_dict[17].remove(42)
+block_dict[18].remove(27)
 block_dict[18].remove(45)
 block_dict[18].remove(46)
+block_dict[19].remove(13)
+block_dict[20].remove(26)
 block_dict[20].remove(35)
-# Can't compute this one inside four hours; maybe it's the MHC?
-block_dict[6].remove(25)
 
 effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'intermediate'}
 
@@ -82,7 +88,6 @@ def get_whole_genome_effect_block_files(wildcards):
 
     return effect_block_files
 
-# TODO make the legend and hap whole files temp
 rule get_legend_files_with_euro_common_maf:
     input:
         "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.legend.gz"
@@ -128,6 +133,16 @@ rule get_euro_hap_files_with_metadata:
 
         rm {params.temp_eur_cols_file} {params.temp_hap_file} {params.temp_hap_filtered_maf_file} {params.temp_hap_with_maf_file}
         """
+
+rule write_out_available_blocks:
+    output:
+        "resources/simgwas/available_blocks.tsv"
+    run:
+        with open(output[0], 'w') as outfile:
+            outfile.write("chr\tblock\n")
+            for x in sorted(block_dict.items()):
+                for y in x[1]:
+                    outfile.write(f"{x[0]}\t{y}\n")
 
 # Generates rules to generate LD block files for whole genome
 # After https://stackoverflow.com/a/49004234

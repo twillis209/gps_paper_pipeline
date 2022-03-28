@@ -1,68 +1,149 @@
+import os
+
+tag_pairs = list(chain(*[[''.join([x,y]) for y in tags[i+1:]] for i,x in enumerate(tags[:-1])]))
+
+effect_block_pairs = ["1-m0:49_1-m50:99", "1-m0:49_1-m40:89", "1-m0:49_1-m30:79", "1-m0:49_1-m20:69", "1-m0:49_1-m10:59", "1-m0:49_1-m0:49", "1-m0:24_1-m25:49", "1-m0:24_1-m20:44", "1-m0:24_1-m15:39", "1-m0:24_1-m10:34", "1-m0:24_1-m5:29", "1-s0:119+2-s0:139+3-s0:119+4-s0:9_4-s0:9+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:19_4-s0:19+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:29_4-s0:29+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:49_4-s0:49+5-s0:108+6-s0:105+7-s0:91+8-s0:72"]
+
+sample_sizes = [1000, 5000, 10000, 50000, 100000, 250000]
+
 rule compute_gps_for_sim_pair:
     input:
         sum_stats_file = "results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv"
     output:
-        temp("results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_gps_value.tsv")
+        temp("results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{tag_pair}_gps_value.tsv")
+    params:
+        a_colname = lambda wildcards: "p.%d.A" % (tags.index(wildcards.tag_pair[0])+1),
+        b_colname = lambda wildcards: "p.%d.B" % (tags.index(wildcards.tag_pair[1])+1)
     shell:
-        "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a p.1.A -b p.2.B -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -o {output}"
+        "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -o {output}"
 
 rule permute_sim_pair:
     input:
         sum_stats_file = "results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv"
     output:
-        temp("results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws,\d+}_permutations/{effect_blocks_A}_{effect_blocks_B}.tsv")
+        "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws,\d+}_permutations/{effect_blocks_A}_{effect_blocks_B}_{tag_pair}.tsv"
+    params:
+        a_colname = lambda wildcards: "p.%d.A" % (tags.index(wildcards.tag_pair[0])+1),
+        b_colname = lambda wildcards: "p.%d.B" % (tags.index(wildcards.tag_pair[1])+1)
     threads: 8
     resources:
         mem_mb = get_mem_mb,
         time = get_permute_time,
     shell:
-        "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a p.1.A -b p.2.B -c {threads} -n {wildcards.draws}"
+        "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws}"
 
-# TODO need to make pruned ranges
-# TODO could just make a simgwas version of the subset_reference rule in Snakefile and run it once as I use the same SNPs each time
 rule fit_gev_and_compute_gps_pvalue_for_sim_pair:
     input:
-        gps_file = "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_gps_value.tsv",
-        perm_file = "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws}_permutations/{effect_blocks_A}_{effect_blocks_B}.tsv"
+        gps_file = "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{tag_pair}_gps_value.tsv",
+        perm_file = "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws}_permutations/{effect_blocks_A}_{effect_blocks_B}_{tag_pair}.tsv"
     output:
-        "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{draws}_permutations_gps_pvalue.tsv"
+        "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{draws}_permutations_{tag_pair}_gps_pvalue.tsv"
     shell:
       "Rscript workflow/scripts/fit_gev_and_compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.effect_blocks_A} -b {wildcards.effect_blocks_B} -o {output}"
 
-"""
-rule collate_gps_pvalue_data:
+rule run_gps_sim_data:
     input:
-        pvalue_files = ["results/ukbb/{snp_set}/window_{window}_step_{step}/%s_{draws}_permutations_gps_pvalue.tsv" % x for x in ukbb_trait_pairs]+
-        ["results/pid_ukbb/{snp_set}/window_{window}_step_{step}/%s_{draws}_permutations_gps_pvalue.tsv" % x for x in pid_ukbb_trait_pairs],
-        lookup_file = "resources/ukbb_sum_stats/trait_metadata.tsv"
+        ["results/gps/simgwas/window_1000kb_step_50/%d_%d_%d_%d/%s_3000_permutations_%s_gps_pvalue.tsv" % (i, i, i, i, j, k) for i in sample_sizes for j in effect_block_pairs for k in tag_pairs]
     output:
-        "results/combined/{snp_set}/window_{window}_step_{step}/gps_pvalues_{draws}_permutations_with_labels.tsv"
+        "results/gps/simgwas/window_1000kb_step_50/combined_gps_results.tsv"
     run:
         with open(output[0], 'w') as outfile:
-            outfile.write(("\t".join(["trait_A", "trait_B", "gps", "n", "loc", "loc.sd", "scale", "scale.sd", "shape", "shape.sd", "pval"]))+"\n")
-            for i,x in enumerate(input.pvalue_files):
+
+            for i,x in enumerate(input):
                 with open(x, 'r') as infile:
-                    data_line = infile.readlines()[1]
+                    lines = infile.readlines()
 
-                    m = re.match("results/(pid_){0,1}ukbb/%s/window_%s_step_%s/(\w+)-(\w+)_%s_permutations_gps_pvalue.tsv" % (wildcards.snp_set, wildcards.window, wildcards.step, wildcards.draws), x)
+                    if i == 0:
+                        outfile.write("blocks.A\tblocks.B\teffect_size\tncases.A\tncontrols.A\tncases.B\tncontrols.B\ttag_pair\t%s" % lines[0])
 
-                outfile.write(("\t".join([m[2], m[3], data_line])))
-        shell("Rscript workflow/scripts/add_trait_labels_to_gps_results.R -p {output} -l {input.lookup_file} -o {output}")
+                    head, tail = os.path.split(x)
 
-rule collate_gps_pvalue_data_for_new_prune:
+                    ncases_A, ncontrols_A, ncases_B, ncontrols_B = re.search("\d+_\d+_\d+_\d+", head).group().split('_')
+
+                    effect_size = re.search("[smlvhi]", tail).group()
+
+                    effect_blocks_A, effect_blocks_B = tail.split('_')[:2]
+
+                    tag_pair = tail.split('_')[4]
+
+                    outfile.write(f"{effect_blocks_A}\t{effect_blocks_B}\t{effect_size}\t{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{tag_pair}\t{lines[1]}")
+
+rule compute_hoeffdings_for_sim_pair:
     input:
-        pvalue_files = ["results/pid_ukbb/all_pruned_snps/window_50_step_5/%s_3000_permutations_gps_pvalue.tsv" % x for x in pid_ukbb_trait_pairs]
+        sum_stats_file = "results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv"
     output:
-        "results/combined/all_pruned_snps/window_50_step_5/gps_pvalues_3000_permutations_with_labels.tsv"
+        "results/hoeffdings/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{tag_pair}_hoeffdings.tsv"
+    params:
+        a_colname = lambda wildcards: "p.%d.A" % (tags.index(wildcards.tag_pair[0])+1),
+        b_colname = lambda wildcards: "p.%d.B" % (tags.index(wildcards.tag_pair[1])+1)
+    shell:
+        """
+        Rscript workflow/scripts/compute_hoeffdings.R -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -o {output} -nt 1
+        sed -i 's/p\.1\.A/{wildcards.effect_blocks_A}/' {output}
+        sed -i 's/p\.2\.B/{wildcards.effect_blocks_B}/' {output}
+        """
+
+rule run_hoeffdings_sim_data:
+    input:
+        ["results/hoeffdings/simgwas/window_1000kb_step_50/%d_%d_%d_%d/%s_%s_hoeffdings.tsv" % (i, i, i, i, j, k) for i in sample_sizes for k in tag_pairs for j in effect_block_pairs]
+    output:
+        "results/hoeffdings/simgwas/window_1000kb_step_50/combined_hoeffdings_results.tsv"
     run:
         with open(output[0], 'w') as outfile:
-            outfile.write(("\t".join(["trait_A", "trait_B", "gps", "n", "loc", "loc.sd", "scale", "scale.sd", "shape", "shape.sd", "pval"]))+"\n")
-            for i,x in enumerate(input.pvalue_files):
+            outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\ttag_pair\tn\tpval\n")
+            for x in input:
+                head, tail = os.path.split(x)
+                head_res = re.match("results/hoeffdings/simgwas/window_1000kb_step_50/(\d+)_(\d+)_(\d+)_(\d+)", head)
+                ncases_A = int(head_res.group(1))
+                ncontrols_A = int(head_res.group(2))
+                ncases_B = int(head_res.group(3))
+                ncontrols_B = int(head_res.group(4))
+
+                effect_blocks_wc_A, effect_blocks_wc_B, tag_pair = tail.split('_')[:3]
+
+                odds_ratios_A = []
+                odds_ratios_B = []
+
+                effect_blocks_A = []
+                effect_blocks_B = []
+
+                for y in effect_blocks_wc_A.split('+'):
+                    if effect_blocks_wc_A != 'null':
+                        block_match = re.match('^(\d+)-(.+)', y)
+
+                        chrom = int(block_match.group(1))
+
+                        range_match = re.match('([smlvhi])(\d+):(\d+)', block_match.group(2))
+
+                        odds_ratios_A.append(odds_ratio_dict[range_match.group(1)])
+
+                        effect_blocks_A += ["%d-%s%d" % (chrom, range_match.group(1), z) for z in range(int(range_match.group(2)), int(range_match.group(3))+1) if z in block_dict[chrom]]
+                    else:
+                        odds_ratios_A.append(odds_ratio_dict['n'])
+
+                for y in effect_blocks_wc_B.split('+'):
+                    if effect_blocks_wc_B != 'null':
+                        block_match = re.match('^(\d+)-(.+)', y)
+
+                        chrom = int(block_match.group(1))
+
+                        range_match = re.match('([smlvhi])(\d+):(\d+)', block_match.group(2))
+
+                        odds_ratios_B.append(odds_ratio_dict[range_match.group(1)])
+
+                        effect_blocks_B += ["%d-%s%d" % (chrom, range_match.group(1), z) for z in range(int(range_match.group(2)), int(range_match.group(3))+1) if z in block_dict[chrom]]
+                    else:
+                        odds_ratios_B.append(odds_ratio_dict['n'])
+
+                odds_ratios_A = ','.join(set([str(x) for x in odds_ratios_A]))
+                odds_ratios_B = ','.join(set([str(x) for x in odds_ratios_B]))
+
+                no_shared_blocks = len([z for z in effect_blocks_A if z in effect_blocks_B])
+
                 with open(x, 'r') as infile:
-                    data_line = infile.readlines()[1]
+                    line = infile.readline()
+                    line = infile.readline()
 
-                    m = re.match("results/(pid_){0,1}ukbb/%s/window_%s_step_%s/(\w+)-(\w+)_%s_permutations_gps_pvalue.tsv" % (wildcards.snp_set, wildcards.window, wildcards.step, wildcards.draws), x)
-
-                outfile.write(("\t".join([m[2], m[3], data_line])))
-        shell("Rscript workflow/scripts/add_trait_labels_to_gps_results.R -p {output} -l {input.lookup_file} -o {output}")
-"""
+                    n = line.split()[2]
+                    pval = line.split()[5]
+                    outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{odds_ratios_A}\t{odds_ratios_B}\t{effect_blocks_wc_A}\t{effect_blocks_wc_B}\t{no_shared_blocks}\t{tag_pair}\t{n}\t{pval}\n")

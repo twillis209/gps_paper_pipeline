@@ -66,3 +66,21 @@ rule collate_gps_pvalue_data_for_new_prune:
 
                 outfile.write(("\t".join([m[2], m[3], data_line])))
         shell("Rscript workflow/scripts/add_trait_labels_to_gps_results.R -p {output} -l {input.lookup_file} -o {output}")
+
+rule generate_ecdf_values_for_trait_pair:
+    input:
+        ancient("resources/{trait_A}.temp"),
+        ancient("resources/{trait_B}.temp"),
+        sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"),
+    output:
+        "results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_ecdf.tsv"
+    shell:
+        "workflow/scripts/gps_cpp/build/apps/fitAndEvaluateEcdfsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
+
+rule plot_denominator_heatmap:
+    input:
+        "results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_ecdf.tsv"
+    output:
+        "results/plots/{join}/gps_heatmaps/{trait_A}-{trait_B}.png"
+    shell:
+        "workflow/scripts/plot_gps_denom_heatmap.R -i {input} -o {output}"
