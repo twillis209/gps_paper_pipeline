@@ -1,5 +1,6 @@
 import re as re
 import pandas as pd
+import random
 
 block_daf = pd.read_csv("resources/ldetect/blocks.txt", sep = " ", names = ["chr_block", "chr", "start", "stop"])
 
@@ -14,7 +15,8 @@ block_dict[4].remove(21)
 block_dict[5] = range(108)
 block_dict[6].remove(6)
 block_dict[6].remove(25)
-block_dict[6].remove(38)
+block_dict[6].remove(38
+                     )
 block_dict[8].remove(22)
 block_dict[11].remove(31)
 block_dict[11].remove(73)
@@ -30,10 +32,10 @@ block_dict[20].remove(35)
 
 effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'intermediate'}
 
-def get_whole_genome_null_block_files(wildcards):
+def get_null_block_files(wildcards):
     null_block_file_format = "results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
 
-    effect_block_files = get_whole_genome_effect_block_files(wildcards)
+    effect_block_files = get_effect_block_files(wildcards)
 
     null_block_files_to_omit = [re.sub('small|medium|large|vlarge|huge|intermediate|random_\d+-\d+', 'null', x) for x in effect_block_files]
 
@@ -48,7 +50,7 @@ def get_whole_genome_null_block_files(wildcards):
 
     return null_block_files
 
-def get_whole_genome_effect_block_files(wildcards):
+def get_effect_block_files(wildcards):
     block_file_format = "results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
 
     effect_block_files = []
@@ -87,6 +89,55 @@ def get_whole_genome_effect_block_files(wildcards):
                     effect_block_files.append(block_file_format % (chrom, effect, int(singleton_match.group(2))))
 
     return effect_block_files
+
+# NB: Implements a messy anti-pattern of behaviour, shouldn't be called outside the context of the rule combine_randomised_effect_blocks
+def get_randomised_block_files(wildcards):
+    if os.path.exists(f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised_blocks_logs/{wildcards.ncases}_{wildcards.ncontrols}/{wildcards.effect_blocks}_sum_stats.log"):
+        with open(f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised_blocks_logs/{wildcards.ncases}_{wildcards.ncontrols}/{wildcards.effect_blocks}_sum_stats.log", 'r') as infile:
+            block_file_strings = infile.readlines()
+
+        return [x.strip() for x in block_file_strings]
+    else:
+        block_files = []
+
+        if wildcards.effect_blocks != 'null':
+            block_match = re.match('([smlvh])(\d+)', wildcards.effect_blocks)
+
+            if not block_match:
+                raise ValueError("Invalid block format: %s" % wildcards.effect_blocks)
+
+            effect = effect_size_dict[block_match.group(1)]
+            no_of_blocks = int(block_match.group(2))
+
+            effect_block_files = []
+
+            for i in range(no_of_blocks):
+                chrom = random.choice(list(block_dict.keys()))
+                block_no = random.choice(block_dict[chrom])
+                effect_block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/{effect}/{wildcards.ncases}_{wildcards.ncontrols}/block_{block_no}_sum_stats.tsv.gz")
+
+            for chrom in block_dict.keys():
+                for block_no in block_dict[chrom]:
+                    if f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/{effect}/{wildcards.ncases}_{wildcards.ncontrols}/block_{block_no}_sum_stats.tsv.gz" not in effect_block_files:
+                        block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases}_{wildcards.ncontrols}/block_{block_no}_sum_stats.tsv.gz")
+
+            block_files += effect_block_files
+        else:
+            for chrom in block_dict.items():
+                for block_no in block_dict[chrom]:
+                    block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases}_{wildcards.ncontrols}/block_{block_no}_sum_stats.tsv.gz")
+
+        with open(f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised_blocks_logs/{wildcards.ncases}_{wildcards.ncontrols}/{wildcards.effect_blocks}_sum_stats.log", 'w') as outfile:
+            for x in block_files:
+                outfile.write(f"{x}\n")
+
+        return block_files
+
+def read_randomised_blocks_log(wildcards):
+    with open(f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised_blocks_logs/{wildcards.ncases}_{wildcards.ncontrols}/{wildcards.effect_blocks}_sum_stats.log", 'r') as infile:
+        block_file_strings = infile.readlines()
+
+    return [x.strip() for x in block_file_strings]
 
 rule get_legend_files_with_euro_common_maf:
     input:
@@ -206,10 +257,10 @@ rule get_causal_variant_by_ld_block:
     shell:
         "Rscript workflow/scripts/simgwas/get_causal_variant_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 -o {output} -nt {threads}"
 
-rule combine_block_sum_stats_whole_genome:
+rule combine_block_sum_stats:
     input:
-        null_block_files = ancient(get_whole_genome_null_block_files),
-        effect_block_files = ancient(get_whole_genome_effect_block_files)
+        null_block_files = ancient(get_null_block_files),
+        effect_block_files = ancient(get_effect_block_files)
     output:
         temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_sum_stats.tsv.gz")
     run:
@@ -219,6 +270,23 @@ rule combine_block_sum_stats_whole_genome:
             else:
                 shell("zcat %s | tail -n +2  >> %s" % (x, output[0].replace('.gz', '')))
         shell("gzip %s" % output[0].replace('.gz', ''))
+
+rule combine_randomised_block_sum_stats:
+    input:
+        block_files = get_randomised_block_files
+    output:
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_sum_stats.tsv.gz"
+    run:
+#        for i,x in enumerate(input.block_files):
+#            if i == 0:
+#                shell("zcat %s > %s" % (x, output.replace('.gz', '')))
+#            else:
+#                shell("zcat %s | tail -n +2  >> %s" % (x, output.replace('.gz', '')))
+         for i,x in enumerate(input.block_files):
+             if i == 0:
+                 shell("zcat %s > %s" % (x, output[0]))
+             else:
+                 shell("zcat %s | tail -n +2 >> %s" % (x, output[0]))
 
 rule make_simgwas_plink_ranges:
     input:
