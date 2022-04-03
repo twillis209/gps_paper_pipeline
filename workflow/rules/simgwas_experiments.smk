@@ -2,11 +2,13 @@ import re
 import os
 from numpy import nan
 
-tag_pairs = list(chain(*[[''.join([x,y]) for y in tags[i+1:]] for i,x in enumerate(tags[:-1])]))
+#tag_pairs = list(chain(*[[''.join([x,y]) for y in tags[i+1:]] for i,x in enumerate(tags[:-1])]))
+
+tag_pairs = [tags[i]+tags[i+1] for i in range(0, 19, 2)]
 
 odds_ratio_dict = {"s": 1.05, "m": 1.2, 'l': 1.4, 'v': 2, 'r': 'random', 'n' : 1, 'i' : 1.1}
 
-medium_effect_block_pairs = ["1-m0:49_1-m50:99", "1-m0:49_1-m40:89", "1-m0:49_1-m30:79", "1-m0:49_1-m20:69", "1-m0:49_1-m10:59", "1-m0:49_1-m0:49", "1-m0:24_1-m25:49", "1-m0:24_1-m20:44", "1-m0:24_1-m15:39", "1-m0:24_1-m10:34", "1-m0:24_1-m5:29"]
+medium_effect_block_pairs = [f"m50_m50_m{x}" for x in [0, 10, 20, 30, 40, 50]]+[f"m25_m25_m{x}" for x in [0, 5, 10, 15, 20, 25]]
 
 small_effect_block_pairs = ["1-s0:119+2-s0:139+3-s0:119+4-s0:9_4-s0:9+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:19_4-s0:19+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:29_4-s0:29+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:49_4-s0:49+5-s0:108+6-s0:105+7-s0:91+8-s0:72"]
 
@@ -104,28 +106,7 @@ rule compile_medium_theo_rg_calculations:
             else:
                 shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
 
-missing_rg_files = ["results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72_bd.log",
-"results/ldsc/rg/whole_genome/250000_250000_250000_250000/1-s0:119+2-s0:139+3-s0:119+4-s0:19_4-s0:19+5-s0:108+6-s0:105+7-s0:91+8-s0:72_ad.log",
-"results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72_ad.log",
-"results/ldsc/rg/whole_genome/250000_250000_250000_250000/1-s0:119+2-s0:139+3-s0:119+4-s0:49_4-s0:49+5-s0:108+6-s0:105+7-s0:91+8-s0:72_cd.log",
-"results/ldsc/rg/whole_genome/250000_250000_250000_250000/1-s0:119+2-s0:139+3-s0:119+4-s0:49_4-s0:49+5-s0:108+6-s0:105+7-s0:91+8-s0:72_bd.log",
-"results/ldsc/rg/whole_genome/250000_250000_250000_250000/1-s0:119+2-s0:139+3-s0:119+4-s0:49_4-s0:49+5-s0:108+6-s0:105+7-s0:91+8-s0:72_ad.log",
-"results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119_5-s0:108+6-s0:105+7-s0:91+8-s0:72_cd.log",
-"results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119+4-s0:9_4-s0:9+5-s0:108+6-s0:105+7-s0:91+8-s0:72_cd.log",
-"results/ldsc/rg/whole_genome/10000_10000_10000_10000/1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72_ab.log",
-"results/ldsc/rg/whole_genome/250000_250000_250000_250000/1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72_ad.log",
-"results/ldsc/rg/whole_genome/10000_10000_10000_10000/1-s0:119+2-s0:139+3-s0:119+4-s0:49_4-s0:49+5-s0:108+6-s0:105+7-s0:91+8-s0:72_ab.log",
-"results/ldsc/rg/whole_genome/250000_250000_250000_250000/1-s0:119+2-s0:139+3-s0:119+4-s0:19_4-s0:19+5-s0:108+6-s0:105+7-s0:91+8-s0:72_cd.log",
-"results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72_cd.log",
-"results/ldsc/rg/whole_genome/250000_250000_250000_250000/1-s0:119+2-s0:139+3-s0:119+4-s0:19_4-s0:19+5-s0:108+6-s0:105+7-s0:91+8-s0:72_bd.log",
-"results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119_5-s0:108+6-s0:105+7-s0:91+8-s0:72_bd.log",
-"results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119+4-s0:9_4-s0:9+5-s0:108+6-s0:105+7-s0:91+8-s0:72_ad.log",
-"results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119_5-s0:108+6-s0:105+7-s0:91+8-s0:72_ad.log",
-"results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119+4-s0:9_4-s0:9+5-s0:108+6-s0:105+7-s0:91+8-s0:72_bd.log",
-"results/ldsc/rg/whole_genome/250000_250000_250000_250000/1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72_bd.log",
-"results/ldsc/rg/whole_genome/250000_250000_250000_250000/1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72_cd.log",
-"results/ldsc/rg/whole_genome/50000_50000_50000_50000/1-s0:119+2-s0:139+3-s0:119+4-s0:29_4-s0:29+5-s0:108+6-s0:105+7-s0:91+8-s0:72_ab.log"]
-
+                """
 rule compile_small_rg_estimates:
     input:
         [x for x in ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/%s_%s.log" % (i,i,i,i,e,s) for i in sample_sizes for s in tag_pairs for e in
@@ -217,6 +198,7 @@ rule compile_small_rg_estimates:
 
                     rg, rg_se, rg_z, rg_p = [float(z) if z != 'NA' else nan for z in line.split()[2:6]]
                     outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{odds_ratios_A}\t{odds_ratios_B}\t{effect_blocks_wc_A}\t{effect_blocks_wc_B}\t{no_shared_blocks}\t{tag_pair}\t{h2_A:.4}\t{h2_A_se:.4}\t{h2_B:.4}\t{h2_B_se:.4}\t{rg:.4}\t{rg_se:.4}\t{rg_p:.4}\n")
+"""
 
 rule compile_medium_rg_estimates:
     input:
