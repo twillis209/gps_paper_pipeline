@@ -92,12 +92,6 @@ def get_effect_block_files(wildcards):
 
 # NB: Implements a messy anti-pattern of behaviour, shouldn't be called outside the context of the rule combine_randomised_effect_blocks
 def get_randomised_block_files(wildcards):
-    if os.path.exists(f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised_blocks_logs/{wildcards.ncases}_{wildcards.ncontrols}/{wildcards.effect_blocks}_sum_stats.log"):
-        with open(f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised_blocks_logs/{wildcards.ncases}_{wildcards.ncontrols}/{wildcards.effect_blocks}_sum_stats.log", 'r') as infile:
-            block_file_strings = infile.readlines()
-
-        return [x.strip() for x in block_file_strings]
-    else:
         block_files = []
 
         if wildcards.effect_blocks != 'null':
@@ -134,17 +128,8 @@ def get_randomised_block_files(wildcards):
         return block_files
 
 # NB: Implements a messy anti-pattern of behaviour, shouldn't be called outside the context of the rule combine_randomised_block_sum_stats_for_pair
-# TODO how can we make this unique?
 def get_randomised_block_files_for_pair(wildcards):
-    combined_out_log = f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{wildcards.ncases_A}_{wildcards.ncontrols_A}_{wildcards.ncases_B}_{wildcards.ncontrols_B}/{wildcards.effect_blocks_A}_{wildcards.effect_blocks_B}_{wildcards.shared_effect_blocks}_sum_stats.log"
-    a_out_log = f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{wildcards.ncases_A}_{wildcards.ncontrols_A}_{wildcards.ncases_B}_{wildcards.ncontrols_B}/{wildcards.effect_blocks_A}_{wildcards.effect_blocks_B}_{wildcards.shared_effect_blocks}_sum_stats_a.log"
-    b_out_log = f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{wildcards.ncases_A}_{wildcards.ncontrols_A}_{wildcards.ncases_B}_{wildcards.ncontrols_B}/{wildcards.effect_blocks_A}_{wildcards.effect_blocks_B}_{wildcards.shared_effect_blocks}_sum_stats_b.log"
-
-    if os.path.exists(combined_out_log) and os.path.exists(a_out_log) and os.path.exists(b_out_log):
-        with open(combined_out_log) as infile:
-            block_files = [x.strip() for x in infile.readlines()]
-
-        return block_files
+    random.seed(wildcards.seed)
 
     shared_chrom_block_nos = []
 
@@ -237,28 +222,7 @@ def get_randomised_block_files_for_pair(wildcards):
                 if f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{block_no}_sum_stats.tsv.gz" not in block_files:
                     block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{block_no}_sum_stats.tsv.gz")
 
-    if not os.path.exists(os.path.dirname(combined_out_log)):
-        os.makedirs(os.path.dirname(combined_out_log))
-
-    if not os.path.exists(os.path.dirname(a_out_log)):
-        os.makedirs(os.path.dirname(a_out_log))
-
-    if not os.path.exists(os.path.dirname(b_out_log)):
-        os.makedirs(os.path.dirname(b_out_log))
-
-    with open(combined_out_log, 'w') as combined_outfile:
-        for x in block_files:
-            combined_outfile.write(f"{x}\n")
-
-    with open(a_out_log, 'w') as a_outfile:
-        for x in a_block_files:
-            a_outfile.write(f"{x}\n")
-
-    with open(b_out_log, 'w') as b_outfile:
-        for x in b_block_files:
-            b_outfile.write(f"{x}\n")
-
-    return block_files
+    return (block_files, a_block_files, b_block_files)
 
 def read_combined_blocks_log(wildcards):
     with open(f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{wildcards.ncases_A}_{wildcards.ncontrols_A}_{wildcards.ncases_B}_{wildcards.ncontrols_B}/{wildcards.effect_blocks_A}_{wildcards.effect_blocks_B}_{wildcards.shared_effect_blocks}_sum_stats.log") as infile:
@@ -415,163 +379,33 @@ rule combine_randomised_block_sum_stats:
         # Clean up file from the get_randomised_block_files input function
         shell(f"rm {params.log_file}")
 
-# A rule which randomises the block files in the first place, outputs the log files as temp files?
-
-rule determine_randomised_blocks_for_pair:
-    output:
-        combined_out_log = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_sum_stats.log"),
-        a_out_log = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_sum_stats_a.log",
-        b_out_log = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_sum_stats_b.log",
-    run:
-        shared_chrom_block_nos = []
-
-        if wildcards.shared_effect_blocks != 'null':
-            block_match = re.match('([smlvh])(\d+)', wildcards.shared_effect_blocks)
-
-            if not block_match:
-                raise ValueError("Invalid block format: %s" % wildcards.shared_effect_blocks)
-
-            effect = effect_size_dict[block_match.group(1)]
-            no_of_shared_blocks = int(block_match.group(2))
-
-            for i in range(no_of_shared_blocks):
-                chrom = random.choice(list(block_dict.keys()))
-                block_no = random.choice(block_dict[chrom])
-
-                shared_chrom_block_nos.append((chrom, block_no))
-
-        a_chrom_block_nos = []
-
-        if wildcards.effect_blocks_A != 'null':
-            block_match_a = re.match('([smlvh])(\d+)', wildcards.effect_blocks_A)
-
-            if not block_match_a:
-                raise ValueError("Invalid block format: %s" % wildcards.effect_blocks_A)
-
-            effect_a = effect_size_dict[block_match_a.group(1)]
-            no_of_blocks_a = int(block_match_a.group(2))
-
-            i = 0
-
-            while i < max(no_of_blocks_a-no_of_shared_blocks, 0):
-                chrom = random.choice(list(block_dict.keys()))
-                block_no = random.choice(block_dict[chrom])
-
-                if (chrom, block_no) not in shared_chrom_block_nos:
-                    a_chrom_block_nos.append((chrom, block_no))
-                    i += 1
-
-        b_chrom_block_nos = []
-
-        if wildcards.effect_blocks_B != 'null':
-            block_match_b = re.match('([smlvh])(\d+)', wildcards.effect_blocks_B)
-
-            if not block_match_b:
-                raise ValueError("Invalid block format: %s" % wildcards.effect_blocks_B)
-
-            effect_b = effect_size_dict[block_match_b.group(1)]
-            no_of_blocks_b = int(block_match_b.group(2))
-
-            i = 0
-
-            while i < max(no_of_blocks_b-no_of_shared_blocks, 0):
-                chrom = random.choice(list(block_dict.keys()))
-                block_no = random.choice(block_dict[chrom])
-
-                if (chrom, block_no) not in shared_chrom_block_nos:
-                    b_chrom_block_nos.append((chrom, block_no))
-                    i += 1
-
-        block_files = []
-
-        a_block_files = []
-        b_block_files = []
-
-        for x in shared_chrom_block_nos:
-            block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-            a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-            b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-            if wildcards.ncases_A != wildcards.ncases_B or wildcards.ncontrols_A != wildcards.ncontrols_B:
-                block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-
-        for x in a_chrom_block_nos:
-            block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_a}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-            a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_a}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-
-        for x in b_chrom_block_nos:
-            b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_b}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-            if f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_b}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz" not in block_files:
-                block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_b}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-
-        for chrom in block_dict.keys():
-            for block_no in block_dict[chrom]:
-                if (chrom, block_no) not in a_chrom_block_nos and (chrom, block_no) not in shared_chrom_block_nos:
-                    block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{block_no}_sum_stats.tsv.gz")
-                    a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{block_no}_sum_stats.tsv.gz")
-                if (chrom, block_no) not in b_chrom_block_nos and (chrom, block_no) not in shared_chrom_block_nos:
-                    b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{block_no}_sum_stats.tsv.gz")
-                    if f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{block_no}_sum_stats.tsv.gz" not in block_files:
-                        block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{block_no}_sum_stats.tsv.gz")
-
-        with open(output.combined_out_log, 'w') as combined_outfile:
-            for x in block_files:
-                combined_outfile.write(f"{x}\n")
-
-        with open(output.a_out_log, 'w') as a_outfile:
-            for x in a_block_files:
-                a_outfile.write(f"{x}\n")
-
-        with open(output.b_out_log, 'w') as b_outfile:
-            for x in b_block_files:
-                b_outfile.write(f"{x}\n")
-
 rule combine_randomised_block_sum_stats_for_pair:
     input:
-        combined_out_log = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_sum_stats.log",
-        a_out_log = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_sum_stats_a.log",
-        b_out_log = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_sum_stats_b.log",
-        block_files = read_combined_blocks_log
+        block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[0],
+        a_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[1],
+        b_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[2]
     output:
-        combined_sum_stats_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_a.tsv.gz",
-        combined_sum_stats_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_b.tsv.gz"
+        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_a.tsv.gz"),
+        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_b.tsv.gz")
     params:
-        combined_sum_stats_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_a.tsv",
-        combined_sum_stats_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_b.tsv"
+        combined_sum_stats_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_a.tsv",
+        combined_sum_stats_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_b.tsv"
     run:
-        pass
+        for i,x in enumerate(input.a_block_files):
+            if i == 0:
+                shell(f"zcat {x} > {params.combined_sum_stats_A}")
+            else:
+                shell(f"zcat {x} | tail -n +2 >> {params.combined_sum_stats_A}")
 
-    """
-        test_out = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/10000_10000_10000_10000/s1_s1_s1_sum_stats_a.log"
+        shell(f"gzip {params.combined_sum_stats_A}")
 
-        if os.path.exists(test_out):
-            print("output.a_out_log exists")
-        else:
-            print("output.a_out_log does not exist")
+        for i,x in enumerate(input.b_block_files):
+            if i == 0:
+                shell(f"zcat {x} > {params.combined_sum_stats_B}")
+            else:
+                shell(f"zcat {x} | tail -n +2 >> {params.combined_sum_stats_B}")
 
-        with open(output.a_out_log, 'r') as a_outfile:
-            a_block_files = [x.strip() for x in a_outfile.readlines()]
-
-            for i,x in a_block_files:
-                if i == 0:
-                    shell(f"zcat {x} > {params.combined_sum_stats_A}")
-                else:
-                    shell(f"zcat {x} | tail -n +2 >> {params.combined_sum_stats_A}")
-
-            shell(f"gzip {params.combined_sum_stats_A}")
-
-        with open(output.b_out_log, 'r') as b_outfile:
-            b_block_files = [x.strip() for x in b_outfile.readlines()]
-
-            for i,x in b_block_files:
-                if i == 0:
-                    shell(f"zcat {x} > {params.combined_sum_stats_B}")
-                else:
-                    shell(f"zcat {x} | tail -n +2 >> {params.combined_sum_stats_B}")
-
-                    shell(f"gzip {params.combined_sum_stats_B}")
-
-            # NB: Have to manage deletion of these files - unless we make them necessary for the next rule? If we want to run these jobs in parallel, need to add some kind of hash or something
-    """
+        shell(f"gzip {params.combined_sum_stats_B}")
 
 rule make_simgwas_plink_ranges:
     input:
@@ -597,14 +431,37 @@ rule merge_simulated_sum_stats:
 
 rule prune_merged_sim_sum_stats:
     input:
-      bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
-      pruned_range_file = "resources/plink_ranges/simgwas/pruned_ranges/window_{window}_step_{step}/all.prune.in",
-      sum_stats_file = "results/simgwas/simulated_sum_stats/merged/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv.gz"
+        bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
+        pruned_range_file = "resources/plink_ranges/simgwas/pruned_ranges/window_{window}_step_{step}/all.prune.in",
+        sum_stats_file = "results/simgwas/simulated_sum_stats/merged/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv.gz"
     output:
         temp("results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
     threads: 4
     shell:
-      "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
+
+rule merge_randomised_simulated_sum_stats:
+    input:
+        sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_a.tsv.gz",
+        sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_b.tsv.gz"
+    output:
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/merged_sum_stats.tsv.gz")
+    params:
+        no_reps = 20
+    threads: 4
+    shell:
+        "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps {params.no_reps} -o {output} -nt {threads}"
+
+rule prune_merged_randomised_simulated_sum_stats:
+    input:
+        bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
+        pruned_range_file = "resources/plink_ranges/simgwas/pruned_ranges/window_{window}_step_{step}/all.prune.in",
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/merged_sum_stats.tsv.gz"
+    output:
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/pruned_sum_stats.tsv.gz")
+    threads: 4
+    shell:
+        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
 
 rule get_causal_variants:
     input:
