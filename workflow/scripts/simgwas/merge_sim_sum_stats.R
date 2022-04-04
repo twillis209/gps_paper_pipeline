@@ -12,8 +12,13 @@ args <- parser$parse_args()
 
 setDTthreads(args$no_of_threads)
 
-sum_stats_A_dat <- fread(args$sum_stats_file_A, sep = '\t', header = T)
-sum_stats_B_dat <- fread(args$sum_stats_file_B, sep = '\t', header = T)
+col_names <- c("position", "block", "a0", "a1", "TYPE", "EUR", "zexp", paste0("zsim.", 1:args$no_reps), paste0("vbetasim.", 1:args$no_reps), paste0("betasim.", 1:args$no_reps), paste0("p.", 1:args$no_reps), "chosen_or", "ncases", "ncontrols", "rsID", "chr")
+
+sum_stats_A_dat <- fread(args$sum_stats_file_A, sep = '\t', header = F)
+sum_stats_B_dat <- fread(args$sum_stats_file_B, sep = '\t', header = F)
+
+names(sum_stats_A_dat) <- col_names
+names(sum_stats_B_dat) <- col_names
 
 setnames(sum_stats_A_dat, paste0('zsim.', 1:args$no_reps), sprintf('zsim.%s.A', 1:args$no_reps))
 setnames(sum_stats_B_dat, paste0('zsim.', 1:args$no_reps), sprintf('zsim.%s.B', 1:args$no_reps))

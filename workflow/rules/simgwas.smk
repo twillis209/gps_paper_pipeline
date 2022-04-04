@@ -15,8 +15,7 @@ block_dict[4].remove(21)
 block_dict[5] = range(108)
 block_dict[6].remove(6)
 block_dict[6].remove(25)
-block_dict[6].remove(38
-                     )
+block_dict[6].remove(38)
 block_dict[8].remove(22)
 block_dict[11].remove(31)
 block_dict[11].remove(73)
@@ -226,158 +225,6 @@ def get_randomised_block_files_for_pair(wildcards):
 
     return (block_files, a_block_files, b_block_files)
 
-def read_combined_blocks_log(wildcards):
-    with open(f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{wildcards.ncases_A}_{wildcards.ncontrols_A}_{wildcards.ncases_B}_{wildcards.ncontrols_B}/{wildcards.effect_blocks_A}_{wildcards.effect_blocks_B}_{wildcards.shared_effect_blocks}_sum_stats.log") as infile:
-        return [x.strip() for x in infile.readlines()]
-
-rule remove_header_from_block_sum_stats_file:
-    input:
-        "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.tsv.gz"
-    output:
-        "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.done"
-    params:
-        "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.tsv"
-    shell:
-        """
-        zcat {input} | tail -n +2 >{params};
-        gzip -f {params};
-        touch {output}
-        """
-"""
-rule fix_all_headers:
-    input:
-        [[f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/{effect_size}/{ncases}_{ncases}/block_{block}_sum_stats.done" for block in block_dict[chrom]] for chrom in block_dict.keys() for ncases in sample_sizes for effect_size in ['null']]
-
-rule fix_all_nonnull_headers:
-    input:
-        ["results/simgwas/simulated_sum_stats/chr1/block_sum_stats/small/10000_10000/block_23_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_79_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_76_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_110_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_64_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_21_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_55_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_88_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_113_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_9_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_8_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/small/10000_10000/block_5_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/medium/10000_10000/block_8_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/medium/10000_10000/block_33_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/medium/10000_10000/block_69_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/small/10000_10000/block_16_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/small/10000_10000/block_18_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_27_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_20_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_13_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_76_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_44_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_1_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_4_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_13_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_38_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_33_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_55_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_24_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_35_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_47_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_15_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_21_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_40_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr15/block_sum_stats/small/10000_10000/block_24_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr15/block_sum_stats/medium/10000_10000/block_47_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/small/10000_10000/block_35_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/small/10000_10000/block_23_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_47_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_5_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_10_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_29_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_21_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_24_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_38_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_28_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_33_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/small/10000_10000/block_36_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_32_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_35_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_19_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_18_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_13_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_23_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_34_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_21_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/small/10000_10000/block_2_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_19_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_17_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_5_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_23_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_30_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_26_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_33_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_24_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_138_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_42_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_110_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_135_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_126_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_109_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_86_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_95_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_20_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_29_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_7_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_0_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/small/10000_10000/block_17_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_13_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_2_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_9_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_11_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_21_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/small/10000_10000/block_114_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/small/10000_10000/block_6_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/small/10000_10000/block_81_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_10_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_6_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_64_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_90_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_111_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_9_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_30_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_25_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_46_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_88_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/small/10000_10000/block_23_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/medium/10000_10000/block_37_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/medium/10000_10000/block_67_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/medium/10000_10000/block_98_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/medium/10000_10000/block_99_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_60_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_22_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_27_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_8_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_13_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_10_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_57_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_11_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_64_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr7/block_sum_stats/medium/10000_10000/block_0_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr7/block_sum_stats/medium/10000_10000/block_58_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/small/10000_10000/block_74_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_3_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_19_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_6_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_81_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_52_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_7_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_71_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_44_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_6_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_50_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_33_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_34_sum_stats.done",
-        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_55_sum_stats.done"]
-        """
-
 rule get_legend_files_with_euro_common_maf:
     input:
         "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.legend.gz"
@@ -503,40 +350,8 @@ rule combine_block_sum_stats:
     output:
         temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_sum_stats.tsv.gz")
     run:
-        for i,x in enumerate(input):
-            if i == 0:
-                shell("zcat %s >> %s" % (x, output[0].replace('.gz', '')))
-            else:
-                shell("zcat %s | tail -n +2  >> %s" % (x, output[0].replace('.gz', '')))
-        shell("gzip %s" % output[0].replace('.gz', ''))
-
-rule combine_randomised_block_sum_stats_for_pair:
-    input:
-        block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[0],
-        a_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[1],
-        b_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[2]
-    output:
-        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_A.tsv.gz"),
-        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_B.tsv.gz")
-    params:
-        combined_sum_stats_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_A.tsv",
-        combined_sum_stats_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_B.tsv"
-    run:
-        for i,x in enumerate(input.a_block_files):
-            if i == 0:
-                shell(f"zcat {x} > {params.combined_sum_stats_A}")
-            else:
-                shell(f"zcat {x} | tail -n +2 >> {params.combined_sum_stats_A}")
-
-        shell(f"gzip {params.combined_sum_stats_A}")
-
-        for i,x in enumerate(input.b_block_files):
-            if i == 0:
-                shell(f"zcat {x} > {params.combined_sum_stats_B}")
-            else:
-                shell(f"zcat {x} | tail -n +2 >> {params.combined_sum_stats_B}")
-
-        shell(f"gzip {params.combined_sum_stats_B}")
+        for x in input:
+            shell(f"cat {x} >> {output}")
 
 rule make_simgwas_plink_ranges:
     input:
@@ -546,8 +361,9 @@ rule make_simgwas_plink_ranges:
         [("resources/plink_ranges/simgwas/chr%d.txt" % x for x in range(1,23))]
     threads: 4
     shell:
-        "Rscript workflow/scripts/simgwas/make_simgwas_plink_ranges.R --sum_stats_file {input.sum_stats_file} --input_bim_file {input.bim_file} --output_range_files {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/make_simgwas_plink_ranges.R --sum_stats_file {input.sum_stats_file} --input_bim_file {input.bim_file} --output_range_files {output} -nt {threads} --bp_pos 1 --chr_pos 92 --a0_pos 3 --a1_pos 4"
 
+# TODO fix and test column handling
 rule merge_simulated_sum_stats:
     input:
         sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A}_{ncontrols_A}/{effect_blocks_A}_sum_stats.tsv.gz",
@@ -560,6 +376,7 @@ rule merge_simulated_sum_stats:
     shell:
         "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps {params.no_reps} -o {output} -nt {threads}"
 
+        # TODO fix and test column handling
 rule prune_merged_sim_sum_stats:
     input:
         bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
@@ -567,32 +384,11 @@ rule prune_merged_sim_sum_stats:
         sum_stats_file = "results/simgwas/simulated_sum_stats/merged/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv.gz"
     output:
         temp("results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
-    threads: 4
-    shell:
-        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
-
-rule merge_randomised_simulated_sum_stats:
-    input:
-        sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_A.tsv.gz",
-        sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_B.tsv.gz"
-    output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/merged_sum_stats.tsv.gz")
     params:
         no_reps = 20
     threads: 4
     shell:
-        "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps {params.no_reps} -o {output} -nt {threads}"
-
-rule prune_merged_randomised_simulated_sum_stats:
-    input:
-        bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
-        pruned_range_file = "resources/plink_ranges/simgwas/pruned_ranges/window_{window}_step_{step}/all.prune.in",
-        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/merged_sum_stats.tsv.gz"
-    output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/pruned_sum_stats.tsv.gz")
-    threads: 4
-    shell:
-        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads} --no_reps {params.no_reps}"
 
 rule get_causal_variants:
     input:
