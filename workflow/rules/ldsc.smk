@@ -23,41 +23,6 @@ rule extract_ld_scores:
     shell:
         "tar -xjf {input} -C {params.output_root}"
 
-rule munge_randomised_sum_stats:
-    input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_sum_stats_{pair_label}.tsv.gz"
-    output:
-        temp("results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_{pair_label,[AB]}_{tag}.tsv.sumstats.gz")
-    params:
-        output_filename = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_sum_stats_{pair_label}_{tag}.tsv",
-         signed_sumstats_col = lambda wildcards: tag_signed_sumstats_dict[wildcards.tag],
-         pvalue_col = lambda wildcards: tag_pvalue_dict[wildcards.tag]
-    conda:
-        "envs/ldsc.yaml"
-    shell:
-        """
-        python $ldsc/munge_sumstats.py --sumstats {input} --N-con-col ncontrols --N-cas-col ncases --snp id --out {params.output_filename} --signed-sumstats {params.signed_sumstats_col} --p {params.pvalue_col} --a1 a0 --a2 a1 --frq EUR --a1-inc;
-        """
-
-rule estimate_rg_for_randomised_sum_stats:
-    input:
-        ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
-        ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
-        sum_stats_A = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_A_{tag_A}.tsv.sumstats.gz",
-        sum_stats_B = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_B_{tag_B}.tsv.sumstats.gz"
-    output:
-        "results/ldsc/rg/whole_genome/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_{tag_A}{tag_B}.log"
-    params:
-        log_file_par = "results/ldsc/rg/whole_genome/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_{tag_A}{tag_B}",
-        # NB: Trailing '/' is needed in ld_score_root
-        ld_score_root = "resources/ldsc/eur_w_ld_chr/",
-        population_prevalence = 0.02,
-        sample_prevalence = 0.5
-    conda:
-        "envs/ldsc.yaml"
-    shell:
-        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} --intercept-h2 1,1"
-
 # TODO Fix like I fixed theoretical rg
 rule calculate_theoretical_h2:
     input:

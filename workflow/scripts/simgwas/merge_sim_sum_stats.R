@@ -29,8 +29,8 @@ setnames(sum_stats_B_dat, paste0('betasim.', 1:args$no_reps), sprintf('betasim.%
 setnames(sum_stats_A_dat, paste0('p.', 1:args$no_reps), sprintf('p.%s.A', 1:args$no_reps))
 setnames(sum_stats_B_dat, paste0('p.', 1:args$no_reps), sprintf('p.%s.B', 1:args$no_reps))
 
-B_cols <- c('rsID', sprintf('zsim.%s.B', 1:args$no_reps), sprintf('vbetasim.%s.B', 1:args$no_reps), sprintf('betasim.%s.B', 1:args$no_reps), sprintf('p.%s.B', 1:args$no_reps), 'chr', 'position', 'a0', 'a1')
+B_cols <- c('rsID', sprintf('zsim.%s.B', 1:args$no_reps), sprintf('vbetasim.%s.B', 1:args$no_reps), sprintf('betasim.%s.B', 1:args$no_reps), sprintf('p.%s.B', 1:args$no_reps), 'chr', 'position', 'a0', 'a1', 'chosen_or', 'ncases', 'ncontrols')
 
-merged_dat <- merge(sum_stats_A_dat, sum_stats_B_dat[, ..B_cols], by = c('chr', 'position', 'a0', 'a1'))
+merged_dat <- merge(sum_stats_A_dat, sum_stats_B_dat[, ..B_cols], by = c('chr', 'position', 'a0', 'a1'), suffixes = c(".A", ".B"))
 
 fwrite(merged_dat, file = args$output_path, sep = '\t')

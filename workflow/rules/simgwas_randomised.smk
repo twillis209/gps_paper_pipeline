@@ -130,16 +130,14 @@ def get_randomised_block_files_for_pair(wildcards):
 
     return (block_files, a_block_files, b_block_files)
 
-# TODO fix seed issue; seed per file?
 rule combine_randomised_block_sum_stats_for_pair:
     input:
         block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[0],
         a_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[1],
         b_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[2]
     output:
-        log_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/combine_rule.done"
-        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_A.tsv.gz"),
-        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_B.tsv.gz")
+        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A.tsv.gz"),
+        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B.tsv.gz")
     run:
         for x in input.a_block_files:
             shell(f"cat {x} >> {output.combined_sum_stats_A}")
@@ -147,27 +145,33 @@ rule combine_randomised_block_sum_stats_for_pair:
         for x in input.b_block_files:
             shell(f"cat {x} >> {output.combined_sum_stats_B}")
 
-# TODO fix and test column handling
+# TODO check that no. in output is same as number in input
+# TODO just cbind? Everything should be in the same order.
+# TODO Uh-oh: 8,998,661 in m1_seed_111_sum_stats_A.tsv.gz, 9,000,062 in seed_111_merged_sum_stats.tsv.gz
+# TODO merge with merge took 17+ minutes
+# TODO how long if we order on something? blocks won't be in the same order each time
 rule merge_randomised_simulated_sum_stats:
     input:
-        sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_sum_stats_A.tsv.gz",
-        sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_sum_stats_B.tsv.gz"
+        sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A.tsv.gz",
+        sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B.tsv.gz"
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/merged_sum_stats.tsv.gz")
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats.tsv.gz")
     params:
         no_reps = 20
-    threads: 4
+    threads: 12
     shell:
         "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps {params.no_reps} -o {output} -nt {threads}"
 
-        # TODO fix and test column handling
+# TODO fix column order based on code in merge_sim_sum_stats.R and test column handling
 rule prune_merged_randomised_simulated_sum_stats:
     input:
         bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
         pruned_range_file = "resources/plink_ranges/simgwas/pruned_ranges/window_{window}_step_{step}/all.prune.in",
-        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/merged_sum_stats.tsv.gz"
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats.tsv.gz"
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/seed_{seed}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/pruned_sum_stats.tsv.gz")
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats.tsv.gz")
+    params:
+        no_reps = 20
     threads: 4
     shell:
-        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} --no_reps {params.no_reps} -o {output} -nt {threads}"
