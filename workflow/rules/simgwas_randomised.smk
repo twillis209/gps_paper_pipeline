@@ -136,25 +136,33 @@ rule combine_randomised_block_sum_stats_for_pair:
         a_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[1],
         b_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[2]
     output:
-        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A_no_header.tsv.gz"),
-        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B_no_header.tsv.gz")
+        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A.tsv.gz"),
+        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B.tsv.gz"),
+        header_file = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_header.tsv.gz")
+    params:
+        no_reps = 20,
+        uncomp_header_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_header.tsv"
     run:
+        zsim_string = "\t".join([f"zsim.{x}" for x in range(1,21)])
+        p_string = "\t".join([f"p.{x}" for x in range(1,21)])
+        beta_string = "\t".join([f"betasim.{x}" for x in range(1,21)])
+        vbeta_string = "\t".join([f"vbetasim.{x}" for x in range(1,21)])
+        header_string = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{zsim_string}\t{vbeta_string}\t{beta_string}\t{p_string}\tchosen_or\tncases\tncontrols\tchr"
+
+        with open(params.uncomp_header_file, 'w') as outfile:
+            outfile.write(f"{header_string}\n")
+
+        shell(f"gzip {params.uncomp_header_file}")
+
+        shell(f"cat {output.header_file} > {output.combined_sum_stats_A}")
+
         for x in input.a_block_files:
             shell(f"cat {x} >> {output.combined_sum_stats_A}")
 
+        shell(f"cat {output.header_file} > {output.combined_sum_stats_B}")
+
         for x in input.b_block_files:
             shell(f"cat {x} >> {output.combined_sum_stats_B}")
-
-rule add_header_to_combined_randomised_sum_stats:
-    input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_seed_{seed}_sum_stats_{pair_label}_no_header.tsv.gz",
-    output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_seed_{seed}_sum_stats_{pair_label,[AB]}.tsv.gz")
-    params:
-        no_reps = 20
-    threads: 8
-    shell:
-        "Rscript workflow/scripts/simgwas/add_header_to_combined_randomised_sum_stats.R --sum_stats_file {input} --no_reps {params.no_reps} -o {output} -nt {threads}"
 
 # TODO Uh-oh: 8,998,661 in m1_seed_111_sum_stats_A.tsv.gz, 9,000,062 in seed_111_merged_sum_stats.tsv.gz
 rule merge_randomised_simulated_sum_stats:
