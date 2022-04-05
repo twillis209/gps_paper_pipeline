@@ -229,7 +229,7 @@ rule get_legend_files_with_euro_common_maf:
     input:
         "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.legend.gz"
     output:
-        temp("resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend.gz")
+        "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend.gz"
     params:
         "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend"
     shell:
@@ -328,6 +328,27 @@ rule simulate_sum_stats_by_ld_block:
     shell:
         "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 20 -o {output} -nt {threads}"
 
+# TODO remove me
+rule fix_block_sum_stats_id:
+    input:
+        legend_file = "resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz",
+        block_file = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.tsv.gz"
+    output:
+        log_file = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.id.done"
+    params:
+        no_reps = 20
+    threads: 2
+    shell:
+        """
+        Rscript workflow/scripts/simgwas/add_rsIDs.R --leg_file {input.legend_file} --block_file {input.block_file} --no_reps {params.no_reps} -o {input.block_file} -nt {threads};
+        touch {output.log_file}
+        """
+
+# TODO remove me
+rule fix_all_block_sum_stats:
+    input:
+        [[f"results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/{ncases}_{ncases}/block_{block}_sum_stats.id.done" for block in block_dict[ch]] for ch in range(1,23) for ncases in sample_sizes]
+
 rule get_causal_variant_by_ld_block:
     input:
         bim_file = ancient("resources/1000g/chr{ch}.bim"),
@@ -348,7 +369,7 @@ rule combine_block_sum_stats:
         null_block_files = ancient(get_null_block_files),
         effect_block_files = ancient(get_effect_block_files)
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_sum_stats.tsv.gz")
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases,\d+}_{ncontrols,\d+}/{effect_blocks}_sum_stats.tsv.gz")
     run:
         for x in input:
             shell(f"cat {x} >> {output}")
@@ -363,7 +384,6 @@ rule make_simgwas_plink_ranges:
     shell:
         "Rscript workflow/scripts/simgwas/make_simgwas_plink_ranges.R --sum_stats_file {input.sum_stats_file} --input_bim_file {input.bim_file} --output_range_files {output} -nt {threads} --bp_pos 1 --chr_pos 92 --a0_pos 3 --a1_pos 4"
 
-# TODO fix and test column handling
 rule merge_simulated_sum_stats:
     input:
         sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A}_{ncontrols_A}/{effect_blocks_A}_sum_stats.tsv.gz",

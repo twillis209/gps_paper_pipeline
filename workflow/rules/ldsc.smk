@@ -61,7 +61,7 @@ rule munge_whole_genome_sum_stats:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_sum_stats.tsv.gz"
     output:
         # NB: Awkward output filename due to the way the LDSC script works
-        temp("results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_{tag,[abcde]}.tsv.sumstats.gz")
+        temp("results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases,\d+}_{ncontrols,\d+}/{effect_blocks}_{tag,\w}.tsv.sumstats.gz")
     params:
          output_filename = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_{tag}.tsv",
          signed_sumstats_col = lambda wildcards: tag_signed_sumstats_dict[wildcards.tag],

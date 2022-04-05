@@ -26,16 +26,13 @@ parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates', d
 parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-#test_args <- c('--hap_file', 'resources/simgwas/1000g/blockwise/chr1/block_0.hap.gz', '--leg_file', 'resources/simgwas/1000g/blockwise/chr1/block_0.legend.gz', '--bim_file', 'resources/1000g/chr1.bim', '--ld_mat_file', 'results/simgwas/chr1_ld_matrices/chr1_block_0_ld_matrix.RData', '--chr_no', 1, '--causal_variant_ind', 2000, '--effect_size', 'null', '--output_file', 'chr1_block_0_sum_stats.tsv.gz', '--no_of_threads', 1, '--no_reps', 2, '--no_controls', 40000, '--no_cases', 40000)
-#args <- parser$parse_args(test_args)
-
 args <- parser$parse_args()
 
 setDTthreads(args$no_of_threads)
 
 leg_dat <- fread(file = args$leg_file, sep = ' ', header = T)
 hap_dat <- fread(file = args$hap_file, sep = ' ', header = F)
-bim_dat <- fread(file = args$bim_file, sep = '\t', header = F, col.names = c('chr', 'rsID', 'Cm', 'bp', 'A1', 'A2'))
+bim_dat <- fread(file = args$bim_file, sep = '\t', header = F, col.names = c('chr', 'bim.id', 'Cm', 'bp', 'A1', 'A2'))
 load(file = args$ld_mat_file)
 
 if(is.null(args$causal_variant_ind)) {
@@ -147,20 +144,26 @@ setnames(result_dat, 'or', 'chosen_or')
 
 result_dat[, `:=` (ncases = args$no_cases, ncontrols = args$no_controls)]
 
-result_dat <- merge(result_dat, bim_dat[, .(rsID, bp, A1, A2)], by.x = 'position', by.y = 'bp', all.x = T)
+result_dat <- merge(result_dat, bim_dat[, .(bim.id, bp, A1, A2)], by.x = 'position', by.y = 'bp', all.x = T)
 
 result_dat <- result_dat[(a0 == A2 & a1 == A1) | (a0 == A1 & a1 == A2)]
 
-result_dat[, c("A1", "A2", "id") := NULL]
+result_dat[, c("A1", "A2", "bim.id") := NULL]
 
 result_dat[, chr := args$chr_no]
 
-fwrite(result_dat, file = args$output_file, sep = '\t', header = F)
+result_dat[, id := tstrsplit(id, split = ':')[[1]]]
 
-#position        block   a0      a1      TYPE    EUR     zexp    zsim.1  zsim.2  zsim.3  zsim.4  zsim.5  zsim.6  zsim.7  zsim.8  zsim.9  zsim.10 zsim.11 zsim.12 zsim.13 zsim.
+cols <- c("position", "a0", "a1", "id", "block", "TYPE", "EUR", "zexp", paste0("zsim.", 1:args$no_reps), paste0("vbetasim.", 1:args$no_reps), paste0("betasim.", 1:args$no_reps), paste0("p.", 1:args$no_reps), "chosen_or", "ncases", "ncontrols", "chr")
+cols <- c("position", "a0", "a1", "id", "block", "TYPE", "EUR", "zexp", paste0("zsim.", 1:20), paste0("vbetasim.", 1:20), paste0("betasim.", 1:20), paste0("p.", 1:20), "chosen_or", "ncases", "ncontrols", "chr")
+
+result_dat <- result_dat[, ..cols]
+
+fwrite(result_dat, file = args$output_file, sep = '\t', col.names = F)
+
+#position a0      a1 id block     TYPE    EUR     zexp    zsim.1  zsim.2  zsim.3  zsim.4  zsim.5  zsim.6  zsim.7  zsim.8  zsim.9  zsim.10 zsim.11 zsim.12 zsim.13 zsim.
 #14      zsim.15 zsim.16 zsim.17 zsim.18 zsim.19 zsim.20 vbetasim.1      vbetasim.2      vbetasim.3      vbetasim.4      vbetasim.5      vbetasim.6      vbetasim.7      vbeta
 #sim.8   vbetasim.9      vbetasim.10     vbetasim.11     vbetasim.12     vbetasim.13     vbetasim.14     vbetasim.15     vbetasim.16     vbetasim.17     vbetasim.18     vbeta
 #sim.19  vbetasim.20     betasim.1       betasim.2       betasim.3       betasim.4       betasim.5       betasim.6       betasim.7       betasim.8       betasim.9       betas
 #im.10   betasim.11      betasim.12      betasim.13      betasim.14      betasim.15      betasim.16      betasim.17      betasim.18      betasim.19      betasim.20      p.1 p
-#.2      p.3     p.4     p.5     p.6     p.7     p.8     p.9     p.10    p.11    p.12    p.13    p.14    p.15    p.16    p.17    p.18    p.19    p.20    chosen_or       ncase
-#s       ncontrols       rsID    chr      
+#.2      p.3     p.4     p.5     p.6     p.7     p.8     p.9     p.10    p.11    p.12    p.13    p.14    p.15    p.16    p.17    p.18    p.19    p.20    chosen_or       ncases       ncontrols       chr

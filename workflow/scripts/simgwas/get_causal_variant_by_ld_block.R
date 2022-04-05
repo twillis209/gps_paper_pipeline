@@ -20,7 +20,7 @@ setDTthreads(args$no_of_threads)
 
 leg_dat <- fread(file = args$leg_file, sep = ' ', header = T)
 hap_dat <- fread(file = args$hap_file, sep = ' ', header = F)
-bim_dat <- fread(file = args$bim_file, sep = '\t', header = F, col.names = c('chr', 'rsID', 'Cm', 'bp', 'A1', 'A2'))
+bim_dat <- fread(file = args$bim_file, sep = '\t', header = F, col.names = c('chr', 'bim.id', 'Cm', 'bp', 'A1', 'A2'))
 load(file = args$ld_mat_file)
 
 if(is.null(args$causal_variant_ind)) {
@@ -60,12 +60,14 @@ cv_snp <- chosen_snps[cv_ind]
 
 result_dat <- data.table(leg_dat[rs == cv_snp, .(id, position, block, a0, a1, TYPE, EUR)])
 
-result_dat <- merge(result_dat, bim_dat[, .(rsID, bp, A1, A2)], by.x = 'position', by.y = 'bp', all.x = T)
+result_dat <- merge(result_dat, bim_dat[, .(bim.id, bp, A1, A2)], by.x = 'position', by.y = 'bp', all.x = T)
 
 result_dat <- result_dat[(a0 == A2 & a1 == A1) | (a0 == A1 & a1 == A2)]
 
-result_dat[, c("A1", "A2", "id") := NULL]
+result_dat[, c("A1", "A2", "bim.id") := NULL]
 
 result_dat[, chr := args$chr_no]
+
+result_dat[, rsID := tstrsplit(id, split = ':')[[1]]]
 
 fwrite(result_dat, file = args$output_file, sep = '\t')
