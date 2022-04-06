@@ -92,7 +92,7 @@ def get_randomised_block_files_for_pair(wildcards):
             chrom = random.choice(list(block_dict.keys()))
             block_no = random.choice(block_dict[chrom])
 
-            if (chrom, block_no) not in shared_chrom_block_nos:
+            if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos:
                 b_chrom_block_nos.append((chrom, block_no))
                 i += 1
 
@@ -119,7 +119,6 @@ def get_randomised_block_files_for_pair(wildcards):
 
     for chrom in block_dict.keys():
         for block_no in block_dict[chrom]:
-            # if not in a block files or not in b block files, handle case where ncases/ncontrols are not the same
             if (chrom, block_no) not in a_chrom_block_nos and (chrom, block_no) not in shared_chrom_block_nos:
                 block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{block_no}_sum_stats.tsv.gz")
                 a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{block_no}_sum_stats.tsv.gz")
@@ -139,6 +138,8 @@ rule combine_randomised_block_sum_stats_for_pair:
         combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A.tsv.gz"),
         combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B.tsv.gz"),
         header_file = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_header.tsv.gz")
+    log:
+        log = "logs/combine_randomised_block_sum_stats_for_pair/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}_{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}.log"
     params:
         no_reps = 20,
         uncomp_header_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_header.tsv"
@@ -147,7 +148,7 @@ rule combine_randomised_block_sum_stats_for_pair:
         p_string = "\t".join([f"p.{x}" for x in range(1,21)])
         beta_string = "\t".join([f"betasim.{x}" for x in range(1,21)])
         vbeta_string = "\t".join([f"vbetasim.{x}" for x in range(1,21)])
-        header_string = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{zsim_string}\t{vbeta_string}\t{beta_string}\t{p_string}\tchosen_or\tncases\tncontrols\tchr"
+        header_string = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{zsim_string}\t{vbeta_string}\t{beta_string}\t{p_string}\tchosen_or\tncases\tncontrols\tchr\tblock_effect_size"
 
         with open(params.uncomp_header_file, 'w') as outfile:
             outfile.write(f"{header_string}\n")
@@ -156,13 +157,19 @@ rule combine_randomised_block_sum_stats_for_pair:
 
         shell(f"cat {output.header_file} > {output.combined_sum_stats_A}")
 
-        for x in input.a_block_files:
-            shell(f"cat {x} >> {output.combined_sum_stats_A}")
+        with open(log.log, 'w') as logfile:
 
-        shell(f"cat {output.header_file} > {output.combined_sum_stats_B}")
+            for x in input.a_block_files:
+                shell(f"cat {x} >> {output.combined_sum_stats_A}")
+                logfile.write(f"{x}\n")
 
-        for x in input.b_block_files:
-            shell(f"cat {x} >> {output.combined_sum_stats_B}")
+            logfile.write("\n")
+
+            shell(f"cat {output.header_file} > {output.combined_sum_stats_B}")
+
+            for x in input.b_block_files:
+                shell(f"cat {x} >> {output.combined_sum_stats_B}")
+                logfile.write(f"{x}\n")
 
 # TODO Uh-oh: 8,998,661 in m1_seed_111_sum_stats_A.tsv.gz, 9,000,062 in seed_111_merged_sum_stats.tsv.gz
 rule merge_randomised_simulated_sum_stats:
@@ -170,8 +177,7 @@ rule merge_randomised_simulated_sum_stats:
         sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A.tsv.gz",
         sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B.tsv.gz"
     output:
-        # TODO make temp again
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats.tsv.gz"
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats.tsv.gz")
     params:
         no_reps = 20
     threads: 12

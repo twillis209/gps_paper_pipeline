@@ -13,11 +13,7 @@ args <- parser$parse_args()
 
 setDTthreads(args$no_of_threads)
 
-col_names <- c("position", "id", "block", "a0", "a1", "TYPE", "EUR", "zexp", paste0("zsim.", 1:args$no_reps), paste0("vbetasim.", 1:args$no_reps), paste0("betasim.", 1:args$no_reps), paste0("p.", 1:args$no_reps), "chosen_or", "ncases", "ncontrols", "rsID", "chr")
-
-sum_stats_dat <- fread(args$sum_stats_file, sep = '\t', header = F)
-
-names(sum_stats_dat) <- col_names
+sum_stats_dat <- fread(args$sum_stats_file, sep = '\t', header = T)
 
 pruned_rsid_dat <- fread(args$prune_file, sep = ' ', header = F, col.names = 'ID')
 

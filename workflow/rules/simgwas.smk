@@ -2,32 +2,12 @@ import re as re
 import pandas as pd
 import random
 
-block_daf = pd.read_csv("resources/ldetect/blocks.txt", sep = " ", names = ["chr_block", "chr", "start", "stop"])
+block_daf = pd.read_csv("resources/ldetect/available_blocks.tsv", sep = "\t")
 
 block_dict = {}
 
 for i in range(1,23):
-    block_dict[i] = list(block_daf[block_daf["chr"] == i]["chr_block"].apply(lambda x: int(x.split('_block')[1])))
-
-# Following blocks can't be used, either because their LD matrix could not be computed or I could not obtain the 2000th SNP as a causal variant
-block_dict[1].remove(100)
-block_dict[4].remove(21)
-block_dict[5] = range(108)
-block_dict[6].remove(6)
-block_dict[6].remove(25)
-block_dict[6].remove(38)
-block_dict[8].remove(22)
-block_dict[11].remove(31)
-block_dict[11].remove(73)
-block_dict[12].remove(53)
-block_dict[16].remove(0)
-block_dict[17].remove(42)
-block_dict[18].remove(27)
-block_dict[18].remove(45)
-block_dict[18].remove(46)
-block_dict[19].remove(13)
-block_dict[20].remove(26)
-block_dict[20].remove(35)
+    block_dict[i] = list(block_daf[block_daf["chr"] == i][block_daf["available"] == True]["block"])
 
 effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'intermediate'}
 
@@ -329,25 +309,195 @@ rule simulate_sum_stats_by_ld_block:
         "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 20 -o {output} -nt {threads}"
 
 # TODO remove me
-rule fix_block_sum_stats_id:
+rule add_effect_size:
     input:
-        legend_file = "resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz",
         block_file = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.tsv.gz"
     output:
-        log_file = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.id.done"
-    params:
-        no_reps = 20
-    threads: 2
+        log_file = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases}_{ncontrols}/block_{block}_sum_stats.effect_size.done"
+    threads: 1
     shell:
         """
-        Rscript workflow/scripts/simgwas/add_rsIDs.R --leg_file {input.legend_file} --block_file {input.block_file} --no_reps {params.no_reps} -o {input.block_file} -nt {threads};
+        Rscript workflow/scripts/simgwas/add_effect_size.R --block_file {input.block_file} --effect_size {wildcards.effect_size} -o {input.block_file} -nt {threads};
         touch {output.log_file}
         """
 
 # TODO remove me
-rule fix_all_block_sum_stats:
+rule fix_all_blocks_effect_size:
     input:
-        [[f"results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/{ncases}_{ncases}/block_{block}_sum_stats.id.done" for block in block_dict[ch]] for ch in range(1,23) for ncases in sample_sizes]
+        [[f"results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/{ncases}_{ncases}/block_{block}_sum_stats.effect_size.done" for block in block_dict[ch]] for ch in range(1,23) for ncases in sample_sizes]
+
+rule fix_all_blocks_effect_size_nonnull:
+    input:
+        ["results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_70_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_51_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_12_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_65_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_107_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_0_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_24_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_95_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_115_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_89_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr1/block_sum_stats/medium/10000_10000/block_113_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_18_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_92_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_33_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_69_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr2/block_sum_stats/medium/10000_10000/block_89_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_2_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_60_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_45_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_118_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_20_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_76_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_98_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_6_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr3/block_sum_stats/medium/10000_10000/block_0_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_2_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_72_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_16_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_84_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_76_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_103_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr4/block_sum_stats/medium/10000_10000/block_50_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/medium/10000_10000/block_32_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/medium/10000_10000/block_37_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/medium/10000_10000/block_20_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/medium/10000_10000/block_15_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr5/block_sum_stats/medium/10000_10000/block_41_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_2_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_3_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_96_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_14_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_70_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_20_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_9_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_104_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_83_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_97_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_86_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_71_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_90_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_49_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr6/block_sum_stats/medium/10000_10000/block_102_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr7/block_sum_stats/medium/10000_10000/block_19_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr7/block_sum_stats/medium/10000_10000/block_14_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr7/block_sum_stats/medium/10000_10000/block_38_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr7/block_sum_stats/medium/10000_10000/block_31_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr7/block_sum_stats/medium/10000_10000/block_7_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr7/block_sum_stats/medium/10000_10000/block_71_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr7/block_sum_stats/medium/10000_10000/block_58_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_75_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_37_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_35_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_16_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_17_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_13_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_54_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_36_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_88_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr8/block_sum_stats/medium/10000_10000/block_89_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_13_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_15_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_12_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_43_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr9/block_sum_stats/medium/10000_10000/block_24_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_1_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_3_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_48_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_38_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_31_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_10_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_57_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_65_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_68_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr10/block_sum_stats/medium/10000_10000/block_33_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/medium/10000_10000/block_20_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/medium/10000_10000/block_8_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/medium/10000_10000/block_57_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/medium/10000_10000/block_66_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/medium/10000_10000/block_7_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr11/block_sum_stats/medium/10000_10000/block_36_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_14_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_17_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_73_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_23_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_57_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_44_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_69_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr12/block_sum_stats/medium/10000_10000/block_58_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_16_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_27_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_18_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_13_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_23_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_15_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_25_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr13/block_sum_stats/medium/10000_10000/block_40_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_14_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_48_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_23_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_12_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_10_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr14/block_sum_stats/medium/10000_10000/block_44_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr15/block_sum_stats/medium/10000_10000/block_37_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr15/block_sum_stats/medium/10000_10000/block_45_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr15/block_sum_stats/medium/10000_10000/block_47_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr15/block_sum_stats/medium/10000_10000/block_18_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr15/block_sum_stats/medium/10000_10000/block_10_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr15/block_sum_stats/medium/10000_10000/block_24_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_1_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_39_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_35_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_15_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_44_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr16/block_sum_stats/medium/10000_10000/block_21_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_32_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_39_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_14_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_22_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_9_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_11_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr17/block_sum_stats/medium/10000_10000/block_24_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_16_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_14_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_8_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_6_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_33_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr18/block_sum_stats/medium/10000_10000/block_34_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_15_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_12_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_28_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr19/block_sum_stats/medium/10000_10000/block_24_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_2_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_16_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_14_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_4_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_17_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_8_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_5_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_31_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_28_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr20/block_sum_stats/medium/10000_10000/block_24_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_19_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_16_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_14_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_22_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_9_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_18_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_13_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_10_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_7_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr21/block_sum_stats/medium/10000_10000/block_0_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_2_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_3_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_16_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_14_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_18_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_12_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_10_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_6_sum_stats.effect_size.done",
+        "results/simgwas/simulated_sum_stats/chr22/block_sum_stats/medium/10000_10000/block_21_sum_stats.effect_size.done"]
 
 rule get_causal_variant_by_ld_block:
     input:

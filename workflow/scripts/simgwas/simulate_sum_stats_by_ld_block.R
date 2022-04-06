@@ -155,9 +155,10 @@ result_dat[, chr := args$chr_no]
 result_dat[, id := tstrsplit(id, split = ':')[[1]]]
 
 cols <- c("position", "a0", "a1", "id", "block", "TYPE", "EUR", "zexp", paste0("zsim.", 1:args$no_reps), paste0("vbetasim.", 1:args$no_reps), paste0("betasim.", 1:args$no_reps), paste0("p.", 1:args$no_reps), "chosen_or", "ncases", "ncontrols", "chr")
-cols <- c("position", "a0", "a1", "id", "block", "TYPE", "EUR", "zexp", paste0("zsim.", 1:20), paste0("vbetasim.", 1:20), paste0("betasim.", 1:20), paste0("p.", 1:20), "chosen_or", "ncases", "ncontrols", "chr")
 
 result_dat <- result_dat[, ..cols]
+
+result_dat[, block_effect_size := args$effect_size]
 
 fwrite(result_dat, file = args$output_file, sep = '\t', col.names = F)
 
