@@ -28,4 +28,6 @@ B_cols <- c('id', sprintf('zsim.%s.B', 1:args$no_reps), sprintf('vbetasim.%s.B',
 
 merged_dat <- merge(sum_stats_A_dat, sum_stats_B_dat[, ..B_cols], by = c('chr', 'position', 'a0', 'a1'), suffixes = c(".A", ".B"))
 
+if(length(unique(merged_dat$chr)) != 22) stop("Incorrect number of chromosomes present in merged summary statistics")
+
 fwrite(merged_dat, file = args$output_path, sep = '\t')

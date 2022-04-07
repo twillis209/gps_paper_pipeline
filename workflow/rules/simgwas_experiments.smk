@@ -2,76 +2,76 @@ import re
 import os
 from numpy import nan
 
-#tag_pairs = list(chain(*[[''.join([x,y]) for y in tags[i+1:]] for i,x in enumerate(tags[:-1])]))
-
 tag_pairs = [tags[i]+tags[i+1] for i in range(0, 19, 2)]
 
 odds_ratio_dict = {"s": 1.05, "m": 1.2, 'l': 1.4, 'v': 2, 'r': 'random', 'n' : 1, 'i' : 1.1}
 
 medium_effect_tuples = [f"m50_m50_m{x}" for x in [0, 10, 20, 30, 40, 50]]+[f"m25_m25_m{x}" for x in [0, 5, 10, 15, 20, 25]]
 
-small_effect_block_pairs = ["1-s0:119+2-s0:139+3-s0:119+4-s0:9_4-s0:9+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:19_4-s0:19+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:29_4-s0:29+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:39_4-s0:39+5-s0:108+6-s0:105+7-s0:91+8-s0:72", "1-s0:119+2-s0:139+3-s0:119+4-s0:49_4-s0:49+5-s0:108+6-s0:105+7-s0:91+8-s0:72"]
-
 sample_sizes = [1000, 5000, 10000, 50000, 100000, 250000]
 
-rule compile_small_h2_theo_calculations:
+rule compile_medium_rg_estimates:
     input:
-        ["results/ldsc/h2/whole_genome/1-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
-        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 139]],
-        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
-        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 118]],
-        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:118+5-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 107]],
-        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:118+5-s0:107+6-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 105]],
-        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:118+5-s0:107+6-s0:105+7-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 91]],
-    output:
-        "results/ldsc/h2/whole_genome/compiled_s_theo_h2.tsv"
-    run:
-        for i,x in enumerate(input):
-            if i == 0:
-                shell("cat %s > %s" % (x, output[0]))
-            else:
-                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
+        [x[0] % x[1] for x in zip([f"results/ldsc/rg/whole_genome/randomised/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%s_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples], range(100, 1541))][0]
 
-rule compile_medium_h2_theo_calculations:
-    input:
-        ["results/ldsc/h2/whole_genome/1-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
-        ["results/ldsc/h2/whole_genome/1-m0:119+2-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 139]],
-        ["results/ldsc/h2/whole_genome/1-m0:119+2-m0:139+3-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
-        ["results/ldsc/h2/whole_genome/1-m0:119+2-m0:139+3-m0:119+4-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 118]]
-    output:
-        "results/ldsc/h2/whole_genome/compiled_m_theo_h2.tsv"
-    run:
-        for i,x in enumerate(input):
-            if i == 0:
-                shell("cat %s > %s" % (x, output[0]))
-            else:
-                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
+#rule compile_small_h2_theo_calculations:
+#    input:
+#        ["results/ldsc/h2/whole_genome/1-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
+#        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 139]],
+#        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
+#        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 118]],
+#        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:118+5-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 107]],
+#        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:118+5-s0:107+6-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 105]],
+#        ["results/ldsc/h2/whole_genome/1-s0:119+2-s0:139+3-s0:119+4-s0:118+5-s0:107+6-s0:105+7-s0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 91]],
+#    output:
+#        "results/ldsc/h2/whole_genome/compiled_s_theo_h2.tsv"
+#    run:
+#        for i,x in enumerate(input):
+#            if i == 0:
+#                shell("cat %s > %s" % (x, output[0]))
+#            else:
+#                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
 
-rule compile_small_rg_theo_calculations:
-    input:
-        ["results/ldsc/rg/whole_genome/%s_theo_rg.tsv" % x for x in small_effect_block_pairs]
-    output:
-        "results/ldsc/rg/whole_genome/compiled_s_theo_rg.tsv"
-    run:
-        for i,x in enumerate(input):
-            if i == 0:
-                shell("cat %s > %s" % (x, output[0]))
-            else:
-                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
+#rule compile_medium_h2_theo_calculations:
+#    input:
+#        ["results/ldsc/h2/whole_genome/1-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
+#        ["results/ldsc/h2/whole_genome/1-m0:119+2-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 139]],
+#        ["results/ldsc/h2/whole_genome/1-m0:119+2-m0:139+3-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 119]],
+#        ["results/ldsc/h2/whole_genome/1-m0:119+2-m0:139+3-m0:119+4-m0:%d_theo_h2.tsv" % j for j in [9, 19, 39, 79, 99, 118]]
+#    output:
+#        "results/ldsc/h2/whole_genome/compiled_m_theo_h2.tsv"
+#    run:
+#        for i,x in enumerate(input):
+#            if i == 0:
+#                shell("cat %s > %s" % (x, output[0]))
+#            else:
+#                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
+#
+#rule compile_small_rg_theo_calculations:
+#    input:
+#        ["results/ldsc/rg/whole_genome/%s_theo_rg.tsv" % x for x in small_effect_block_pairs]
+#    output:
+#        "results/ldsc/rg/whole_genome/compiled_s_theo_rg.tsv"
+#    run:
+#        for i,x in enumerate(input):
+#            if i == 0:
+#                shell("cat %s > %s" % (x, output[0]))
+#            else:
+#                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
+#
+#rule compile_medium_theo_rg_calculations:
+#    input:
+#        ["results/ldsc/rg/whole_genome/%s_theo_rg.tsv" % x for x in medium_effect_tuples]
+#    output:
+#        "results/ldsc/rg/whole_genome/compiled_m_theo_rg.tsv"
+#    run:
+#        for i,x in enumerate(input):
+#            if i == 0:
+#                shell("cat %s > %s" % (x, output[0]))
+#            else:
+#                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
 
-rule compile_medium_theo_rg_calculations:
-    input:
-        ["results/ldsc/rg/whole_genome/%s_theo_rg.tsv" % x for x in medium_effect_tuples]
-    output:
-        "results/ldsc/rg/whole_genome/compiled_m_theo_rg.tsv"
-    run:
-        for i,x in enumerate(input):
-            if i == 0:
-                shell("cat %s > %s" % (x, output[0]))
-            else:
-                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
-
-                """
+"""
 rule compile_small_rg_estimates:
     input:
         [x for x in ["results/ldsc/rg/whole_genome/%d_%d_%d_%d/%s_%s.log" % (i,i,i,i,e,s) for i in sample_sizes for s in tag_pairs for e in
@@ -165,15 +165,11 @@ rule compile_small_rg_estimates:
                     outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{odds_ratios_A}\t{odds_ratios_B}\t{effect_blocks_wc_A}\t{effect_blocks_wc_B}\t{no_shared_blocks}\t{tag_pair}\t{h2_A:.4}\t{h2_A_se:.4}\t{h2_B:.4}\t{h2_B_se:.4}\t{rg:.4}\t{rg_se:.4}\t{rg_p:.4}\n")
 """
 
-rule compile_medium_rg_estimates:
-    input:
-        [x[0] % x[1] for x in zip([f"results/ldsc/rg/whole_genome/randomised/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%s_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples], range(100, 1541))]
-
 #    output:
 #        "results/ldsc/rg/whole_genome/compiled_m_rg_estimates.tsv"
 #    run:
 #        with open(output[0], 'w') as outfile:
-#            outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\ttag_pair\th2.A\th2.A.se\th2.B\th2.B.se\trg\trg.se\trg.p\n")
+#            outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\ttag_pair\th2.A\th2.A.se\th2.B\th2.B.se\tgcov\tgcov.se\tgcov.int\tgcov.int.se\trg\trg.se\trg.p\n")
 #            for x in input:
 #                head, tail = os.path.split(x)
 #                head_res = re.match("results/ldsc/rg/whole_genome/(\d+)_(\d+)_(\d+)_(\d+)", head)
