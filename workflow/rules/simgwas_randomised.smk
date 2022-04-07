@@ -57,7 +57,8 @@ def get_randomised_block_files_for_pair(wildcards):
             chrom = random.choice(list(block_dict.keys()))
             block_no = random.choice(block_dict[chrom])
 
-            shared_chrom_block_nos.append((chrom, block_no))
+            if (chrom, block_no) not in shared_chrom_block_nos:
+                shared_chrom_block_nos.append((chrom, block_no))
 
     a_chrom_block_nos = []
 
@@ -76,7 +77,7 @@ def get_randomised_block_files_for_pair(wildcards):
             chrom = random.choice(list(block_dict.keys()))
             block_no = random.choice(block_dict[chrom])
 
-            if (chrom, block_no) not in shared_chrom_block_nos:
+            if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos:
                 a_chrom_block_nos.append((chrom, block_no))
                 i += 1
 
@@ -97,7 +98,7 @@ def get_randomised_block_files_for_pair(wildcards):
             chrom = random.choice(list(block_dict.keys()))
             block_no = random.choice(block_dict[chrom])
 
-            if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos:
+            if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos and (chrom, block_no) not in b_chrom_block_nos:
                 b_chrom_block_nos.append((chrom, block_no))
                 i += 1
 
@@ -152,40 +153,24 @@ rule combine_randomised_block_sum_stats_for_pair:
         tag_index_A = lambda wildcards: tags.index(wildcards.tag_A)+1,
         tag_index_B = lambda wildcards: tags.index(wildcards.tag_B)+1
     run:
-        # TODO get metadata indices
-        # metadata (but we don't need all of these): [1,7], [7+(no_reps*4)+1, 7+(no_reps*4)+5]
-    # beta: 7+(no_reps*2)+index_of_replicate
-    # p-value: 7+(no_reps*3)+index_of_replicate
-    # ncases: 7+(no_reps*4)+2
-    # ncontrols: 7+(no_reps*4)+3
-    # chr: 7+(no_reps*4)+4
-    # block_effect_size: 7+(no_reps*4)+5
-    # OLD
-#        zsim_string = "\t".join([f"zsim.{x}" for x in range(1,21)])
-#        p_string = "\t".join([f"p.{x}" for x in range(1,21)])
-#        beta_string = "\t".join([f"betasim.{x}" for x in range(1,21)])
-#        vbeta_string = "\t".join([f"vbetasim.{x}" for x in range(1,21)])
-#        header_string = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{zsim_string}\t{vbeta_string}\t{beta_string}\t{p_string}\tchosen_or\tncases\tncontrols\tchr\tblock_effect_size"
-
         with open(log.log, 'w') as logfile:
             p_column_name_A = f"p.{params.tag_index_A}"
             beta_column_name_A = f"betasim.{params.tag_index_A}"
-            header_string_A = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{beta_column_name_A}\t{p_column_name_A}\tncases\tncontrols\tchr"
+            header_string_A = "\t".join(["position", "a0", "a1", "id", "block", "TYPE", "EUR", beta_column_name_A, p_column_name_A, "ncases", "ncontrols", "chr"])
 
-            beta_column_index_A = 7+(params.no_reps*2)+params.tag_index_A
-            p_column_index_A = 7+(params.no_reps*3)+params.tag_index_A
+            beta_column_index_A = 8+(params.no_reps*2)+params.tag_index_A
+            p_column_index_A = 8+(params.no_reps*3)+params.tag_index_A
 
-            ncases_column_index = 7+(params.no_reps*4)+2
-            ncontrols_column_index = 7+(params.no_reps*4)+3
-            chr_column_index = 7+(params.no_reps*4)+4
+            ncases_column_index = 8+(params.no_reps*4)+2
+            ncontrols_column_index = 8+(params.no_reps*4)+3
+            chr_column_index = 8+(params.no_reps*4)+4
 
-            awk_string_A = f"$1\t$2\t$3\t$4\t$5\t$6\t$7\t${beta_column_index_A}\t${p_column_index_A}\t${ncases_column_index}\t${ncontrols_column_index}\t${chr_column_index}"
+            cut_string_A = f"1-7,{beta_column_index_A},{p_column_index_A},{ncases_column_index},{ncontrols_column_index},{chr_column_index}"
 
-            with open(params.uncomp_sum_stats_A, 'w') as file_A:
-                file_A.write(f"{header_string_A}\n")
+            shell("echo -e \"{header_string_A}\" > {params.uncomp_sum_stats_A}")
 
             for x in input.a_block_files:
-                shell("zcat {x} | awk '{{ print {awk_string_A} }}' >> {params.uncomp_sum_stats_A}")
+                shell("zcat {x} | cut -f{cut_string_A} >> {params.uncomp_sum_stats_A}")
                 logfile.write(f"{x}\n")
 
             shell(f"gzip {params.uncomp_sum_stats_A}")
@@ -194,18 +179,17 @@ rule combine_randomised_block_sum_stats_for_pair:
 
             p_column_name_B = f"p.{params.tag_index_B}"
             beta_column_name_B = f"betasim.{params.tag_index_B}"
-            header_string_B = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{p_column_name_B}\t{beta_column_name_B}\tncases\tncontrols\tchr"
+            header_string_B = "\t".join(["position", "a0", "a1", "id", "block", "TYPE", "EUR", beta_column_name_B, p_column_name_B, "ncases", "ncontrols", "chr"])
 
-            beta_column_index_B = 7+(params.no_reps*2)+params.tag_index_B
-            p_column_index_B = 7+(params.no_reps*3)+params.tag_index_B
+            beta_column_index_B = 8+(params.no_reps*2)+params.tag_index_B
+            p_column_index_B = 8+(params.no_reps*3)+params.tag_index_B
 
-            awk_string_B = f"$1\t$2\t$3\t$4\t$5\t$6\t$7\t${beta_column_index_B}\t${p_column_index_B}\t${ncases_column_index}\t${ncontrols_column_index}\t${chr_column_index}"
+            cut_string_B = f"1-7,{beta_column_index_B},{p_column_index_B},{ncases_column_index},{ncontrols_column_index},{chr_column_index}"
 
-            with open(params.uncomp_sum_stats_B, 'w') as file_B:
-                file_B.write(f"{header_string_B}\n")
+            shell("echo -e \"{header_string_B}\" > {params.uncomp_sum_stats_B}")
 
             for x in input.b_block_files:
-                shell("zcat {x} | awk '{{ print {awk_string_B} }}' >> {params.uncomp_sum_stats_B}")
+                shell("zcat {x} | cut -f{cut_string_B} >> {params.uncomp_sum_stats_B}")
                 logfile.write(f"{x}\n")
 
             shell(f"gzip {params.uncomp_sum_stats_B}")
@@ -213,26 +197,24 @@ rule combine_randomised_block_sum_stats_for_pair:
 # TODO Uh-oh: 8,998,661 in m1_seed_111_sum_stats_A.tsv.gz, 9,000,062 in seed_111_merged_sum_stats.tsv.gz
 rule merge_randomised_simulated_sum_stats:
     input:
-        sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A.tsv.gz",
-        sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B.tsv.gz"
+        sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}{tag_B}.tsv.gz",
+        sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}{tag_B}.tsv.gz"
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats.tsv.gz")
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats_tags_{tag_A}{tag_B}.tsv.gz")
+    threads: 4
     params:
-        no_reps = 20
-    threads: 12
+        file_A_stat_cols = lambda wildcards: tag_pvalue_dict[wildcards.tag_A],
+        file_B_stat_cols = lambda wildcards: tag_pvalue_dict[wildcards.tag_B]
     shell:
-        "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps {params.no_reps} -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --file_A_stat_cols {params.file_A_stat_cols} --file_B_stat_cols {params.file_B_stat_cols} -o {output} -nt {threads}"
 
-# TODO fix column order based on code in merge_sim_sum_stats.R and test column handling
 rule prune_merged_randomised_simulated_sum_stats:
     input:
         bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
         pruned_range_file = "resources/plink_ranges/simgwas/pruned_ranges/window_{window}_step_{step}/all.prune.in",
-        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats.tsv.gz"
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats_tags_{tag_A}{tag_B}.tsv.gz"
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats.tsv.gz")
-    params:
-        no_reps = 20
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}{tag_B}.tsv.gz")
     threads: 4
     shell:
-        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} --no_reps {params.no_reps} -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"

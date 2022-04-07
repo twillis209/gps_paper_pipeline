@@ -10,9 +10,18 @@ medium_effect_tuples = [f"m50_m50_m{x}" for x in [0, 10, 20, 30, 40, 50]]+[f"m25
 
 sample_sizes = [1000, 5000, 10000, 50000, 100000, 250000]
 
+medium_effect_rg_estimate_files = [f"results/ldsc/rg/whole_genome/randomised/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
+
+medium_effect_gps_files = [f"results/gps/simgwas/randomised/window_1000kb_step_50/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%d_tags_{tag_pair}_gps_pvalue.tsv"
+ for size in sample_sizes for effect_tuple in medium_effect_tuples for tag_pair in tag_pairs]
+
 rule compile_medium_rg_estimates:
     input:
-        [x[0] % x[1] for x in zip([f"results/ldsc/rg/whole_genome/randomised/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%s_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples], range(100, 1541))][0]
+        [x[0] % x[1] for x in zip(medium_effect_rg_estimate_files, range(100, 100+len(medium_effect_rg_estimate_files)))]
+
+rule run_gps_sim_data:
+    input:
+        [x[0] % x[1] for x in zip(medium_effect_gps_files, range(1600, 1600+len(medium_effect_gps_files)))]
 
 #rule compile_small_h2_theo_calculations:
 #    input:

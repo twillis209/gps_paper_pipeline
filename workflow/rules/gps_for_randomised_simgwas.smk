@@ -2,23 +2,23 @@ import os
 
 rule compute_gps_for_sim_pair:
     input:
-        sum_stats_file = "results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv"
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}{tag_B}.tsv.gz"
     output:
-        temp("results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{tag_pair}_gps_value.tsv")
+        temp("results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}_gps_value.tsv")
     params:
-        a_colname = lambda wildcards: "p.%d.A" % (tags.index(wildcards.tag_pair[0])+1),
-        b_colname = lambda wildcards: "p.%d.B" % (tags.index(wildcards.tag_pair[1])+1)
+        a_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_A)+1),
+        b_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_B)+1)
     shell:
         "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -o {output}"
 
 rule permute_sim_pair:
     input:
-        sum_stats_file = "results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv"
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}{tag_B}.tsv.gz"
     output:
-        "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws,\d+}_permutations/{effect_blocks_A}_{effect_blocks_B}_{tag_pair}.tsv"
+        "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws,\d+}_permutations/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}.tsv"
     params:
-        a_colname = lambda wildcards: "p.%d.A" % (tags.index(wildcards.tag_pair[0])+1),
-        b_colname = lambda wildcards: "p.%d.B" % (tags.index(wildcards.tag_pair[1])+1)
+        a_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_A)+1),
+        b_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_B)+1)
     threads: 8
     resources:
         mem_mb = get_mem_mb,
@@ -28,16 +28,13 @@ rule permute_sim_pair:
 
 rule fit_gev_and_compute_gps_pvalue_for_sim_pair:
     input:
-        gps_file = "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{tag_pair}_gps_value.tsv",
-        perm_file = "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws}_permutations/{effect_blocks_A}_{effect_blocks_B}_{tag_pair}.tsv"
+        gps_file = "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}_gps_value.tsv",
+        perm_file = "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws,\d+}_permutations/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}.tsv"
     output:
-        "results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{draws}_permutations_{tag_pair}_gps_pvalue.tsv"
+        "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}_gps_pvalue.tsv"
     shell:
       "Rscript workflow/scripts/fit_gev_and_compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.effect_blocks_A} -b {wildcards.effect_blocks_B} -o {output}"
 
-#rule run_gps_sim_data:
-#    input:
-#        ["results/gps/simgwas/window_1000kb_step_50/%d_%d_%d_%d/%s_3000_permutations_%s_gps_pvalue.tsv" % (i, i, i, i, j, k) for i in sample_sizes for j in effect_block_pairs for k in tag_pairs]
 #    output:
 #        "results/gps/simgwas/window_1000kb_step_50/combined_gps_results.tsv"
 #    run:

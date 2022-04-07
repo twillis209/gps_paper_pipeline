@@ -5,7 +5,6 @@ parser <- ArgumentParser(description = 'Prune simulated summary statistics file'
 parser$add_argument('--sum_stats_file', type = 'character', help = 'Path to summary statistics file')
 parser$add_argument('--bim_file', type = 'character', help = 'Path to bim file')
 parser$add_argument('--prune_file', type = 'character', help = 'Path to file containing pruned IDs')
-parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates')
 parser$add_argument('-o', '--output_path', type = 'character', help = 'Path to pruned summary statistics file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
