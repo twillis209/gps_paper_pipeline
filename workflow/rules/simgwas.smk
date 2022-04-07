@@ -315,7 +315,7 @@ rule get_causal_variant_by_ld_block:
         block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
         ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/10000_10000/block_{block}_causal_variant.tsv"
+        temp("results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/10000_10000/block_{block}_causal_variant.tsv")
     threads: 4
     resources:
         mem_mb=get_mem_mb,
