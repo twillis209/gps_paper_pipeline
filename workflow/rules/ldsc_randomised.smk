@@ -1,10 +1,10 @@
 rule munge_randomised_sum_stats:
     input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_seed_{seed}_sum_stats_{pair_label}.tsv.gz"
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_seed_{seed}_sum_stats_{pair_label}_tag_{tag}_of_{tags}.tsv.gz"
     output:
-        temp("results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_seed_{seed,\d+}_{pair_label,[AB]}_{tag,\w}.tsv.sumstats.gz")
+        temp("results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_seed_{seed,\d+}_{pair_label,[AB]}_{tag,\w}_of_{tags,\w+}.tsv.sumstats.gz")
     params:
-        output_filename = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_seed_{seed}_{pair_label}_{tag}.tsv",
+        output_filename = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_seed_{seed}_{pair_label}_{tag}_of_{tags}.tsv",
          signed_sumstats_col = lambda wildcards: tag_signed_sumstats_dict[wildcards.tag],
          pvalue_col = lambda wildcards: tag_pvalue_dict[wildcards.tag]
     conda:
@@ -40,8 +40,8 @@ rule estimate_rg_for_randomised_sum_stats:
     input:
         ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
         ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
-        sum_stats_A = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_A_{tag_A}.tsv.sumstats.gz",
-        sum_stats_B = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_B_{tag_B}.tsv.sumstats.gz"
+        sum_stats_A = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_A_{tag_A}_of_tags_{tag_A}{tag_B}.tsv.sumstats.gz",
+        sum_stats_B = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_B_{tag_B}_of_tags_{tag_A}{tag_B}.tsv.sumstats.gz"
     output:
         "results/ldsc/rg/whole_genome/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.log"
     params:

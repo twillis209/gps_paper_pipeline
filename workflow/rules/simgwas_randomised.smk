@@ -1,3 +1,8 @@
+from string import ascii_lowercase
+
+tags = list(ascii_lowercase[:20])
+tag_pvalue_dict = dict(zip(tags, [f"p.{x}" for x in range(1,21)]))
+
 def get_randomised_block_files(wildcards):
         block_files = []
 
@@ -135,41 +140,75 @@ rule combine_randomised_block_sum_stats_for_pair:
         a_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[1],
         b_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[2]
     output:
-        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A.tsv.gz"),
-        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B.tsv.gz"),
-        header_file = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_header.tsv.gz")
+        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}{tag_B}.tsv.gz"),
+        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}{tag_B}.tsv.gz")
     log:
-        log = "logs/combine_randomised_block_sum_stats_for_pair/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}_{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}.log"
+        log = "logs/combine_randomised_block_sum_stats_for_pair/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}_{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}.log"
     params:
         no_reps = 20,
-        uncomp_header_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_header.tsv"
+        uncomp_sum_stats_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}{tag_B}.tsv",
+        uncomp_sum_stats_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}{tag_B}.tsv",
+        # NB: 1-indexed
+        tag_index_A = lambda wildcards: tags.index(wildcards.tag_A)+1,
+        tag_index_B = lambda wildcards: tags.index(wildcards.tag_B)+1
     run:
-        zsim_string = "\t".join([f"zsim.{x}" for x in range(1,21)])
-        p_string = "\t".join([f"p.{x}" for x in range(1,21)])
-        beta_string = "\t".join([f"betasim.{x}" for x in range(1,21)])
-        vbeta_string = "\t".join([f"vbetasim.{x}" for x in range(1,21)])
-        header_string = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{zsim_string}\t{vbeta_string}\t{beta_string}\t{p_string}\tchosen_or\tncases\tncontrols\tchr\tblock_effect_size"
-
-        with open(params.uncomp_header_file, 'w') as outfile:
-            outfile.write(f"{header_string}\n")
-
-        shell(f"gzip {params.uncomp_header_file}")
-
-        shell(f"cat {output.header_file} > {output.combined_sum_stats_A}")
+        # TODO get metadata indices
+        # metadata (but we don't need all of these): [1,7], [7+(no_reps*4)+1, 7+(no_reps*4)+5]
+    # beta: 7+(no_reps*2)+index_of_replicate
+    # p-value: 7+(no_reps*3)+index_of_replicate
+    # ncases: 7+(no_reps*4)+2
+    # ncontrols: 7+(no_reps*4)+3
+    # chr: 7+(no_reps*4)+4
+    # block_effect_size: 7+(no_reps*4)+5
+    # OLD
+#        zsim_string = "\t".join([f"zsim.{x}" for x in range(1,21)])
+#        p_string = "\t".join([f"p.{x}" for x in range(1,21)])
+#        beta_string = "\t".join([f"betasim.{x}" for x in range(1,21)])
+#        vbeta_string = "\t".join([f"vbetasim.{x}" for x in range(1,21)])
+#        header_string = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{zsim_string}\t{vbeta_string}\t{beta_string}\t{p_string}\tchosen_or\tncases\tncontrols\tchr\tblock_effect_size"
 
         with open(log.log, 'w') as logfile:
+            p_column_name_A = f"p.{params.tag_index_A}"
+            beta_column_name_A = f"betasim.{params.tag_index_A}"
+            header_string_A = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{beta_column_name_A}\t{p_column_name_A}\tncases\tncontrols\tchr"
+
+            beta_column_index_A = 7+(params.no_reps*2)+params.tag_index_A
+            p_column_index_A = 7+(params.no_reps*3)+params.tag_index_A
+
+            ncases_column_index = 7+(params.no_reps*4)+2
+            ncontrols_column_index = 7+(params.no_reps*4)+3
+            chr_column_index = 7+(params.no_reps*4)+4
+
+            awk_string_A = f"$1\t$2\t$3\t$4\t$5\t$6\t$7\t${beta_column_index_A}\t${p_column_index_A}\t${ncases_column_index}\t${ncontrols_column_index}\t${chr_column_index}"
+
+            with open(params.uncomp_sum_stats_A, 'w') as file_A:
+                file_A.write(f"{header_string_A}\n")
 
             for x in input.a_block_files:
-                shell(f"cat {x} >> {output.combined_sum_stats_A}")
+                shell("zcat {x} | awk '{{ print {awk_string_A} }}' >> {params.uncomp_sum_stats_A}")
                 logfile.write(f"{x}\n")
+
+            shell(f"gzip {params.uncomp_sum_stats_A}")
 
             logfile.write("\n")
 
-            shell(f"cat {output.header_file} > {output.combined_sum_stats_B}")
+            p_column_name_B = f"p.{params.tag_index_B}"
+            beta_column_name_B = f"betasim.{params.tag_index_B}"
+            header_string_B = f"position\ta0\ta1\tid\tblock\tTYPE\tEUR\tzexp\t{p_column_name_B}\t{beta_column_name_B}\tncases\tncontrols\tchr"
+
+            beta_column_index_B = 7+(params.no_reps*2)+params.tag_index_B
+            p_column_index_B = 7+(params.no_reps*3)+params.tag_index_B
+
+            awk_string_B = f"$1\t$2\t$3\t$4\t$5\t$6\t$7\t${beta_column_index_B}\t${p_column_index_B}\t${ncases_column_index}\t${ncontrols_column_index}\t${chr_column_index}"
+
+            with open(params.uncomp_sum_stats_B, 'w') as file_B:
+                file_B.write(f"{header_string_B}\n")
 
             for x in input.b_block_files:
-                shell(f"cat {x} >> {output.combined_sum_stats_B}")
+                shell("zcat {x} | awk '{{ print {awk_string_B} }}' >> {params.uncomp_sum_stats_B}")
                 logfile.write(f"{x}\n")
+
+            shell(f"gzip {params.uncomp_sum_stats_B}")
 
 # TODO Uh-oh: 8,998,661 in m1_seed_111_sum_stats_A.tsv.gz, 9,000,062 in seed_111_merged_sum_stats.tsv.gz
 rule merge_randomised_simulated_sum_stats:
