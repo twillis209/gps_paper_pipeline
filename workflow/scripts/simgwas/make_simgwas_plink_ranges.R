@@ -16,9 +16,7 @@ args <- parser$parse_args()
 
 setDTthreads(args$no_of_threads)
 
-sum_stats_dat <- fread(args$sum_stats_file, sep = '\t', header = F, select = c(args$bp_pos, args$chr_pos, args$a0_pos, args$a1_pos))
-
-names(sum_stats_dat) <- c('position', 'chr', 'a0', 'a1')
+sum_stats_dat <- fread(args$sum_stats_file, sep = '\t', header = T, select = c('chr', 'position', 'a0', 'a1'))
 
 bim_dat <- fread(args$input_bim_file, sep = '\t', header = F, col.names = c('chr', 'id', 'Cm', 'bp', 'A1', 'A2'))
 

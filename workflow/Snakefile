@@ -305,7 +305,7 @@ include: "rules/simgwas.smk"
 include: "rules/simgwas_randomised.smk"
 include: "rules/ldsc.smk"
 include: "rules/ldsc_randomised.smk"
-#include: "rules/gps_for_simgwas.smk"
+include: "rules/gps_for_randomised_simgwas.smk"
 include: "rules/simgwas_experiments.smk"
 
 rule download_ukbb_sum_stats:
@@ -383,7 +383,7 @@ rule subset_reference:
     resources:
         mem_mb=get_mem_mb
     shell:
-      "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --extract {input.range_file} --make-bed --out {params.out}"
+      "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --extract {input.range_file} --make-bed --out {params.out}"
 
 rule make_pruned_ranges:
     input:

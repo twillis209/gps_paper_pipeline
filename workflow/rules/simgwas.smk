@@ -333,15 +333,33 @@ rule combine_block_sum_stats:
         for x in input:
             shell(f"cat {x} >> {output}")
 
+rule make_whole_genome_metadata_file:
+    input:
+        [["results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/10000_10000/block_%d_sum_stats.tsv.gz" % (chrom, block) for block in block_dict[chrom]] for chrom in range(1,23)]
+    output:
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/metadata_only.tsv.gz")
+    params:
+        uncomp_output = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/metadata_only.tsv"
+    run:
+        header_string = "position\ta0\ta1\tid\tTYPE\tEUR\tchr"
+
+        shell(f"echo -e \"{header_string}\" > {params.uncomp_output}")
+
+        for x in input:
+            print(x)
+            shell(f"zcat {x} | cut -f1-4,6-7,92 >> {params.uncomp_output}")
+
+        shell("gzip {params.uncomp_output}")
+
 rule make_simgwas_plink_ranges:
     input:
-        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/10000_10000/null_sum_stats.tsv.gz",
+        sum_stats_metadata_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/metadata_only.tsv.gz",
         bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
     output:
         [("resources/plink_ranges/simgwas/chr%d.txt" % x for x in range(1,23))]
     threads: 4
     shell:
-        "Rscript workflow/scripts/simgwas/make_simgwas_plink_ranges.R --sum_stats_file {input.sum_stats_file} --input_bim_file {input.bim_file} --output_range_files {output} -nt {threads} --bp_pos 1 --chr_pos 92 --a0_pos 3 --a1_pos 4"
+        "Rscript workflow/scripts/simgwas/make_simgwas_plink_ranges.R --sum_stats_file {input.sum_stats_metadata_file} --input_bim_file {input.bim_file} --output_range_files {output} -nt {threads} --bp_pos 1 --chr_pos 92 --a0_pos 3 --a1_pos 4"
 
 rule merge_simulated_sum_stats:
     input:
