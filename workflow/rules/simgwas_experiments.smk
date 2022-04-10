@@ -146,21 +146,24 @@ rule compile_medium_gps_results:
 rule compile_medium_effect_theoretical_rg:
     input:
         [x[0] % x[1] for x in zip([f"results/ldsc/rg/whole_genome/randomised/theoretical_rg/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%d_{tag_pair}_theo_rg.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples], range(100, 100+len(medium_effect_rg_estimate_files)))]
-#    output:
-#        "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_m_theoretical_rg.tsv"
-#    run:
-#        with open(output, 'w') as outfile:
-#            outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\tseed\ttag_pair\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\th2.theo.obs.A\th2.theo.obs.B\th2.theo.liab.A\th2.theo.liab.B\tV_A.A\tV_A.B\tC_A.AB\tr_A.AB\n")
-#            for i,x in input:
-#                with open(x, 'r') as infile:
-#                    head, tail = os.path.split(x)
-#
-#                    ncases_A, ncontrols_A, ncases_B, ncontrols_B = re.match("results/ldsc/rg/whole_genome/randomised/theoretical_rg/(\d+)_(\d+)_(\d+)_(\d+)", head).groups()
-#
-#                    effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("m(\d+)_m(\d+)_m(\d+)_seed_(\d+)_(\w{2})_theo_rg.tsv", tail).groups()
-#
-#                    lines = [x.strip() for x in x.readlines()]
-#                    outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{seed}\t{tag_pair}\t1.2\t1.2\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{lines[1]}\n")
+    output:
+        compiled_rg_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_m_theoretical_rg.tsv"
+    run:
+        with open(output.compiled_rg_file, 'w') as outfile:
+            outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\tseed\ttag_pair\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\th2.theo.obs.A\th2.theo.obs.B\th2.theo.liab.A\th2.theo.liab.B\tV_A.A\tV_A.B\tC_A.AB\tr_A.AB\n")
+
+            for x in input:
+                with open(x, 'r') as infile:
+                    head, tail = os.path.split(x)
+
+                    ncases_A, ncontrols_A, ncases_B, ncontrols_B = re.match("results/ldsc/rg/whole_genome/randomised/theoretical_rg/(\d+)_(\d+)_(\d+)_(\d+)", head).groups()
+
+                    effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("m(\d+)_m(\d+)_m(\d+)_seed_(\d+)_(\w{2})_theo_rg.tsv", tail).groups()
+
+                    print("Before lines")
+
+                    lines = [y.strip() for y in infile.readlines()]
+                    outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{seed}\t{tag_pair}\t1.2\t1.2\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{lines[1]}\n")
 
 rule compile_medium_hoeffdings_results:
     input:
