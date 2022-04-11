@@ -6,23 +6,30 @@ tag_pairs = [tags[i]+tags[i+1] for i in range(0, 19, 2)]
 
 odds_ratio_dict = {"s": 1.05, "m": 1.2, 'l': 1.4, 'v': 2, 'r': 'random', 'n' : 1, 'i' : 1.1}
 
-medium_effect_tuples = [f"m50_m50_m{x}" for x in [0, 10, 20, 30, 40, 50]]+[f"m25_m25_m{x}" for x in [0, 5, 10, 15, 20, 25]]
+medium_effect_tuples = [f"m50_m50_m{x}" for x in [0, 10, 20, 30, 40, 50]]+[f"m25_m25_m{x}" for x in [0, 5, 10, 15, 20, 25]]+[f"m50_m50_m{x}" for x in [2, 5, 7, 12, 15, 17]]+[f"m25_m25_m{x}" for x in [2, 7, 12, 17]]
 
 small_effect_tuples = [f"s400_s400_s{x}" for x in range(0, 101, 10)]
 
-sample_sizes = [1000, 5000, 10000, 50000, 100000, 250000]
+sample_sizes = [(1000, 1000, 1000, 1000),
+                (5000, 5000, 5000, 5000),
+                (10000, 10000, 10000, 10000),
+                (250000, 250000, 250000, 250000),
+                (500, 10000, 500, 10000),
+                (1000, 10000, 1000, 10000),
+                (2000, 10000, 2000, 10000),
+                (5000, 10000, 5000, 10000)]
 
-medium_effect_rg_estimate_files = [f"results/ldsc/rg/whole_genome/randomised/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
+medium_effect_rg_estimate_files = [f"results/ldsc/rg/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
 
-medium_effect_gps_files = [f"results/gps/simgwas/randomised/window_1000kb_step_50/{size}_{size}_{size}_{size}/3000_permutations/{effect_tuple}_seed_%d_tags_{tag_pair}_gps_pvalue.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
+medium_effect_gps_files = [f"results/gps/simgwas/randomised/window_1000kb_step_50/{size[0]}_{size[1]}_{size[2]}_{size[3]}/3000_permutations/{effect_tuple}_seed_%d_tags_{tag_pair}_gps_pvalue.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
 
-medium_effect_hoeffdings_files = [f"results/hoeffdings/simgwas/randomised/window_1000kb_step_50/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%d_tags_{tag_pair}_hoeffdings.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
+medium_effect_hoeffdings_files = [f"results/hoeffdings/simgwas/randomised/window_1000kb_step_50/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_tags_{tag_pair}_hoeffdings.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
 
-small_effect_rg_estimate_files = [f"results/ldsc/rg/whole_genome/randomised/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in small_effect_tuples]
+small_effect_rg_estimate_files = [f"results/ldsc/rg/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in small_effect_tuples]
 
-small_effect_gps_files = [f"results/gps/simgwas/randomised/window_1000kb_step_50/{size}_{size}_{size}_{size}/3000_permutations/{effect_tuple}_seed_%d_tags_{tag_pair}_gps_pvalue.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in small_effect_tuples]
+small_effect_gps_files = [f"results/gps/simgwas/randomised/window_1000kb_step_50/{size[0]}_{size[1]}_{size[2]}_{size[3]}/3000_permutations/{effect_tuple}_seed_%d_tags_{tag_pair}_gps_pvalue.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in small_effect_tuples]
 
-small_effect_hoeffdings_files = [f"results/hoeffdings/simgwas/randomised/window_1000kb_step_50/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%d_tags_{tag_pair}_hoeffdings.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in small_effect_tuples]
+small_effect_hoeffdings_files = [f"results/hoeffdings/simgwas/randomised/window_1000kb_step_50/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_tags_{tag_pair}_hoeffdings.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in small_effect_tuples]
 
 rule compile_medium_rg_estimates:
     input:
@@ -108,11 +115,11 @@ rule compile_medium_rg_estimates:
 
                     outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{odds_ratio_A}\t{odds_ratio_B}\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{tag_pair}\t{h2_A:.4}\t{h2_A_se:.4}\t{h2_B:.4}\t{h2_B_se:.4}\t{gcov:.4}\t{gcov_se:.4}\t{gcov_int:.4}\t{gcov_int_se:.4}\t{gcov_zprod:.4}\t{rg:.4}\t{rg_se:.4}\t{rg_p:.4}\n")
 
-rule run_medium_gps_hoeffdings:
+rule run_medium_rg_gps_hoeffdings:
     input:
+        [x[0] % x[1] for x in zip(medium_effect_rg_estimate_files, range(100, 100+len(medium_effect_rg_estimate_files)))]+
         [x[0] % x[1] for x in zip(medium_effect_gps_files, range(100, 100+len(medium_effect_gps_files)))]+
         [x[0] % x[1] for x in zip(medium_effect_hoeffdings_files, range(100, 100+len(medium_effect_hoeffdings_files)))]
-#        [x[0] % x[1] for x in zip(medium_effect_rg_estimate_files, range(100, 100+len(medium_effect_rg_estimate_files)))]
 
 rule compile_medium_gps_results:
     input:
@@ -160,10 +167,10 @@ rule compile_medium_effect_theoretical_rg:
 
                     effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("m(\d+)_m(\d+)_m(\d+)_seed_(\d+)_(\w{2})_theo_rg.tsv", tail).groups()
 
-                    print("Before lines")
-
                     lines = [y.strip() for y in infile.readlines()]
-                    outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{seed}\t{tag_pair}\t1.2\t1.2\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{lines[1]}\n")
+
+                    h2_theo_obs_A, h2_theo_obs_B, h2_theo_liab_A, h2_theo_liab_B, V_A_A, V_A_B, C_A_AB, r_A_AB = lines[1].split('\t')[5:]
+                    outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{seed}\t{tag_pair}\t1.2\t1.2\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{h2_theo_obs_A}\t{h2_theo_obs_B}\t{h2_theo_liab_A}\t{h2_theo_liab_B}\t{V_A_A}\t{V_A_B}\t{C_A_AB}\t{r_A_AB}\n")
 
 rule compile_medium_hoeffdings_results:
     input:

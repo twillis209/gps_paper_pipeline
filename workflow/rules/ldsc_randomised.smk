@@ -55,12 +55,11 @@ rule estimate_rg_for_randomised_sum_stats:
     shell:
         "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} --intercept-h2 1,1"
 
-        # TODO make output temporary
 rule write_out_randomised_blocks_for_pair:
     output:
-        a_chrom_blocks_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/block_files/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}_{tag_A}{tag_B}.tsv",
-        b_chrom_blocks_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/block_files/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_B}_{tag_A}{tag_B}.tsv",
-        shared_chrom_blocks_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/block_files/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_shared_{tag_A}{tag_B}.tsv"
+        a_chrom_blocks_file = temp("results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/block_files/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}_{tag_A}{tag_B}.tsv"),
+        b_chrom_blocks_file = temp("results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/block_files/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_B}_{tag_A}{tag_B}.tsv"),
+        shared_chrom_blocks_file = temp("results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/block_files/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_shared_{tag_A}{tag_B}.tsv")
     params:
         chrom_block_tuples = lambda wildcards: get_randomised_chrom_block_tuples_for_pair(wildcards),
     run:

@@ -66,4 +66,4 @@ source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 
-snakemake -j 200 --keep-going --profile "$HOME/.config/snakemake/slurm" --use-conda $1
+snakemake -j 500 --keep-going --profile "$HOME/.config/snakemake/slurm" --use-conda $1
