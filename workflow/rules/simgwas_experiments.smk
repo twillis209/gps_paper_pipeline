@@ -6,6 +6,7 @@ tag_pairs = [tags[i]+tags[i+1] for i in range(0, 19, 2)]
 
 odds_ratio_dict = {"s": 1.05, "m": 1.2, 'l': 1.4, 'v': 2, 'r': 'random', 'n' : 1, 'i' : 1.1}
 
+# 22
 medium_effect_tuples = [f"m50_m50_m{x}" for x in [0, 10, 20, 30, 40, 50]]+[f"m25_m25_m{x}" for x in [0, 5, 10, 15, 20, 25]]+[f"m50_m50_m{x}" for x in [2, 5, 7, 12, 15, 17]]+[f"m25_m25_m{x}" for x in [2, 7, 12, 17]]
 
 small_effect_tuples = [f"s400_s400_s{x}" for x in range(0, 101, 10)]
@@ -13,13 +14,17 @@ small_effect_tuples = [f"s400_s400_s{x}" for x in range(0, 101, 10)]
 sample_sizes = [(1000, 1000, 1000, 1000),
                 (5000, 5000, 5000, 5000),
                 (10000, 10000, 10000, 10000),
+                (50000, 50000, 50000, 50000),
+                (100000, 100000, 100000, 100000),
                 (250000, 250000, 250000, 250000),
                 (500, 10000, 500, 10000),
                 (1000, 10000, 1000, 10000),
                 (2000, 10000, 2000, 10000),
                 (5000, 10000, 5000, 10000)]
 
-medium_effect_rg_estimate_files = [f"results/ldsc/rg/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
+medium_effect_rg_estimate_files  = [f"results/ldsc/rg/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
+
+medium_effect_rg_estimate_no_overlap_files  = [f"results/ldsc/rg/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}_intercept_0.log" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
 
 medium_effect_gps_files = [f"results/gps/simgwas/randomised/window_1000kb_step_50/{size[0]}_{size[1]}_{size[2]}_{size[3]}/3000_permutations/{effect_tuple}_seed_%d_tags_{tag_pair}_gps_pvalue.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
 
@@ -123,13 +128,12 @@ rule run_medium_rg_gps_hoeffdings:
 
 rule compile_medium_gps_results:
     input:
-        [y for y in [x[0] % x[1] for x in zip(medium_effect_gps_files, range(100, 100+len(medium_effect_gps_files)))] if os.path.exists(y)]
+        [x[0] % x[1] for x in zip(medium_effect_gps_files, range(100, 100+len(medium_effect_gps_files)))]
     output:
         "results/gps/simgwas/randomised/window_1000kb_step_50/compiled_m_gps_results.tsv"
     run:
         with open(output[0], 'w') as outfile:
             outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\ttag_pair\tgps\tn\tgps.p\n")
-            #        "results/gps/simgwas/randomised/window_1000kb_step_50/{size}_{size}_{size}_{size}/3000_permutations/{effect_tuple}_seed_%d_tags_{tag_pair}_gps_pvalue.tsv"
             for x in input:
                 head, tail = os.path.split(x)
                 head_res = re.match("results/gps/simgwas/randomised/window_1000kb_step_50/(\d+)_(\d+)_(\d+)_(\d+)/3000_permutations", head)
@@ -152,7 +156,7 @@ rule compile_medium_gps_results:
 
 rule compile_medium_effect_theoretical_rg:
     input:
-        [x[0] % x[1] for x in zip([f"results/ldsc/rg/whole_genome/randomised/theoretical_rg/{size}_{size}_{size}_{size}/{effect_tuple}_seed_%d_{tag_pair}_theo_rg.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples], range(100, 100+len(medium_effect_rg_estimate_files)))]
+        [x[0] % x[1] for x in zip([f"results/ldsc/rg/whole_genome/randomised/theoretical_rg/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}_theo_rg.tsv" for size in sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples], range(100, 100+len(medium_effect_rg_estimate_files)))]
     output:
         compiled_rg_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_m_theoretical_rg.tsv"
     run:
@@ -201,3 +205,35 @@ rule compile_medium_hoeffdings_results:
                     # NB: The 'n' here is no. of SNPs, not no. of permutations as with GPS
                     _, _, n, Dn, scaled, pval = lines[1].split('\t')
                     outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{odds_ratio_A}\t{odds_ratio_B}\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{tag_pair}\t{pval}\n")
+
+rule compile_medium_stats:
+    input:
+        "results/ldsc/rg/whole_genome/randomised/compiled_m_rg_estimates.tsv",
+        "results/gps/simgwas/randomised/window_1000kb_step_50/compiled_m_gps_results.tsv",
+        "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_m_theoretical_rg.tsv",
+        "results/hoeffdings/simgwas/randomised/window_1000kb_step_50/compiled_m_hoeffdings_results.tsv"
+
+rule compile_mn_pair_block_numbers:
+    input:
+        [f"results/ldsc/rg/whole_genome/randomised/theoretical_rg/500_10000_500_10000/block_files/m{x[1]}_m{x[2]}_m{x[3]}_seed_{x[0]}_shared_mn.tsv" for x in [(1558,25,25,0),
+            (1570,25,25,2),
+            (1559,25,25,5),
+            (1571,25,25,7),
+            (1560,25,25,10),
+            (1572,25,25,12),
+            (1561,25,25,15),
+            (1573,25,25,17),
+            (1562,25,25,20),
+            (1563,25,25,25),
+            (1552,50,50,0),
+            (1564,50,50,2),
+            (1565,50,50,5),
+            (1566,50,50,7),
+            (1553,50,50,10),
+            (1567,50,50,12),
+            (1568,50,50,15),
+            (1569,50,50,17),
+            (1554,50,50,20),
+            (1555,50,50,30),
+            (1556,50,50,40),
+            (1557,50,50,50)]]
