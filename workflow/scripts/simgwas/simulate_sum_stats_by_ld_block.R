@@ -154,6 +154,7 @@ result_dat[, chr := args$chr_no]
 
 result_dat[, id := tstrsplit(id, split = ':')[[1]]]
 
+# NB: We add 'block_effect_size' to the end of this
 cols <- c("position", "a0", "a1", "id", "block", "TYPE", "EUR", "zexp", paste0("zsim.", 1:args$no_reps), paste0("vbetasim.", 1:args$no_reps), paste0("betasim.", 1:args$no_reps), paste0("p.", 1:args$no_reps), "chosen_or", "ncases", "ncontrols", "chr")
 
 result_dat <- result_dat[, ..cols]
@@ -161,10 +162,3 @@ result_dat <- result_dat[, ..cols]
 result_dat[, block_effect_size := args$effect_size]
 
 fwrite(result_dat, file = args$output_file, sep = '\t', col.names = F)
-
-#position a0      a1 id block     TYPE    EUR     zexp    zsim.1  zsim.2  zsim.3  zsim.4  zsim.5  zsim.6  zsim.7  zsim.8  zsim.9  zsim.10 zsim.11 zsim.12 zsim.13 zsim.
-#14      zsim.15 zsim.16 zsim.17 zsim.18 zsim.19 zsim.20 vbetasim.1      vbetasim.2      vbetasim.3      vbetasim.4      vbetasim.5      vbetasim.6      vbetasim.7      vbeta
-#sim.8   vbetasim.9      vbetasim.10     vbetasim.11     vbetasim.12     vbetasim.13     vbetasim.14     vbetasim.15     vbetasim.16     vbetasim.17     vbetasim.18     vbeta
-#sim.19  vbetasim.20     betasim.1       betasim.2       betasim.3       betasim.4       betasim.5       betasim.6       betasim.7       betasim.8       betasim.9       betas
-#im.10   betasim.11      betasim.12      betasim.13      betasim.14      betasim.15      betasim.16      betasim.17      betasim.18      betasim.19      betasim.20      p.1 p
-#.2      p.3     p.4     p.5     p.6     p.7     p.8     p.9     p.10    p.11    p.12    p.13    p.14    p.15    p.16    p.17    p.18    p.19    p.20    chosen_or       ncases       ncontrols       chr

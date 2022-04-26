@@ -7,7 +7,7 @@
 #SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH -p cclake,cclake-himem,icelake,icelake-himem,skylake,skylake-himem
-#SBATCH -o logs/gps_paper_pipeline_scheduler-%j.out
+#SBATCH -o logs/gps_paper_pipeline_scheduler/%j.out
 
 #! Number of nodes and tasks per node allocated by SLURM (do not change):
 numnodes=$SLURM_JOB_NUM_NODES
@@ -66,4 +66,4 @@ source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 
-snakemake -j 500 --keep-going --profile "$HOME/.config/snakemake/slurm" --use-conda $1
+python3 -m snakemake -j 500 --default-resources time=1 --profile "$HOME/.config/snakemake/slurm" $1

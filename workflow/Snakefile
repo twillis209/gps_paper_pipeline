@@ -5,13 +5,13 @@ from itertools import chain
 wildcard_constraints:
     chr = "chr[0-9XY]{1,2}"
 
-max_time = datetime.timedelta(seconds=12*60*60)
+max_time = 12*60
 
 def get_mem_mb(wildcards, threads):
     return threads * 3420
 
 def get_permute_time(wildcards, threads):
-    return str(min(max_time, datetime.timedelta(seconds=3*((int(wildcards.draws)/300)*3600)/int(threads))))
+    return min(max_time, int(0.2*int(wildcards.draws)/int(threads)))
 
 ukbb_trait_codes = ["20002_1220","20002_1289","20002_1286","20002_1291","I9_IHD","20002_1464","20002_1381","20002_1111","22126","20002_1462","K51","20002_1465","20002_1473","K57","K80","20002_1452","20002_1154","D25","6148_2","20002_1113","6148_5","20002_1226","E4_DM1"]
 

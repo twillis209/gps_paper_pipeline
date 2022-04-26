@@ -1,7 +1,7 @@
 library(data.table)
 library(argparse)
 
-parser <- ArgumentParser(description = 'Prune simulated summary statistics file')
+parser <- ArgumentParser(description = 'Merge simulated summary statistics files')
 parser$add_argument('--sum_stats_file_A', type = 'character', help = 'Path to first summary statistics file')
 parser$add_argument('--sum_stats_file_B', type = 'character', help = 'Path to second summary statistics file')
 parser$add_argument('--file_A_stat_cols', type = 'character', nargs = '+', help = 'Columns to retain from file A')

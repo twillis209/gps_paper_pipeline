@@ -288,7 +288,7 @@ rule compute_block_ld_matrix:
         "results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData"
     threads: 4
     resources:
-        time = "8:00:00",
+        time = 60,
         mem_mb=get_mem_mb
     shell:
         "Rscript workflow/scripts/simgwas/compute_block_ld_matrix.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --output_file {output} -nt {threads}"
@@ -304,9 +304,49 @@ rule simulate_sum_stats_by_ld_block:
     threads: 5
     resources:
         mem_mb=get_mem_mb,
-        time = "00:15:00"
+        time = 12
+    group: 'simulate'
     shell:
         "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 20 -o {output} -nt {threads}"
+
+# TODO remove me
+rule rep_simulate_sum_stats_by_ld_block:
+    input:
+        bim_file = ancient("resources/1000g/chr{ch}.bim"),
+        block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.hap.gz"),
+        block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
+        ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
+    output:
+        "results/simgwas/simulated_sum_stats/rep_blocks/chr{ch}/block_sum_stats/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/block_{block,\d+}_sum_stats.tsv.gz"
+    threads: 2
+    resources:
+        mem_mb = get_mem_mb,
+        time = 12
+    shell:
+        "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 2 -o {output} -nt {threads}"
+
+rule rerun_replicates_500_10000_null:
+    input:
+        [[f"results/simgwas/simulated_sum_stats/rep_blocks/chr{ch}/block_sum_stats/null/500_10000/block_{block}_sum_stats.tsv.gz" for block in block_dict[ch]] for ch in range(1, 23)]
+
+rule replace_chosen_replicates:
+    input:
+        old = "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/block_{block,\d+}_sum_stats.tsv.gz",
+        new = "results/simgwas/simulated_sum_stats/rep_blocks/chr{ch}/block_sum_stats/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/block_{block,\d+}_sum_stats.tsv.gz"
+    output:
+        "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/block_{block,\d+}_sum_stats.rep.done"
+    resources:
+        time = 1
+    shell:
+        """
+        Rscript workflow/scripts/simgwas/replace_chosen_replicates.R --sum_stats_file_A {input.old} --sum_stats_file_B {input.new} --no_reps_A 20 --no_reps_B 2 --file_A_stat_cols p.13 p.14 --file_B_stat_cols p.1 p.2 -o {input.old} -nt 1
+
+        touch {output}
+        """
+
+rule fix_replicates_500_10000_null:
+    input:
+        [[f"results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/500_10000/block_{block}_sum_stats.rep.done" for block in block_dict[ch]] for ch in range(1, 23)]
 
 rule get_causal_variant_by_ld_block:
     input:
@@ -319,7 +359,7 @@ rule get_causal_variant_by_ld_block:
     threads: 4
     resources:
         mem_mb=get_mem_mb,
-        time = "00:01:00"
+        time = 1
     shell:
         "Rscript workflow/scripts/simgwas/get_causal_variant_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 -o {output} -nt {threads}"
 
