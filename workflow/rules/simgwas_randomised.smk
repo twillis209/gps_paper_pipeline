@@ -155,6 +155,9 @@ rule combine_randomised_block_sum_stats_for_pair:
         # NB: 1-indexed
         tag_index_A = lambda wildcards: tags.index(wildcards.tag_A)+1,
         tag_index_B = lambda wildcards: tags.index(wildcards.tag_B)+1
+    resources:
+        time = 20
+    group: "ldsc_hoeffding_and_gps_sans_permutation"
     run:
         with open(log.log, 'w') as logfile:
             p_column_name_A = f"p.{params.tag_index_A}"
@@ -198,17 +201,19 @@ rule combine_randomised_block_sum_stats_for_pair:
 
             shell(f"gzip {params.uncomp_sum_stats_B}")
 
-# TODO Uh-oh: 8,998,661 in m1_seed_111_sum_stats_A.tsv.gz, 9,000,062 in seed_111_merged_sum_stats.tsv.gz
 rule merge_randomised_simulated_sum_stats:
     input:
         sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}{tag_B}.tsv.gz",
         sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}{tag_B}.tsv.gz"
     output:
         temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats_tags_{tag_A,[a-z]}{tag_B,[a-z]}.tsv.gz")
-    threads: 4
+    threads: 1
     params:
         file_A_stat_cols = lambda wildcards: tag_pvalue_dict[wildcards.tag_A],
         file_B_stat_cols = lambda wildcards: tag_pvalue_dict[wildcards.tag_B]
+    resources:
+        time = 20
+    group: "ldsc_hoeffding_and_gps_sans_permutation"
     shell:
         "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --file_A_stat_cols {params.file_A_stat_cols} --file_B_stat_cols {params.file_B_stat_cols} -o {output} -nt {threads}"
 
@@ -219,6 +224,9 @@ rule prune_merged_randomised_simulated_sum_stats:
         sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats_tags_{tag_A}{tag_B}.tsv.gz"
     output:
         temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A,[a-z]}{tag_B,[a-z]}.tsv")
-    threads: 4
+    threads: 1
+    resources:
+        time = 20
+    group: "ldsc_hoeffding_and_gps_sans_permutation"
     shell:
         "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
