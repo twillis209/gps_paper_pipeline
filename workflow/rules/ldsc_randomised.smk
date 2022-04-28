@@ -8,7 +8,7 @@ rule munge_randomised_sum_stats:
          signed_sumstats_col = lambda wildcards: tag_signed_sumstats_dict[wildcards.tag],
          pvalue_col = lambda wildcards: tag_pvalue_dict[wildcards.tag]
     resources:
-        time = 15
+        time = 10
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     conda:
         "envs/ldsc.yaml"

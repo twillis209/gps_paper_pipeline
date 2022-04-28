@@ -301,10 +301,10 @@ rule simulate_sum_stats_by_ld_block:
         ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
         "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/block_{block,\d+}_sum_stats.tsv.gz"
-    threads: 5
+    threads: 1
     resources:
         mem_mb=get_mem_mb,
-        time = 12
+        time = 10
     group: 'simulate'
     shell:
         "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps 20 -o {output} -nt {threads}"
@@ -413,7 +413,6 @@ rule merge_simulated_sum_stats:
     shell:
         "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps {params.no_reps} -o {output} -nt {threads}"
 
-        # TODO fix and test column handling
 rule prune_merged_sim_sum_stats:
     input:
         bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
@@ -427,7 +426,7 @@ rule prune_merged_sim_sum_stats:
     shell:
         "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads} --no_reps {params.no_reps}"
 
-        # TODO chr6:block86 CV duplication problem
+# TODO chr6:block86 CV duplication problem
 rule get_causal_variants:
     input:
         [["results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/10000_10000/block_%d_causal_variant.tsv" % (x,y) for y in block_dict[x]] for x in range(1,23)]
