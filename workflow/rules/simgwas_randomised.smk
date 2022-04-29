@@ -160,10 +160,13 @@ rule combine_randomised_block_sum_stats_for_pair:
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     run:
         with open(log.log, 'w') as logfile:
-            p_column_name_A = f"p.{params.tag_index_A}"
+            z_column_name_A = f"zsim.{params.tag_index_A}"
             beta_column_name_A = f"betasim.{params.tag_index_A}"
-            header_string_A = "\t".join(["position", "a0", "a1", "id", "block", "TYPE", "EUR", beta_column_name_A, p_column_name_A, "ncases", "ncontrols", "chr", "block_effect_size"])
+            p_column_name_A = f"p.{params.tag_index_A}"
 
+            header_string_A = "\t".join(["position", "a0", "a1", "id", "block", "TYPE", "EUR", z_column_name_A, beta_column_name_A, p_column_name_A, "ncases", "ncontrols", "chr", "block_effect_size"])
+
+            z_column_index_A = 8+params.tag_index_A
             beta_column_index_A = 8+(params.no_reps*2)+params.tag_index_A
             p_column_index_A = 8+(params.no_reps*3)+params.tag_index_A
 
@@ -172,7 +175,7 @@ rule combine_randomised_block_sum_stats_for_pair:
             chr_column_index = 8+(params.no_reps*4)+4
             block_effect_column_index = 8+(params.no_reps*4)+5
 
-            cut_string_A = f"1-7,{beta_column_index_A},{p_column_index_A},{ncases_column_index},{ncontrols_column_index},{chr_column_index},{block_effect_column_index}"
+            cut_string_A = f"1-7,{z_column_index_A},{beta_column_index_A},{p_column_index_A},{ncases_column_index},{ncontrols_column_index},{chr_column_index},{block_effect_column_index}"
 
             shell("echo -e \"{header_string_A}\" > {params.uncomp_sum_stats_A}")
 
@@ -184,14 +187,17 @@ rule combine_randomised_block_sum_stats_for_pair:
 
             logfile.write("\n")
 
-            p_column_name_B = f"p.{params.tag_index_B}"
+            z_column_name_B = f"zsim.{params.tag_index_B}"
             beta_column_name_B = f"betasim.{params.tag_index_B}"
-            header_string_B = "\t".join(["position", "a0", "a1", "id", "block", "TYPE", "EUR", beta_column_name_B, p_column_name_B, "ncases", "ncontrols", "chr", "block_effect_size"])
+            p_column_name_B = f"p.{params.tag_index_B}"
 
+            header_string_B = "\t".join(["position", "a0", "a1", "id", "block", "TYPE", "EUR", z_column_name_B, beta_column_name_B, p_column_name_B, "ncases", "ncontrols", "chr", "block_effect_size"])
+
+            z_column_index_B = 8+params.tag_index_B
             beta_column_index_B = 8+(params.no_reps*2)+params.tag_index_B
             p_column_index_B = 8+(params.no_reps*3)+params.tag_index_B
 
-            cut_string_B = f"1-7,{beta_column_index_B},{p_column_index_B},{ncases_column_index},{ncontrols_column_index},{chr_column_index},{block_effect_column_index}"
+            cut_string_B = f"1-7,{z_column_index_B},{beta_column_index_B},{p_column_index_B},{ncases_column_index},{ncontrols_column_index},{chr_column_index},{block_effect_column_index}"
 
             shell("echo -e \"{header_string_B}\" > {params.uncomp_sum_stats_B}")
 
