@@ -73,6 +73,42 @@ rule qc:
     shell:
         "plink --memory {resources.mem_mb} --threads {threads} --bfile resources/1000g/euro/{wildcards.chr}_euro --geno 0.1 --mind 0.1 --maf 0.005 --hwe 1e-50 --make-bed --silent --out resources/1000g/euro/qc/{wildcards.chr}_qc"
 
+rule deduplicate_variants:
+    input:
+        "resources/1000g/euro/qc/{chr}_qc.bed",
+        "resources/1000g/euro/qc/{chr}_qc.bim",
+        "resources/1000g/euro/qc/{chr}_qc.fam"
+    output:
+        "resources/1000g/euro/qc/nodup/{chr}.bed",
+        "resources/1000g/euro/qc/nodup/{chr}.bim",
+        "resources/1000g/euro/qc/nodup/{chr}.fam"
+    params:
+        input_stem = "resources/1000g/euro/qc/{chr}_qc",
+        output_stem = "resources/1000g/euro/qc/nodup/{chr}"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    shell:
+        "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --rm-dup 'force-first' --make-bed --silent --out {params.output_stem}"
+
+rule retain_only_snp_variants:
+    input:
+        "resources/1000g/euro/qc/nodup/{chr}.bed",
+        "resources/1000g/euro/qc/nodup/{chr}.bim",
+        "resources/1000g/euro/qc/nodup/{chr}.fam"
+    output:
+        "resources/1000g/euro/qc/nodup/snps_only/{chr}.bed",
+        "resources/1000g/euro/qc/nodup/snps_only/{chr}.bim",
+        "resources/1000g/euro/qc/nodup/snps_only/{chr}.fam"
+    params:
+        input_stem = "resources/1000g/euro/qc/nodup/{chr}",
+        output_stem = "resources/1000g/euro/qc/nodup/snps_only/{chr}"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    shell:
+        "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --snps-only --make-bed --silent --out {params.output_stem}"
+
 rule concatenate_qc_bim_files:
     input:
         ["resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)]
