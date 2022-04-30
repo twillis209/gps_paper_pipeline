@@ -89,52 +89,5 @@ rule estimate_rg_with_ldak_thin:
         output_stem = "results/simgwas/ldak/ldak-thin/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}"
     shell:
         """
-        $ldakRoot/ldak --sum-cors {params.output_stem} --tagfile {input.wg_tagging_file} --summary {input.sum_stats_file_A} --summary2 {input.sum_stats_file_B} --allow-ambiguous YES --check-sums NO > {log.log_file}
+        $ldakRoot/ldak --sum-cors {params.output_stem} --tagfile {input.wg_tagging_file} --summary {input.sum_stats_file_A} --summary2 {input.sum_stats_file_B} --allow-ambiguous YES --check-sums NO --cutoff 0.01 > {log.log_file}
         """
-
-#        rule estimate_sumher_rg:
-#            input:
-#            output:
-#            shell:
-#                "ldak --sum-cors gencor --summary {input.sum_stats_A} --summary2 {input.sum_stats_B} --tagfile LDAK-Thin.tagging --allow-ambiguous YES"
-#
-#rule cut_weights:
-#    input:
-#        "resources/1000g/euro/qc/{chr}_qc.bed",
-#        "resources/1000g/euro/qc/{chr}_qc.bim",
-#        "resources/1000g/euro/qc/{chr}_qc.fam"
-#    output:
-#        predictors = "results/simgwas/ldak/weights/{chr}/weights.predictors",
-#        log = "resources/simgwas/ldak/weights/{chr}/cut_weights.log"
-#    params:
-#        input_stem = "resources/1000g/euro/qc/{chr}_qc",
-#        output_dir = "results/simgwas/ldak/weights/{chr}"
-#    shell:
-#        "ldak --cut-weights {params.output_dir} --bfile {params.input_stem} > {output.log}"
-#
-#rule calc_weights_all:
-#     input:
-#        "results/simgwas/ldak/{chr}/weights.predictors",
-#        "resources/1000g/euro/qc/{chr}_qc.bed",
-#        "resources/1000g/euro/qc/{chr}_qc.bim",
-#        "resources/1000g/euro/qc/{chr}_qc.fam"
-#     output:
-#         weights_file = "results/simgwas/ldak/weights/{chr}/weights.all",
-#         log = "results/simgwas/ldak/weights/{chr}/calc_weights_all.log"
-#     params:
-#        input_stem = "resources/1000g/euro/qc/{chr}_qc",
-#        output_dir = "results/simgwas/ldak/weights/{chr}"
-#     shell:
-#      "ldak --calc-weights-all {params.output_dir} --bfile {params.input_stem} > {output.log}"
-#
-## NB: Actually the GCTA model, but recommended if one wishes to copy LDSC
-#
-#rule calculate_ldsc_taggings_for_chromosome:
-#    input:
-#        weights_file
-#    output:
-#        output_stem
-#    shell:
-#        "ldak --calc-tagging {params.output_stem} --bfile {params.input_dir} --ignore-weights YES --chr {wildcards.chr} --power 1 --window-kb 1000"
-#
-## TODO should I add --cutoff 0.01? Read about it
