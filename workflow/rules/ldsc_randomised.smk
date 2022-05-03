@@ -17,29 +17,6 @@ rule munge_randomised_sum_stats:
         python $ldsc/munge_sumstats.py --sumstats {input} --N-con-col ncontrols --N-cas-col ncases --snp id --out {params.output_filename} --signed-sumstats {params.signed_sumstats_col} --p {params.pvalue_col} --a1 a0 --a2 a1 --frq EUR --a1-inc;
         """
 
-# TODO revise simgwas_randomised to add in single-trait scheme
-rule estimate_randomised_h2_B0_1:
-    input:
-        ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
-        ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
-        sum_stats = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_{tag}.tsv.sumstats.gz"
-    output:
-        "results/ldsc/h2/whole_genome/{ncases,\d+}_{ncontrols,\d+}/B0_1/{effect_blocks,[^/]+}_{tag,[abcde]}.log"
-    params:
-        log_file_par = "results/ldsc/h2/whole_genome/{ncases}_{ncontrols}/B0_1/{effect_blocks}_{tag,[abcde]}",
-        # NB: Trailing '/' is needed in ld_score_root
-        ld_score_root = "resources/ldsc/eur_w_ld_chr/",
-        population_prevalence = 0.02,
-        sample_prevalence = 0.5,
-        intercept = 1
-    resources:
-        time = 2
-    group: "ldsc_hoeffding_and_gps_sans_permutation"
-    conda:
-        "envs/ldsc.yaml"
-    shell:
-        "python $ldsc/ldsc.py --h2 {input.sum_stats} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence} --pop-prev {params.population_prevalence} --intercept-h2 {params.intercept}"
-
 rule estimate_rg_for_randomised_sum_stats:
     input:
         ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
@@ -47,43 +24,24 @@ rule estimate_rg_for_randomised_sum_stats:
         sum_stats_A = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_A_{tag_A}_of_{tag_A}{tag_B}.tsv.sumstats.gz",
         sum_stats_B = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_B_{tag_B}_of_{tag_A}{tag_B}.tsv.sumstats.gz"
     output:
-        "results/ldsc/rg/whole_genome/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.log"
+        "results/ldsc/rg/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/whole_genome/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.log"
+    log:
+        log = "results/ldsc/rg/{h2_intercept}_h2_{rg_intercept}_rg_intercept/whole_genome/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.actual_log"
     params:
-        log_file_par = "results/ldsc/rg/whole_genome/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}",
+        log_file_par = "results/ldsc/rg/{h2_intercept}_h2_{rg_intercept}_rg_intercept/whole_genome/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}",
         # NB: Trailing '/' is needed in ld_score_root
         ld_score_root = "resources/ldsc/eur_w_ld_chr/",
         population_prevalence = 0.02,
-        sample_prevalence = 0.5
+        sample_prevalence = 0.5,
+        h2_intercept = lambda wildcards: "--intercept-h2 1,1" if wildcards.h2_intercept == "fixed" else "",
+        rg_intercept = lambda wildcards: "--intercept-gencov 0,0" if wildcards.rg_intercept == "fixed" else ""
     resources:
         time = 2
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     conda:
         "envs/ldsc.yaml"
     shell:
-        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} --intercept-h2 1,1"
-
-        # TODO doesn't work, some problem with wildcards
-rule estimate_rg_for_randomised_sum_stats_with_no_overlap:
-    input:
-        ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
-        ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
-        sum_stats_A = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_A_{tag_A}_of_{tag_A}{tag_B}.tsv.sumstats.gz",
-        sum_stats_B = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_B_{tag_B}_of_{tag_A}{tag_B}.tsv.sumstats.gz"
-    output:
-        "results/ldsc/rg/whole_genome/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}_intercept_0.log"
-    params:
-        log_file_par = "results/ldsc/rg/whole_genome/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}",
-        # NB: Trailing '/' is needed in ld_score_root
-        ld_score_root = "resources/ldsc/eur_w_ld_chr/",
-        population_prevalence = 0.02,
-        sample_prevalence = 0.5
-    resources:
-        time = 2
-    group: "ldsc_hoeffding_and_gps_sans_permutation"
-    conda:
-        "envs/ldsc.yaml"
-    shell:
-        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} --no-intercept"
+        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} {params.h2_intercept} {params.rg_intercept} >{log.log}"
 
 rule write_out_randomised_blocks_for_pair:
     output:
