@@ -2,7 +2,7 @@ import re
 import os
 from numpy import nan
 
-include: 'simgwas_experiments_functions.smk'
+include: 'simgwas_experiments_functions.py'
 
 tag_pairs = [tags[i]+tags[i+1] for i in range(0, 19, 2)]
 
