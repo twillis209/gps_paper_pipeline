@@ -1,125 +1,121 @@
+import pandas as pd
+
 def get_randomised_chrom_block_tuples_for_pair(wildcards):
     random.seed(wildcards.seed)
 
     shared_chrom_block_nos = []
+    shared_chrom_block_dict = {}
 
     if wildcards.shared_effect_blocks != 'null':
-        block_match = re.match('([smlvh])(\d+)', wildcards.shared_effect_blocks)
+        for token in wildcards.shared_effect_blocks.split('-'):
+            block_match = re.match('([smlvh])(\d+)', token)
 
-        if not block_match:
-            raise ValueError("Invalid block format: %s" % wildcards.shared_effect_blocks)
+            if not block_match:
+                raise ValueError("Invalid block format: %s" % token)
 
-        effect = effect_size_dict[block_match.group(1)]
-        no_of_shared_blocks = int(block_match.group(2))
+            effect = effect_size_dict[block_match.group(1)]
+            no_of_shared_blocks = int(block_match.group(2))
 
-        i = 0
+            i = 0
 
-        while i < max(no_of_shared_blocks, 0):
-            chrom = random.choice(list(block_dict.keys()))
-            block_no = random.choice(block_dict[chrom])
+            shared_chrom_block_dict[effect] = []
 
-            if (chrom, block_no) not in shared_chrom_block_nos:
-                shared_chrom_block_nos.append((chrom, block_no))
-                i += 1
+            while i < max(no_of_shared_blocks, 0):
+                chrom = random.choice(list(block_dict.keys()))
+                block_no = random.choice(block_dict[chrom])
 
-        if no_of_shared_blocks != len(shared_chrom_block_nos):
-                raise ValueError("No. of shared blocks does not match randomly chosen no.")
+                if (chrom, block_no) not in shared_chrom_block_nos:
+                    shared_chrom_block_nos.append((chrom, block_no))
+                    shared_chrom_block_dict[effect].append((chrom, block_no))
+                    i += 1
 
     a_chrom_block_nos = []
+    a_chrom_block_dict = {}
 
     if wildcards.effect_blocks_A != 'null':
-        block_match_a = re.match('([smlvh])(\d+)', wildcards.effect_blocks_A)
+        for token in wildcards.effect_blocks_A.split('-'):
+            block_match_a = re.match('([smlvh])(\d+)', token)
 
-        if not block_match_a:
-            raise ValueError("Invalid block format: %s" % wildcards.effect_blocks_A)
+            if not block_match_a:
+                raise ValueError("Invalid block format: %s" % token)
 
-        effect_a = effect_size_dict[block_match_a.group(1)]
-        no_of_blocks_a = int(block_match_a.group(2))
+            effect_a = effect_size_dict[block_match_a.group(1)]
+            no_of_blocks_a = int(block_match_a.group(2))
 
-        i = 0
+            i = 0
 
-        while i < max(no_of_blocks_a-no_of_shared_blocks, 0):
-            chrom = random.choice(list(block_dict.keys()))
-            block_no = random.choice(block_dict[chrom])
+            a_chrom_block_dict[effect_a] = []
 
-            if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos:
-                a_chrom_block_nos.append((chrom, block_no))
-                i += 1
+            if effect_a not in shared_chrom_block_dict.keys():
+                shared_chrom_block_dict[effect_a] = []
 
+            while i < max(no_of_blocks_a-len(shared_chrom_block_dict[effect_a]), 0):
+                chrom = random.choice(list(block_dict.keys()))
+                block_no = random.choice(block_dict[chrom])
 
-        if max(no_of_blocks_a-no_of_shared_blocks, 0) != len(a_chrom_block_nos):
-                raise ValueError("No. of a blocks does not match randomly chosen no.")
+                if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos:
+                    a_chrom_block_nos.append((chrom, block_no))
+                    a_chrom_block_dict[effect_a].append((chrom, block_no))
+                    i += 1
 
     b_chrom_block_nos = []
+    b_chrom_block_dict = {}
 
     if wildcards.effect_blocks_B != 'null':
-        block_match_b = re.match('([smlvh])(\d+)', wildcards.effect_blocks_B)
+        for token in wildcards.effect_blocks_B.split('-'):
+            block_match_b = re.match('([smlvh])(\d+)', token)
 
-        if not block_match_b:
-            raise ValueError("Invalid block format: %s" % wildcards.effect_blocks_B)
+            if not block_match_b:
+                raise ValueError("Invalid block format: %s" % token)
 
-        effect_b = effect_size_dict[block_match_b.group(1)]
-        no_of_blocks_b = int(block_match_b.group(2))
+            effect_b = effect_size_dict[block_match_b.group(1)]
+            no_of_blocks_b = int(block_match_b.group(2))
 
-        i = 0
+            i = 0
 
-        while i < max(no_of_blocks_b-no_of_shared_blocks, 0):
-            chrom = random.choice(list(block_dict.keys()))
-            block_no = random.choice(block_dict[chrom])
+            b_chrom_block_dict[effect_b] = []
 
-            if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos and (chrom, block_no) not in b_chrom_block_nos:
-                b_chrom_block_nos.append((chrom, block_no))
-                i += 1
+            if effect_b not in shared_chrom_block_dict.keys():
+                shared_chrom_block_dict[effect_b] = []
 
-        if max(no_of_blocks_b-no_of_shared_blocks, 0) != len(b_chrom_block_nos):
-                raise ValueError("No. of b blocks does not match randomly chosen no.")
+            while i < max(no_of_blocks_b-len(shared_chrom_block_dict[effect_b]), 0):
+                chrom = random.choice(list(block_dict.keys()))
+                block_no = random.choice(block_dict[chrom])
 
-    return (shared_chrom_block_nos, a_chrom_block_nos, b_chrom_block_nos)
+                if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos and (chrom, block_no) not in b_chrom_block_nos:
+                    b_chrom_block_nos.append((chrom, block_no))
+                    b_chrom_block_dict[effect_b].append((chrom, block_no))
+                    i += 1
+
+
+    return (shared_chrom_block_nos, a_chrom_block_nos, b_chrom_block_nos, shared_chrom_block_dict, a_chrom_block_dict, b_chrom_block_dict)
 
 def get_randomised_block_files_for_pair(wildcards):
-    shared_chrom_block_nos, a_chrom_block_nos, b_chrom_block_nos = get_randomised_chrom_block_tuples_for_pair(wildcards)
-
-    block_match = re.match('([smlvh])(\d+)', wildcards.shared_effect_blocks)
-
-    if not block_match:
-            raise ValueError("Invalid block format: %s" % wildcards.shared_effect_blocks)
-
-    effect = effect_size_dict[block_match.group(1)]
-
-    block_match_a = re.match('([smlvh])(\d+)', wildcards.effect_blocks_A)
-
-    if not block_match_a:
-            raise ValueError("Invalid block format: %s" % wildcards.effect_blocks_A)
-
-    effect_a = effect_size_dict[block_match_a.group(1)]
-
-    block_match_b = re.match('([smlvh])(\d+)', wildcards.effect_blocks_B)
-
-    if not block_match_b:
-            raise ValueError("Invalid block format: %s" % wildcards.effect_blocks_B)
-
-    effect_b = effect_size_dict[block_match_b.group(1)]
+    shared_chrom_block_nos, a_chrom_block_nos, b_chrom_block_nos, shared_chrom_block_dict, a_chrom_block_dict, b_chrom_block_dict = get_randomised_chrom_block_tuples_for_pair(wildcards)
 
     block_files = []
 
     a_block_files = []
     b_block_files = []
 
-    for x in shared_chrom_block_nos:
-        block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-        a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-        b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-        if wildcards.ncases_A != wildcards.ncases_B or wildcards.ncontrols_A != wildcards.ncontrols_B:
-            block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
+    for k in shared_chrom_block_dict.keys():
+        for v in shared_chrom_block_dict[k]:
+            block_files.append(f"results/simgwas/simulated_sum_stats/chr{v[0]}/block_sum_stats/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{v[1]}_sum_stats.tsv.gz")
+            a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{v[0]}/block_sum_stats/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{v[1]}_sum_stats.tsv.gz")
+            b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{v[0]}/block_sum_stats/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{v[1]}_sum_stats.tsv.gz")
+            if wildcards.ncases_A != wildcards.ncases_B or wildcards.ncontrols_A != wildcards.ncontrols_B:
+                block_files.append(f"results/simgwas/simulated_sum_stats/chr{v[0]}/block_sum_stats/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{v[1]}_sum_stats.tsv.gz")
 
-    for x in a_chrom_block_nos:
-        block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_a}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-        a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_a}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
+    for k in a_chrom_block_dict.keys():
+        for v in a_chrom_block_dict[k]:
+            block_files.append(f"results/simgwas/simulated_sum_stats/chr{v[0]}/block_sum_stats/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{v[1]}_sum_stats.tsv.gz")
+            a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{v[0]}/block_sum_stats/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{v[1]}_sum_stats.tsv.gz")
 
-    for x in b_chrom_block_nos:
-        b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_b}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-        if f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_b}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz" not in block_files:
-            block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_b}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
+    for k in b_chrom_block_dict.keys():
+        for v in b_chrom_block_dict[k]:
+            b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{v[0]}/block_sum_stats/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{v[1]}_sum_stats.tsv.gz")
+            if f"results/simgwas/simulated_sum_stats/chr{v[0]}/block_sum_stats/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{v[1]}_sum_stats.tsv.gz" not in block_files:
+                block_files.append(f"results/simgwas/simulated_sum_stats/chr{v[0]}/block_sum_stats/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{v[1]}_sum_stats.tsv.gz")
 
     for chrom in block_dict.keys():
         for block_no in block_dict[chrom]:
@@ -132,3 +128,16 @@ def get_randomised_block_files_for_pair(wildcards):
                     block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{block_no}_sum_stats.tsv.gz")
 
     return (block_files, a_block_files, b_block_files)
+
+def chrom_block_dict_to_dataframe(chrom_block_dict):
+    cols = ['chr', 'block', 'effect']
+    daf = pd.DataFrame(columns = cols)
+
+    for k in chrom_block_dict.keys():
+        daf = pd.concat([
+            daf, pd.DataFrame(
+            [(v[0], v[1], k) for v in chrom_block_dict[k]], columns = cols
+        )
+        ])
+
+    return daf

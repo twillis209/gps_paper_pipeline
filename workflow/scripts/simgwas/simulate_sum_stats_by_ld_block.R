@@ -47,8 +47,6 @@ odds_ratios <- list('null' = 1,
                     'large' = 1.4,
                     'vlarge' = 2)
 
-
-
 # TODO does not work, do not reimplement without fixing
 #args$odds_ratios <- sample(odds_ratios[[args$effect_size]], size = length(args$causal_variant_ind), replace = T)
 

@@ -54,16 +54,21 @@ rule write_out_randomised_blocks_for_pair:
         time = 2
     group: "calculate_theoretical_rg"
     run:
-        block_a_daf = pd.DataFrame(params.chrom_block_tuples[0]+params.chrom_block_tuples[1], columns = ['chr', 'block'])
-        block_a_daf.sort_values(by = ['chr', 'block'], inplace = True)
-        block_a_daf.to_csv(output.a_chrom_blocks_file, index = False, sep = '\t')
+        _, _, _, shared_chrom_block_dict, a_chrom_block_dict, b_chrom_block_dict = params.chrom_block_tuples
 
-        block_b_daf = pd.DataFrame(params.chrom_block_tuples[0]+params.chrom_block_tuples[2], columns = ['chr', 'block'])
-        block_b_daf.sort_values(by = ['chr', 'block'], inplace = True)
-        block_b_daf.to_csv(output.b_chrom_blocks_file, index = False, sep = '\t')
+        block_a_daf = chrom_block_dict_to_dataframe(a_chrom_block_dict)
+        block_a_daf.sort_values(by = ['chr', 'block', 'effect'], inplace = True)
 
-        shared_block_daf = pd.DataFrame(params.chrom_block_tuples[0], columns = ['chr', 'block'])
-        shared_block_daf.sort_values(by = ['chr', 'block'], inplace = True)
+        block_b_daf = chrom_block_dict_to_dataframe(b_chrom_block_dict)
+        block_b_daf.sort_values(by = ['chr', 'block', 'effect'], inplace = True)
+
+        shared_block_daf = chrom_block_dict_to_dataframe(shared_chrom_block_dict)
+        shared_block_daf.sort_values(by = ['chr', 'block', 'effect'], inplace = True)
+
+        pd.concat([block_a_daf, shared_block_daf]).to_csv(output.a_chrom_blocks_file, index = False, sep = '\t')
+
+        pd.concat([block_b_daf, shared_block_daf]).to_csv(output.b_chrom_blocks_file, index = False, sep = '\t')
+
         shared_block_daf.to_csv(output.shared_chrom_blocks_file, index = False, sep = '\t')
 
 rule calculate_theoretical_rg_for_randomised_sum_stats:
@@ -72,16 +77,14 @@ rule calculate_theoretical_rg_for_randomised_sum_stats:
         a_chrom_blocks_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/block_files/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}_{tag_A}{tag_B}.tsv",
         b_chrom_blocks_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/block_files/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_B}_{tag_A}{tag_B}.tsv"
     output:
-        theo_rg_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A,[smlhv]\d+}_{effect_blocks_B,[smlhv]\d+}_{shared_effect_blocks,[smlhv]\d+}_seed_{seed,\d+}_{tag_A}{tag_B}_theo_rg.tsv",
+        theo_rg_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A,[smlh0-9\-]+}_{effect_blocks_B,[smlh0-9\-]+}_{shared_effect_blocks,[smlh0-9\-]+}_seed_{seed,\d+}_{tag_A,\w}{tag_B,\w}_theo_rg.tsv",
     params:
         population_prevalence_A = 0.02,
         sample_prevalence_A = 0.5,
         population_prevalence_B = 0.02,
         sample_prevalence_B = 0.5,
-        odds_ratio_a = lambda wildcards: odds_ratio_dict[re.search("[smlvhin]", wildcards.effect_blocks_A).group()],
-        odds_ratio_b = lambda wildcards: odds_ratio_dict[re.search("[smlvhin]", wildcards.effect_blocks_B).group()]
     resources:
         time = 2
     group: "calculate_theoretical_rg"
     shell:
-        "Rscript workflow/scripts/ldsc/calculate_theoretical_rg_randomised_blocks.R --cv_file {input.combined_causal_variants_file} --a_blocks_file {input.a_chrom_blocks_file} --b_blocks_file {input.b_chrom_blocks_file} --odds_ratio_a {params.odds_ratio_a} --odds_ratio_b {params.odds_ratio_b} --P_a {params.sample_prevalence_A} --P_b {params.sample_prevalence_B} --K_a {params.population_prevalence_A} --K_b {params.population_prevalence_B} -o {output.theo_rg_file} -nt {threads}"
+        "Rscript workflow/scripts/ldsc/calculate_theoretical_rg_randomised_blocks.R --cv_file {input.combined_causal_variants_file} --a_blocks_file {input.a_chrom_blocks_file} --b_blocks_file {input.b_chrom_blocks_file} --P_a {params.sample_prevalence_A} --P_b {params.sample_prevalence_B} --K_a {params.population_prevalence_A} --K_b {params.population_prevalence_B} -o {output.theo_rg_file} -nt {threads}"
