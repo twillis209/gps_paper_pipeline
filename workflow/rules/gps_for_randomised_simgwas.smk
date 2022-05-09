@@ -35,7 +35,7 @@ rule fit_gev_and_compute_gps_pvalue_for_sim_pair:
         gps_file = "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}_gps_value.tsv",
         perm_file = "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws}_permutations/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}.tsv"
     output:
-        "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{draws,\d+}_permutations/{effect_blocks_A,[smlh]\d+}_{effect_blocks_B,[smlh]\d+}_{shared_effect_blocks,[smlh]\d+}_seed_{seed,\d+}_tags_{tag_A,[a-z]}{tag_B,[a-z]}_gps_pvalue.tsv"
+        "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{draws,\d+}_permutations/{effect_blocks_A,[smlh\d-]+}_{effect_blocks_B,[smlh\d-]+}_{shared_effect_blocks,[smlh\d-]+}_seed_{seed,\d+}_tags_{tag_A,[a-z]}{tag_B,[a-z]}_gps_pvalue.tsv"
     resources:
         time = 2
     group: "permutation"

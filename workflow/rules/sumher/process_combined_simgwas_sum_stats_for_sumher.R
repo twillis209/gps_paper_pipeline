@@ -25,4 +25,4 @@ dat <- dat[!duplicated(dat, by = 'Predictor')]
 
 dat <- dat[, .(Predictor, A1, A2, n, Z)]
 
-fwrite(dat, file = snakemake@output[[1]], sep = '\t')
+fwrite(dat, file = snakemake@output[[1]], sep = '\t', na = 'NA')

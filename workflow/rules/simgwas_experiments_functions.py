@@ -1,3 +1,6 @@
+def parse_effect_token_to_odds_ratios(token):
+    return ','.join([str(odds_ratio_dict[re.match('[smlhv]', x).group()]) for x in token.split('-')])
+
 def compile_rg_results(input, output):
     with open(output[0], 'w') as outfile:
         outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\th2.int.con\tgcov.int.con\tblocks.A\tblocks.B\tno_shared_blocks\ttag_pair\tseed\th2.A\th2.A.se\th2.int.A\th2.int.A.se\th2.B\th2.B.se\th2.int.B\th2.int.B.se\tgcov\tgcov.se\tgcov.int\tgcov.int.se\tgcov.zprod\trg\trg.se\trg.p\n")
@@ -11,16 +14,17 @@ def compile_rg_results(input, output):
             ncases_B = int(head_res.group(5))
             ncontrols_B = int(head_res.group(6))
     
-            tail_effect_res = re.match("(\w)\d+_(\w)\d+_\w\d+_seed_\d+_\w{2}", tail)
+            tail_effect_res = re.match("([smlhv\d-]+)_([smlhv\d-]+)_[smlhv\d-]+_seed_\d+_\w{2}", tail)
     
             effect_A, effect_B = tail_effect_res.groups()
-    
-            # NB: currently assuming effect size is same
-            odds_ratio_A = odds_ratio_dict[effect_A]
-            odds_ratio_B = odds_ratio_dict[effect_B]
-    
+
+            odds_ratios_A = parse_effect_token_to_odds_ratios(effect_A)
+            odds_ratios_B = parse_effect_token_to_odds_ratios(effect_B)
+
+            # TODO fix for mixed-effect blocks
             tail_res = re.match("\w(\d+)_\w(\d+)_\w(\d+)_seed_(\d+)_(\w{2})", tail)
-    
+
+            # TODO hyphenated blocks
             effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = tail_res.groups()
     
             h2_regex = r"Total Liability scale h2: (.+)\s+\((.+)\)"
@@ -147,7 +151,7 @@ def compile_gps_results(input, output):
 
 def compile_theoretical_rg_results(input, output):
     with open(output.compiled_rg_file, 'w') as outfile:
-        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\tseed\ttag_pair\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\th2.theo.obs.A\th2.theo.obs.B\th2.theo.liab.A\th2.theo.liab.B\tV_A.A\tV_A.B\tC_A.AB\tr_A.AB\n")
+        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\tseed\ttag_pair\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tshared_blocks\th2.theo.obs.A\th2.theo.obs.B\th2.theo.liab.A\th2.theo.liab.B\tV_A.A\tV_A.B\tC_A.AB\tr_A.AB\n")
 
         for x in input:
             with open(x, 'r') as infile:
@@ -155,19 +159,19 @@ def compile_theoretical_rg_results(input, output):
 
                 ncases_A, ncontrols_A, ncases_B, ncontrols_B = re.match("results/ldsc/rg/whole_genome/randomised/theoretical_rg/(\d+)_(\d+)_(\d+)_(\d+)", head).groups()
 
-                tail_effect_res = re.match("(\w)\d+_(\w)\d+_\w\d+_seed_\d+_\w{2}", tail)
+                tail_effect_res = re.match("([smlhv\d-]+)_([smlhv\d-]+)_[smlhv\d-]+_seed_\d+_\w{2}", tail)
+
                 effect_A, effect_B = tail_effect_res.groups()
 
-                # NB: currently assuming effect size is same
-                odds_ratio_A = odds_ratio_dict[effect_A]
-                odds_ratio_B = odds_ratio_dict[effect_B]
+                odds_ratios_A = parse_effect_token_to_odds_ratios(effect_A)
+                odds_ratios_B = parse_effect_token_to_odds_ratios(effect_B)
 
-                effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("\w(\d+)_\w(\d+)_\w(\d+)_seed_(\d+)_(\w{2})_theo_rg.tsv", tail).groups()
+                effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("([smlhv\d-]+)_([smlhv\d-]+)_([smlhv\d-]+)_seed_(\d+)_(\w{2})_theo_rg.tsv", tail).groups()
 
                 lines = [y.strip() for y in infile.readlines()]
 
                 h2_theo_obs_A, h2_theo_obs_B, h2_theo_liab_A, h2_theo_liab_B, V_A_A, V_A_B, C_A_AB, r_A_AB = lines[1].split('\t')[5:]
-                outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{seed}\t{tag_pair}\t{odds_ratio_A}\t{odds_ratio_B}\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{h2_theo_obs_A}\t{h2_theo_obs_B}\t{h2_theo_liab_A}\t{h2_theo_liab_B}\t{V_A_A}\t{V_A_B}\t{C_A_AB}\t{r_A_AB}\n")
+                outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{seed}\t{tag_pair}\t{odds_ratios_A}\t{odds_ratios_B}\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{h2_theo_obs_A}\t{h2_theo_obs_B}\t{h2_theo_liab_A}\t{h2_theo_liab_B}\t{V_A_A}\t{V_A_B}\t{C_A_AB}\t{r_A_AB}\n")
 
     return
 

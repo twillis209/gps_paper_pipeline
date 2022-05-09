@@ -396,7 +396,7 @@ rule make_simgwas_plink_ranges:
         sum_stats_metadata_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/metadata_only.tsv.gz",
         bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
     output:
-        [("resources/plink_ranges/simgwas/chr%d.txt" % x for x in range(1,23))]
+        [("resources/plink_ranges/1000g/chr%d.txt" % x for x in range(1,23))]
     threads: 4
     shell:
         "Rscript workflow/scripts/simgwas/make_simgwas_plink_ranges.R --sum_stats_file {input.sum_stats_metadata_file} --input_bim_file {input.bim_file} --output_range_files {output} -nt {threads} --bp_pos 1 --chr_pos 92 --a0_pos 3 --a1_pos 4"
@@ -416,7 +416,7 @@ rule merge_simulated_sum_stats:
 rule prune_merged_sim_sum_stats:
     input:
         bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
-        pruned_range_file = "resources/plink_ranges/simgwas/pruned_ranges/window_{window}_step_{step}/all.prune.in",
+        pruned_range_file = "resources/plink_ranges/1000g/pruned_ranges/window_{window}_step_{step}/all.prune.in",
         sum_stats_file = "results/simgwas/simulated_sum_stats/merged/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv.gz"
     output:
         temp("results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
