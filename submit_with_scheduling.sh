@@ -24,6 +24,8 @@ module load rhel7/default-peta4            # REQUIRED - loads the basic environm
 module load r-4.0.2-gcc-5.4.0-xyx46xb
 export R_LIBS=/home/tw395/R/4.0.2/libs:$R_LIBS
 
+workdir="$SLURM_SUBMIT_DIR"
+
 #! Are you using OpenMP (NB this is unrelated to OpenMPI)? If so increase this
 #! safe value to no more than 32:
 export OMP_NUM_THREADS=1
@@ -40,6 +42,9 @@ export I_MPI_PIN_ORDER=scatter # Adjacent domains have minimal sharing of caches
 ### You should not have to change anything below this line ####
 ###############################################################
 
+cd $workdir
+echo -e "Changed directory to `pwd`.\n"
+
 JOBID=$SLURM_JOB_ID
 
 echo -e "JobID: $JOBID\n======"
@@ -52,7 +57,7 @@ if [ "$SLURM_JOB_NODELIST" ]; then
         export NODEFILE=`generate_pbs_nodefile`
         cat $NODEFILE | uniq > logs/machine.file.$JOBID
         echo -e "\nNodes allocated:\n================"
-        echo `cat machine.file.$JOBID | sed -e 's/\..*$//g'`
+        echo `cat logs/machine.file.$JOBID | sed -e 's/\..*$//g'`
 fi
 
 echo -e "\nnumtasks=$numtasks, numnodes=$numnodes, mpi_tasks_per_node=$mpi_tasks_per_node (OMP_NUM_THREADS=$OMP_NUM_THREADS)"
@@ -66,4 +71,4 @@ source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 
-python3 -m snakemake -j 300 --nolock --verbose --scheduler greedy --default-resources time=1 --profile "$HOME/.config/snakemake/slurm" $1
+python3 -m snakemake -j 300 --default-resources time=1 mem_mb=3420 --use-conda --scheduler greedy --profile "$HOME/.config/snakemake/slurm" "${@}"
