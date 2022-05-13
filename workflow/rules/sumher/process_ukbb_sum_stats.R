@@ -29,4 +29,4 @@ dat <- na.omit(dat)
 
 dat <- dat[, .(Predictor, A1, A2, n, Z)]
 
-fwrite(dat, file = snakemake@output[[1]], sep = '\t', na = 'NA')
+fwrite(dat, file = snakemake@output[[1]], sep = '\t', na = 'NA', quote = F)

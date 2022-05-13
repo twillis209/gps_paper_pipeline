@@ -7,6 +7,7 @@ rule munge_randomised_sum_stats:
         output_filename = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks}_seed_{seed}_{pair_label}_{tag}_of_{tags}.tsv",
          signed_sumstats_col = lambda wildcards: tag_signed_sumstats_dict[wildcards.tag],
          pvalue_col = lambda wildcards: tag_pvalue_dict[wildcards.tag]
+    threads: 2
     resources:
         time = 10
     group: "ldsc_hoeffding_and_gps_sans_permutation"
@@ -41,7 +42,8 @@ rule estimate_rg_for_randomised_sum_stats:
     conda:
         "envs/ldsc.yaml"
     shell:
-        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} {params.h2_intercept} {params.rg_intercept} >{log.log}"
+        # Hacky fix to retain 'log' file (the output is regrettably so-called), which we need whether or not the estimation process failed
+        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} {params.h2_intercept} {params.rg_intercept} >{log.log} || true"
 
 rule write_out_randomised_blocks_for_pair:
     output:

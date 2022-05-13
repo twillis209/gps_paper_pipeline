@@ -14,7 +14,7 @@ rule thin_predictors:
     params:
         input_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
         output_stem = "results/ldak/ldak-thin/weights/{join}/{chr}/thin"
-    #group: "sumher"
+    group: "sumher"
     shell:
         """
         $ldakRoot/ldak --thin {params.output_stem} --bfile {params.input_stem} --window-prune .98 --window-kb 100 > {log.log_file};
@@ -50,7 +50,7 @@ rule join_ldak_thin_taggings:
         log_file = "results/ldak/ldak-thin/{join}/whole_genome.tagging.log"
     params:
         output_stem = "results/ldak/ldak-thin/{join}/whole_genome"
-    #group: "sumher"
+    group: "sumher"
     shell:
         """
         for x in {input}; do
@@ -76,9 +76,9 @@ rule process_combined_simgwas_sum_stats:
     threads: 2
     resources:
         time = 10
-    #group: "ldsc_hoeffding_and_gps_sans_permutation"
+    group: "ldsc_hoeffding_and_gps_sans_permutation"
     script:
-        "process_combined_sum_stats_for_sumher.R"
+        "process_combined_simgwas_sum_stats_for_sumher.R"
 
 # NB: Currently assuming in the script that ncases_A == ncases_B and ncontrols_A == ncontrols_B
 rule process_ukbb_sum_stats:
@@ -92,7 +92,7 @@ rule process_ukbb_sum_stats:
     threads: 8
     resources:
         time = 10
-    #group: "ukbb_sumher"
+    group: "ukbb_sumher"
     script:
         "process_ukbb_sum_stats.R"
 
@@ -104,18 +104,18 @@ rule estimate_rg_with_ldak_thin_for_simgwas:
         sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_A}_seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}{tag_B}.assoc",
         sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/{effect_blocks_B}_seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}{tag_B}.assoc"
     output:
-        cors_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors",
-        cors_full_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors.full",
-        labels_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors.labels",
-        overlap_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors.overlap",
-        progress_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors.progress"
+        progress_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}_seed_{seed,\d+}_{tag_A,[a-z]}{tag_B,[a-z]}.progress"
+#        cors_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors",
+#        cors_full_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors.full",
+#        labels_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors.labels",
+#        overlap_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors.overlap",
     log:
         log_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.log"
     params:
         output_stem = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}"
     resources:
         time = 5
-    #group: "ldsc_hoeffding_and_gps_sans_permutation"
+    group: "ldsc_hoeffding_and_gps_sans_permutation"
     shell:
         """
         $ldakRoot/ldak --sum-cors {params.output_stem} --tagfile {input.wg_tagging_file} --summary {input.sum_stats_file_A} --summary2 {input.sum_stats_file_B} --allow-ambiguous YES --check-sums NO --cutoff 0.01 > {log.log_file}
@@ -127,18 +127,18 @@ rule estimate_rg_with_ldak_thin_for_ukbb:
         sum_stats_file_A = "resources/ukbb_sum_stats/{trait_A}.assoc",
         sum_stats_file_B = "resources/ukbb_sum_stats/{trait_B}.assoc"
     output:
-        labels_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.cors.labels",
-        overlap_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.cors.overlap",
-        progress_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.cors.progress"
-        #cors_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.cors"
-        #cors_full_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.cors.full",
+        progress_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.progress"
+#        cors_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.cors",
+#        cors_full_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.cors.full",
+#        labels_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.cors.labels",
+#        overlap_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.cors.overlap",
     log:
         log_file = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}.log"
     params:
         output_stem = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}"
     resources:
         time = 5
-    #group: "ukbb_sumher"
+    group: "ukbb_sumher"
     shell:
         """
         $ldakRoot/ldak --sum-cors {params.output_stem} --tagfile {input.wg_tagging_file} --summary {input.sum_stats_file_A} --summary2 {input.sum_stats_file_B} --allow-ambiguous YES --check-sums NO --cutoff 0.01 > {log.log_file}
