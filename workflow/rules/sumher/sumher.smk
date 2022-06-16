@@ -1,4 +1,3 @@
-# TODO experiment with LDAK-Thin and BLD-LDAK and see if it makes a difference
 from scipy.stats import chi2
 
 rule thin_predictors:
@@ -21,8 +20,6 @@ rule thin_predictors:
         awk < {output.thin_file} '{{print $1, 1}}' > {output.weights_file}
         """
 
-# TODO need to decide whether assuming LDSC/GCTA model for which we ignore weights and set --power 1
-# TODO the LDAK-Thin model uses --power -.25
 rule calculate_ldak_thin_taggings_for_chromosome:
     input:
         "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.bed",
@@ -41,7 +38,6 @@ rule calculate_ldak_thin_taggings_for_chromosome:
 
 rule join_ldak_thin_taggings:
     input:
-        # TODO not sure I'm using the format string syntax correctly here
         [f"results/ldak/ldak-thin/taggings/{{join}}/chr{x}.tagging" for x in range(1, 23)]
     output:
         wg_tagging_file = "results/ldak/ldak-thin/{join}/whole_genome.tagging",
@@ -96,8 +92,6 @@ rule process_ukbb_sum_stats:
     script:
         "process_ukbb_sum_stats.R"
 
-# TODO use --genomic control or --intercept arguments?
-# https://dougspeed.com/summary-statistics/
 rule estimate_rg_with_ldak_thin_for_simgwas:
     input:
         wg_tagging_file = "results/ldak/ldak-thin/1000g/whole_genome.tagging",

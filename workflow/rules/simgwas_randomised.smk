@@ -7,9 +7,9 @@ include: "simgwas_randomised_functions.py"
 
 rule combine_randomised_block_sum_stats_for_pair:
     input:
-        block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[0],
-        a_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[1],
-        b_block_files = lambda wildcards: get_randomised_block_files_for_pair(wildcards)[2]
+        block_files = ancient(lambda wildcards: get_randomised_block_files_for_pair(wildcards)[0]),
+        a_block_files = ancient(lambda wildcards: get_randomised_block_files_for_pair(wildcards)[1]),
+        b_block_files = ancient(lambda wildcards: get_randomised_block_files_for_pair(wildcards)[2])
     output:
         combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/{effect_blocks_A}_seed_{seed,\d+}_sum_stats_A_tag_{tag_A,[a-z]}_of_{tag_A}{tag_B,[a-z]}.tsv.gz"),
         combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/{effect_blocks_B}_seed_{seed,\d+}_sum_stats_B_tag_{tag_B,[a-z]}_of_{tag_A}{tag_B}.tsv.gz")

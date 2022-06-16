@@ -66,8 +66,6 @@ rule munge_whole_genome_sum_stats:
          output_filename = "results/ldsc/munged_sum_stats/whole_genome_sum_stats/{ncases}_{ncontrols}/{effect_blocks}_{tag}.tsv",
          signed_sumstats_col = lambda wildcards: tag_signed_sumstats_dict[wildcards.tag],
          pvalue_col = lambda wildcards: tag_pvalue_dict[wildcards.tag]
-    resources:
-        disk_mb = 2048
     conda:
         "envs/ldsc.yaml"
     shell:

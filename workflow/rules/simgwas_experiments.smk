@@ -180,10 +180,7 @@ rule compile_medium_rg_results:
 
 rule compile_mixed_rg_results:
     input:
-        seeded_mixed_effect_rg_estimate_free_h2_free_rg_files+
-        seeded_mixed_effect_rg_estimate_fixed_h2_free_rg_files+
-        seeded_mixed_effect_rg_estimate_fixed_h2_fixed_rg_files+
-        seeded_mixed_effect_rg_estimate_free_h2_fixed_rg_files
+        seeded_mixed_effect_rg_estimate_fixed_h2_free_rg_files
     output:
         "results/ldsc/rg/whole_genome/randomised/compiled_mixed_rg_results.tsv"
     run:
@@ -193,7 +190,7 @@ rule compile_small_effect_theoretical_rg:
     input:
         seeded_small_effect_theoretical_rg_files
     output:
-        compiled_rg_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_s_theoretical_rg.tsv"
+         "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_s_theoretical_rg.tsv"
     run:
         compile_theoretical_rg_results(input, output)
 
@@ -201,7 +198,7 @@ rule compile_medium_effect_theoretical_rg:
     input:
         seeded_medium_effect_theoretical_rg_files
     output:
-        compiled_rg_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_m_theoretical_rg.tsv"
+        "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_m_theoretical_rg.tsv"
     run:
         compile_theoretical_rg_results(input, output)
 
@@ -209,33 +206,33 @@ rule compile_mixed_effect_theoretical_rg:
     input:
         seeded_mixed_effect_theoretical_rg_files
     output:
-        compiled_rg_file = "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_mixed_theoretical_rg.tsv"
+        "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_mixed_theoretical_rg.tsv"
     run:
         compile_theoretical_rg_results(input, output)
 
 rule compile_small_effect_sumher_results:
     input:
-        seeded_small_effect_sumher_rg_files
+        [x.replace('progress', 'log') for x in seeded_small_effect_sumher_rg_files]
     output:
         compiled_rg_file = "results/ldak/ldak-thin/1000g/rg/compiled_s_sumher_rg.tsv"
     run:
-        compile_sumher_results(input, output)
+        compile_sumher_results_from_log_files(input, output)
 
 rule compile_medium_effect_sumher_results:
     input:
-        seeded_medium_effect_sumher_rg_files
+        [x.replace('progress', 'log') for x in seeded_medium_effect_sumher_rg_files]
     output:
         compiled_rg_file = "results/ldak/ldak-thin/1000g/rg/compiled_m_sumher_rg.tsv"
     run:
-        compile_sumher_results(input, output)
+        compile_sumher_results_from_log_files(input, output)
 
 rule compile_mixed_effect_sumher_results:
     input:
-        seeded_mixed_effect_sumher_rg_files
+        [x.replace('progress', 'log') for x in seeded_mixed_effect_sumher_rg_files]
     output:
         compiled_rg_file = "results/ldak/ldak-thin/1000g/rg/compiled_mixed_sumher_rg.tsv"
     run:
-        compile_sumher_results(input, output)
+        compile_sumher_results_from_log_files(input, output)
 
 rule compile_small_gps_results:
     input:
@@ -293,9 +290,9 @@ rule compile_results:
         "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_s_theoretical_rg.tsv",
         "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_m_theoretical_rg.tsv",
         "results/ldsc/rg/whole_genome/randomised/theoretical_rg/compiled_mixed_theoretical_rg.tsv",
-        "results/simgwas/ldak/ldak-thin/rg/compiled_s_sumher_rg.tsv",
-        "results/simgwas/ldak/ldak-thin/rg/compiled_m_sumher_rg.tsv",
-        "results/simgwas/ldak/ldak-thin/rg/compiled_mixed_sumher_rg.tsv",
+        "results/ldak/ldak-thin/1000g/rg/compiled_s_sumher_rg.tsv",
+        "results/ldak/ldak-thin/1000g/rg/compiled_m_sumher_rg.tsv",
+        "results/ldak/ldak-thin/1000g/rg/compiled_mixed_sumher_rg.tsv",
         "results/gps/simgwas/randomised/window_1000kb_step_50/compiled_s_gps_results.tsv",
         "results/gps/simgwas/randomised/window_1000kb_step_50/compiled_m_gps_results.tsv",
         "results/gps/simgwas/randomised/window_1000kb_step_50/compiled_mixed_gps_results.tsv",

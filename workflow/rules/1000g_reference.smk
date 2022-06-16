@@ -26,11 +26,13 @@ rule vcf_to_bed:
     temp("resources/1000g/{chr}.bed"),
     "resources/1000g/{chr}.bim",
     temp("resources/1000g/{chr}.fam")
+  params:
+    out = "resources/1000g/{chr}"
   threads: 8
   resources:
       mem_mb=get_mem_mb
   shell:
-      "plink2 --memory {resources.mem_mb} --threads {threads} --vcf resources/1000g/{wildcards.chr}.vcf.gz --make-bed --out resources/1000g/{wildcards.chr} --set-all-var-ids @:#:\$r:\$a --max-alleles 2 --new-id-max-allele-len 20 'truncate'"
+      "plink2 --memory {resources.mem_mb} --threads {threads} --vcf {input} --make-bed --out {params.out} --set-all-var-ids @:#:\$r:\$a --max-alleles 2 --new-id-max-allele-len 20 'truncate'"
 
 # NB: Removes related individuals, so we have 498 of 503 Europeans left
 rule make_euro_fam:
@@ -73,6 +75,59 @@ rule qc:
     shell:
         "plink2 --memory {resources.mem_mb} --threads {threads} --bfile resources/1000g/euro/{wildcards.chr}_euro --geno 0.1 --mind 0.1 --maf 0.005 --hwe 1e-50 --make-bed --silent --out resources/1000g/euro/qc/{wildcards.chr}_qc"
 
+rule subset_reference:
+    input:
+      "resources/1000g/euro/qc/{chr}_qc.bed",
+      "resources/1000g/euro/qc/{chr}_qc.bim",
+      "resources/1000g/euro/qc/{chr}_qc.fam",
+      range_file = "resources/plink_ranges/{join}/{chr}.txt"
+    output:
+      "resources/plink_subsets/{join}/{chr}.bed",
+      "resources/plink_subsets/{join}/{chr}.bim",
+      "resources/plink_subsets/{join}/{chr}.fam"
+    params:
+      bfile = "resources/1000g/euro/qc/{chr}_qc",
+      out = "resources/plink_subsets/{join}/{chr}"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    shell:
+      "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --extract {input.range_file} --make-bed --out {params.out}"
+
+rule make_pruned_ranges:
+    input:
+      "resources/plink_subsets/{join}/{chr}.bed",
+      "resources/plink_subsets/{join}/{chr}.bim",
+      "resources/plink_subsets/{join}/{chr}.fam"
+    output:
+      "resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/{chr}.prune.in",
+      "resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/{chr}.prune.out"
+    params:
+      bfile = "resources/plink_subsets/{join}/{chr}",
+      prune_out = "resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/{chr}"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    shell:
+      "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --indep-pairwise {wildcards.window} {wildcards.step} 0.2 --out {params.prune_out}"
+
+rule cat_pruned_ranges:
+    input:
+      ("resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/chr%d.prune.in" % x for x in range(1,23))
+    output:
+        "resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/all.prune.in"
+    shell:
+      "for x in {input}; do cat $x >>{output}; done"
+
+rule cat_bim_files:
+    input:
+        ("resources/plink_subsets/{join}/chr%d.bim" % x for x in range(1,23))
+    output:
+        "resources/plink_subsets/{join}/all.bim"
+    shell:
+        "for x in {input}; do cat $x >>{output}; done"
+
+
 rule deduplicate_variants:
     input:
         "resources/1000g/euro/qc/{chr}_qc.bed",
@@ -90,6 +145,24 @@ rule deduplicate_variants:
         mem_mb=get_mem_mb
     shell:
         "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --rm-dup 'force-first' --make-bed --silent --out {params.output_stem}"
+
+rule retain_only_snp_variants:
+    input:
+        "resources/1000g/euro/qc/nodup/{chr}.bed",
+        "resources/1000g/euro/qc/nodup/{chr}.bim",
+        "resources/1000g/euro/qc/nodup/{chr}.fam"
+    output:
+        "resources/1000g/euro/qc/nodup/snps_only/1000g/{chr}.bed",
+        "resources/1000g/euro/qc/nodup/snps_only/1000g/{chr}.bim",
+        "resources/1000g/euro/qc/nodup/snps_only/1000g/{chr}.fam"
+    params:
+        input_stem = "resources/1000g/euro/qc/nodup/{chr}",
+        output_stem = "resources/1000g/euro/qc/nodup/snps_only/1000g/{chr}"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    shell:
+        "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --snps-only --make-bed --silent --out {params.output_stem}"
 
 rule subset_snp_variants:
     input:

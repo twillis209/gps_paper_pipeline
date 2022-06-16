@@ -7,3 +7,6 @@ logs
 submit_with*
 Rplots.pdf
 .Rhistory
+extra_scripts
+extra_results
+prototype_python_code.py

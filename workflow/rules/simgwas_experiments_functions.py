@@ -3,7 +3,7 @@ def parse_effect_token_to_odds_ratios(token):
 
 def compile_rg_results(input, output):
     with open(output[0], 'w') as outfile:
-        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\th2.int.con\tgcov.int.con\tblocks.A\tblocks.B\tno_shared_blocks\ttag_pair\tseed\th2.A\th2.A.se\th2.int.A\th2.int.A.se\th2.B\th2.B.se\th2.int.B\th2.int.B.se\tgcov\tgcov.se\tgcov.int\tgcov.int.se\tgcov.zprod\trg\trg.se\trg.p\n")
+        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\th2.int.con\tgcov.int.con\tblocks.A\tblocks.B\tshared_blocks\ttag_pair\tseed\th2.A\th2.A.se\th2.int.A\th2.int.A.se\th2.B\th2.B.se\th2.int.B\th2.int.B.se\tgcov\tgcov.se\tgcov.int\tgcov.int.se\tgcov.zprod\trg\trg.se\trg.p\n")
         for x in input:
             head, tail = os.path.split(x)
             head_res = re.match("results/ldsc/rg/(\w+)_h2_(\w+)_rg_intercept/whole_genome/randomised/(\d+)_(\d+)_(\d+)_(\d+)", head)
@@ -115,7 +115,7 @@ def compile_rg_results(input, output):
 
 def compile_gps_results(input, output):
     with open(output[0], 'w') as outfile:
-        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\ttag_pair\tseed\tgps\tn\tgps.p\n")
+        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tshared_blocks\ttag_pair\tseed\tgps\tn\tgps.p\n")
         for x in input:
             head, tail = os.path.split(x)
             head_res = re.match("results/gps/simgwas/randomised/window_1000kb_step_50/(\d+)_(\d+)_(\d+)_(\d+)/3000_permutations", head)
@@ -124,7 +124,7 @@ def compile_gps_results(input, output):
             ncases_B = int(head_res.group(3))
             ncontrols_B = int(head_res.group(4))
 
-            effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("([smlhv\d-]+)_([smlhv\d-]+)_([smlhv\d-]+)_seed_(\d+)_(\w{2})", tail).groups()
+            effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("([smlhv\d-]+)_([smlhv\d-]+)_([smlhv\d-]+)_seed_(\d+)_tags_(\w{2})", tail).groups()
 
             odds_ratios_A = parse_effect_token_to_odds_ratios(effect_blocks_A)
             odds_ratios_B = parse_effect_token_to_odds_ratios(effect_blocks_B)
@@ -137,7 +137,7 @@ def compile_gps_results(input, output):
     return
 
 def compile_theoretical_rg_results(input, output):
-    with open(output.compiled_rg_file, 'w') as outfile:
+    with open(output[0], 'w') as outfile:
         outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\tseed\ttag_pair\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tshared_blocks\th2.theo.obs.A\th2.theo.obs.B\th2.theo.liab.A\th2.theo.liab.B\tV_A.A\tV_A.B\tC_A.AB\tr_A.AB\n")
 
         for x in input:
@@ -161,7 +161,7 @@ def compile_theoretical_rg_results(input, output):
 
 def compile_hoeffdings_results(input, output):
     with open(output[0], 'w') as outfile:
-        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\ttag_pair\tseed\thoeff.p\n")
+        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tshared_blocks\ttag_pair\tseed\thoeff.p\n")
         for x in input:
             head, tail = os.path.split(x)
             head_res = re.match("results/hoeffdings/simgwas/randomised/window_1000kb_step_50/(\d+)_(\d+)_(\d+)_(\d+)", head)
@@ -170,7 +170,7 @@ def compile_hoeffdings_results(input, output):
             ncases_B = int(head_res.group(3))
             ncontrols_B = int(head_res.group(4))
 
-            effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("([smlhv\d-]+)_([smlhv\d-]+)_([smlhv\d-]+)_seed_(\d+)_(\w{2})", tail).groups()
+            effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("([smlhv\d-]+)_([smlhv\d-]+)_([smlhv\d-]+)_seed_(\d+)_tags_(\w{2})", tail).groups()
 
             odds_ratios_A = parse_effect_token_to_odds_ratios(effect_blocks_A)
             odds_ratios_B = parse_effect_token_to_odds_ratios(effect_blocks_B)
@@ -186,10 +186,10 @@ def compile_hoeffdings_results(input, output):
 def compile_sumher_results(input, output):
     with open(output[0], 'w') as outfile:
 
-        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tno_shared_blocks\ttag_pair\tseed\th2.A\th2.A.se\th2.B\th2.B.se\tgcov\tgcov.se\trg\trg.se\n")
+        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tshared_blocks\ttag_pair\tseed\th2.A\th2.A.se\th2.B\th2.B.se\tgcov\tgcov.se\trg\trg.se\n")
         for x in input:
             head, tail = os.path.split(x)
-            head_res = re.match("results/simgwas/ldak/ldak-thin/rg/(\d+)_(\d+)_(\d+)_(\d+)", head)
+            head_res = re.match("results/ldak/ldak-thin/1000g/rg/(\d+)_(\d+)_(\d+)_(\d+)", head)
             ncases_A = int(head_res.group(1))
             ncontrols_A = int(head_res.group(2))
             ncases_B = int(head_res.group(3))
@@ -206,6 +206,47 @@ def compile_sumher_results(input, output):
 
                 # Category Trait1_Her SD Trait2_Her SD Both_Coher SD Correlation SD
                 _, h2_A, h2_A_se, h2_B, h2_B_se, cov, cov_se, rg, rg_se = line.split()
+                outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{odds_ratios_A}\t{odds_ratios_B}\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{tag_pair}\t{seed}\t{float(h2_A)}\t{float(h2_A_se)}\t{float(h2_B)}\t{float(h2_B_se)}\t{float(cov)}\t{float(cov_se)}\t{float(rg)}\t{float(rg_se)}\n")
+
+    return
+
+def compile_sumher_results_from_log_files(input, output):
+    with open(output[0], 'w') as outfile:
+
+        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tshared_blocks\ttag_pair\tseed\th2.A\th2.A.se\th2.B\th2.B.se\tgcov\tgcov.se\trg\trg.se\n")
+        for x in input:
+            head, tail = os.path.split(x)
+            head_res = re.match("results/ldak/ldak-thin/1000g/rg/(\d+)_(\d+)_(\d+)_(\d+)", head)
+            ncases_A = int(head_res.group(1))
+            ncontrols_A = int(head_res.group(2))
+            ncases_B = int(head_res.group(3))
+            ncontrols_B = int(head_res.group(4))
+
+            effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("([smlhv\d-]+)_([smlhv\d-]+)_([smlhv\d-]+)_seed_(\d+)_(\w{2})", tail).groups()
+
+            odds_ratios_A = parse_effect_token_to_odds_ratios(effect_blocks_A)
+            odds_ratios_B = parse_effect_token_to_odds_ratios(effect_blocks_B)
+
+            with open(x, 'r') as infile:
+
+                line = infile.readline()
+
+                while re.match("^Trait 1 heritability", line) is None:
+                    line = infile.readline()
+
+                h2_A, h2_A_se = re.match("Trait 1 heritability: (-?\d+\.\d+|-?nan) \((\d+\.\d+|nan)\)", line).groups()
+
+                line = infile.readline()
+
+                h2_B, h2_B_se = re.match("Trait 2 heritability: (-?\d+\.\d+|-?nan) \((\d+\.\d+|nan)\)", line).groups()
+
+                line = infile.readline()
+
+                cov, cov_se = re.match("Coheritability: (-?\d+\.\d+|-?nan) \((\d+\.\d+|nan)\)", line).groups()
+
+                line = infile.readline()
+
+                rg, rg_se = re.match("Correlation: (-?\d+\.\d+|-?nan) \((\d+\.\d+|nan)\)", line).groups()
                 outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{odds_ratios_A}\t{odds_ratios_B}\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{tag_pair}\t{seed}\t{float(h2_A)}\t{float(h2_A_se)}\t{float(h2_B)}\t{float(h2_B_se)}\t{float(cov)}\t{float(cov_se)}\t{float(rg)}\t{float(rg_se)}\n")
 
     return

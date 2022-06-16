@@ -6,7 +6,7 @@ rule compute_gps_for_trait_pair:
     output:
         temp("results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.tsv")
     shell:
-      "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -o {output}"
+      "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -l -o {output}"
 
 rule permute_trait_pair:
     input:
@@ -67,7 +67,7 @@ rule collate_gps_pvalue_data_for_new_prune:
                 outfile.write(("\t".join([m[2], m[3], data_line])))
         shell("Rscript workflow/scripts/add_trait_labels_to_gps_results.R -p {output} -l {input.lookup_file} -o {output}")
 
-rule generate_ecdf_values_for_trait_pair:
+rule generate_ecdf_values_for_ukbb_trait_pair:
     input:
         ancient("resources/{trait_A}.temp"),
         ancient("resources/{trait_B}.temp"),
