@@ -363,7 +363,7 @@ rule merge_pid_and_ukbb_sum_stats:
         pid_file = "resources/pid.tsv.gz"
     output:
         merged_file = "resources/merged_pid_ukbb_sum_stats.tsv.gz",
-        temp_files = ["resources/%s.temp" % x for x in glob_wildcards("resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv").id]+["resources/pid.temp"]
+        temp_files = ["resources/ukbb_sum_stats/%s.temp" % x for x in glob_wildcards("resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv").id]+["resources/pid.temp"]
     threads: 8
     shell:
       """
