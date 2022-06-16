@@ -13,10 +13,6 @@ args <- parser$parse_args()
 
 setDTthreads(args$no_of_threads)
 
-#args$input_bim_files <- unlist(strsplit(args$input_bim_files, ","))
-#args$non_na_cols <- unlist(strsplit(args$non_na_cols, ","))
-#args$output_bim_files <- unlist(strsplit(args$output_bim_files, ","))
-
 if(length(args$output_bim_files) != length(args$input_bim_files)) {
   stop("Length of input and output bim file vectors must match")
 }

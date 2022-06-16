@@ -1,7 +1,7 @@
 rule compute_gps_for_trait_pair:
     input:
-      ancient("resources/ukbb_sum_stats/{trait_A}.temp"),
-      ancient("resources/ukbb_sum_stats/{trait_B}.temp"),
+      ancient("resources/ukbb_sum_stats/{trait_A}.done"),
+      ancient("resources/ukbb_sum_stats/{trait_B}.done"),
       sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"),
     output:
         temp("results/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.tsv")
