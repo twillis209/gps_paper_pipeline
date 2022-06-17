@@ -3,8 +3,8 @@
 #SBATCH -A MRC-BSU-SL2-CPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=40
-#SBATCH --time=3:00:00
+#SBATCH --cpus-per-task=20
+#SBATCH --time=4:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH -p cclake,cclake-himem,icelake,icelake-himem,skylake,skylake-himem
 #SBATCH -o logs/run_ukbb_sumer-%j.out
@@ -67,4 +67,4 @@ source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 
-python3 -m snakemake -c 40 --keep-going --nolock --scheduler greedy ukbb_sumher
+python3 -m snakemake -c 20 --keep-going --nolock --scheduler greedy results/ldak/ldak-thin/ukbb/rg/compiled_ukbb_sumher_results.tsv

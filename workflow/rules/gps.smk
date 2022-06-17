@@ -7,22 +7,30 @@ rule compute_gps_for_trait_pair:
         temp("results/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.tsv")
     log:
         "results/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.log"
+    params:
+        no_of_perturbations = 100
+    group: "gps"
+    resources:
+        time = 10
     shell:
-      "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -p 100 -l -o {output} -g {log}"
+      "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -p {params.no_of_perturbations} -l -o {output} -g {log}"
 
 rule permute_trait_pair:
     input:
-      ancient("resources/{trait_A}.temp"),
-      ancient("resources/{trait_B}.temp"),
+      ancient("resources/ukbb_sum_stats/{trait_A}.done"),
+      ancient("resources/ukbb_sum_stats/{trait_B}.done"),
       sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"),
     output:
-        "results/{join}/{snp_set,!randomised}/window_{window}_step_{step}/{draws}_permutations/{trait_A}-{trait_B}.tsv"
+        "results/{join}/{snp_set,all_pruned_snps|sans_mhc}/window_{window}_step_{step}/{draws}_permutations/{trait_A}-{trait_B}.tsv"
+    params:
+        no_of_perturbations = 100
     threads: 8
     resources:
         mem_mb = get_mem_mb,
         time = get_permute_time,
+    group: "gps"
     shell:
-      "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {threads} -n {wildcards.draws}"
+      "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {threads} -n {wildcards.draws} -p {params.no_of_perturbations}"
 
 rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
     input:
@@ -30,26 +38,32 @@ rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
         perm_file = ancient("results/{join}/{snp_set}/window_{window}_step_{step}/{draws}_permutations/{trait_A}-{trait_B}.tsv")
     output:
         "results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_pvalue.tsv"
+    resources:
+        time = 5
+    group: "gps"
     shell:
       "Rscript workflow/scripts/fit_gev_and_compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
 
 rule collate_gps_pvalue_data:
     input:
         pvalue_files = ["results/gps/ukbb/{snp_set}/window_{window}_step_{step}/%s_{draws}_permutations_gps_pvalue.tsv" % x for x in ukbb_trait_pairs],
-#        ["results/pid_ukbb/{snp_set}/window_{window}_step_{step}/%s_{draws}_permutations_gps_pvalue.tsv" % x for x in pid_ukbb_trait_pairs],
         lookup_file = "resources/ukbb_sum_stats/trait_metadata.tsv"
     output:
-        "results/gps/combined/{snp_set}/window_{window}_step_{step}/gps_pvalues_{draws}_permutations_with_labels.tsv"
+        combined_pvalue_file = "results/gps/combined/{snp_set}/window_{window}_step_{step}/gps_pvalues_{draws}_permutations_with_labels.tsv"
+    resources:
+        time = 5
     run:
-        with open(output[0], 'w') as outfile:
+        print(output)
+        with open(output.combined_pvalue_file, 'w') as outfile:
             outfile.write(("\t".join(["trait_A", "trait_B", "gps", "n", "loc", "loc.sd", "scale", "scale.sd", "shape", "shape.sd", "pval"]))+"\n")
             for i,x in enumerate(input.pvalue_files):
                 with open(x, 'r') as infile:
-                    data_line = infile.readlines()[1]
+                    line = infile.readline()
+                    line = infile.readline()
 
-                    m = re.match("results/(pid_){0,1}ukbb/%s/window_%s_step_%s/(\w+)-(\w+)_%s_permutations_gps_pvalue.tsv" % (wildcards.snp_set, wildcards.window, wildcards.step, wildcards.draws), x)
+                    m = re.match("results/gps/ukbb/%s/window_%s_step_%s/(\w+)-(\w+)_%s_permutations_gps_pvalue.tsv" % (wildcards.snp_set, wildcards.window, wildcards.step, wildcards.draws), x)
 
-                outfile.write(("\t".join([m[2], m[3], data_line])))
+                outfile.write(("\t".join([m[1], m[2], line])))
         shell("Rscript workflow/scripts/add_trait_labels_to_gps_results.R -p {output} -l {input.lookup_file} -o {output}")
 
 rule generate_ecdf_values_for_ukbb_trait_pair:

@@ -8,8 +8,7 @@ rule compute_hoeffdings_for_trait_pair:
 
 rule collate_hoeffdings_results:
     input:
-      ["results/ukbb/{snp_set}/window_{window}_step_{step}/%s_hoeffdings.tsv" % x for x in ukbb_trait_pairs]+
-      ["results/pid_ukbb/{snp_set}/window_{window}_step_{step}/%s_hoeffdings.tsv" % x for x in pid_ukbb_trait_pairs]
+      ["results/ukbb/{snp_set}/window_{window}_step_{step}/%s_hoeffdings.tsv" % x for x in ukbb_trait_pairs]
     output:
       "results/combined/{snp_set}/window_{window}_step_{step}/hoeffdings_results.tsv"
     shell:
