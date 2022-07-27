@@ -1,18 +1,13 @@
 library(data.table)
-library(argparse)
 
-parser <- ArgumentParser(description = 'Excise MHC from pruned, merged GWAS summary statistics file')
-parser$add_argument('-i', '--sum_stats_file', type = 'character', help = 'Path to summary statistics file')
-parser$add_argument('-n', '--no_snps', type = 'integer', help = 'Number of SNPs to retain in output')
-parser$add_argument('-o', '--output_path', type = 'character', help = 'Path to output file', required = T)
-parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
+setDTthreads(snakemake@resources[['threads']])
 
-args <- parser$parse_args()
+sum_stats_dat <- fread(snakemake@input[[1]], sep = '\t', header = T, tmpdir = snakemake@params[['tmpdir']])
 
-setDTthreads(args$no_of_threads)
+sum_stats_dat[, c('chr', 'bp') := tstrsplit(variant, split = ':', keep = 1:2)]
 
-sum_stats_dat <- fread(args$sum_stats_file, sep = '\t', header = T)
+sum_stats_dat <- sum_stats_dat[!(chr == 6 & bp %between% c(24e6, 45e6))]
 
-sum_stats_dat <- sum_stats_dat[!(CHR19 == 6 & BP19 %between% c(24e6, 45e6))]
+sum_stats_dat[, c('chr', 'bp') := NULL]
 
-fwrite(sum_stats_dat, file = args$output_path, sep = '\t')
+fwrite(sum_stats_dat, file = snakemake@output[[1]], sep = '\t')

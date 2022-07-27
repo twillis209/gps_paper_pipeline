@@ -8,12 +8,28 @@ rule compute_gps_for_trait_pair:
     log:
         "results/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.log"
     params:
-        no_of_perturbations = 100
+        no_of_perturbations = 1
     group: "gps"
     resources:
         time = 10
     shell:
       "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -p {params.no_of_perturbations} -l -o {output} -g {log}"
+
+rule compute_gps_for_trait_pair_with_naive_ecdf_algo:
+    input:
+        ancient("resources/ukbb_sum_stats/{trait_A}.done"),
+        ancient("resources/ukbb_sum_stats/{trait_B}.done"),
+        sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"),
+    output:
+        "results/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_naive_gps_value.tsv"
+    params:
+        no_of_pert_iterations = 0
+    threads: 10
+    resources:
+        time = 30
+    group: "gps"
+    shell:
+        "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -n {threads} -p {params.no_of_pert_iterations} -o {output}"
 
 rule permute_trait_pair:
     input:
@@ -23,7 +39,7 @@ rule permute_trait_pair:
     output:
         "results/{join}/{snp_set,all_pruned_snps|sans_mhc}/window_{window}_step_{step}/{draws}_permutations/{trait_A}-{trait_B}.tsv"
     params:
-        no_of_perturbations = 100
+        no_of_perturbations = 1
     threads: 8
     resources:
         mem_mb = get_mem_mb,
@@ -66,15 +82,29 @@ rule collate_gps_pvalue_data:
                 outfile.write(("\t".join([m[1], m[2], line])))
         shell("Rscript workflow/scripts/add_trait_labels_to_gps_results.R -p {output} -l {input.lookup_file} -o {output}")
 
-rule generate_ecdf_values_for_ukbb_trait_pair:
+rule compute_gps_for_trait_pair_and_write_out_intermediate_values:
     input:
-        ancient("resources/{trait_A}.temp"),
-        ancient("resources/{trait_B}.temp"),
+        ancient("resources/{trait_A}"),
+        ancient("resources/{trait_B}"),
         sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"),
     output:
-        "results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_ecdf.tsv"
+        temp("results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_intermediates.tsv")
+    threads: 12
+    resources:
+        time = 30
+    group: "gps"
     shell:
-        "workflow/scripts/gps_cpp/build/apps/fitAndEvaluateEcdfsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
+        "workflow/scripts/gps_cpp/build/apps/fitAndEvaluateEcdfsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -n {threads} -o {output}"
+
+rule annotate_intermediate_gps_output:
+    input:
+        intermediates_file = "results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_intermediates.tsv",
+        sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
+    output:
+        "results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_intermediates_annot.tsv"
+    group: "gps"
+    threads: 4
+    script: "../scripts/annotate_intermediate_gps_output.R"
 
 rule plot_denominator_heatmap:
     input:
@@ -175,3 +205,26 @@ rule plot_gev_estimates_for_increasing_no_snps:
 rule plot_gev_estimates_for_increasing_no_snps_for_selected_ukbb_traits:
     input:
         ["results/plots/ukbb/window_1000kb_step_50/%s_3000_permutations_variable_no_snps_estimates.png" % x for x in trait_pairs_for_increasing_perm_fits]
+
+rule compile_naive_gps_values:
+    input:
+        [f"results/ukbb/{{snp_set}}/window_1000kb_step_50/{trait_pair}_naive_gps_value.tsv" for trait_pair in ukbb_trait_pairs]
+    output:
+        "results/ukbb/{snp_set}/window_1000kb_step_50/compiled_naive_gps_values.tsv"
+    shell:
+        """
+        echo -e "Trait_A\tTrait_B\tGPS" >{output}
+
+        for x in {input}; do
+            tail -n 1 $x >>{output}
+        done
+        """
+
+rule compile_top_maximands_for_ukbb_traits:
+    input:
+        annot_files = [f"results/gps/ukbb/{{snp_set}}/window_1000kb_step_50/{trait_pair}_intermediates_annot.tsv" for trait_pair in ukbb_trait_pairs],
+        pvalue_files = [f"results/gps/ukbb/{{snp_set}}/window_1000kb_step_50/{trait_pair}_3000_permutations_gps_pvalue.tsv" for trait_pair in ukbb_trait_pairs]
+    output:
+        "results/gps/ukbb/{snp_set}/window_1000kb_step_50/compiled_top_maximands.tsv"
+    threads: 4
+    script: "../scripts/compile_top_maximands_for_ukbb_traits.R"

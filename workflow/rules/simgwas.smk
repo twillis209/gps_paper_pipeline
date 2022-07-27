@@ -11,10 +11,8 @@ for i in range(1,23):
 
 effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'intermediate'}
 
-sample_sizes = [1000, 5000, 10000, 50000, 100000, 250000]
-
 def get_null_block_files(wildcards):
-    null_block_file_format = "results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
+    null_block_file_format = "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/null/{ncases}_{ncontrols}/chr%d/block_%s_seed_{seed}_sum_stats.tsv.gz"
 
     effect_block_files = get_effect_block_files(wildcards)
 
@@ -32,7 +30,7 @@ def get_null_block_files(wildcards):
     return null_block_files
 
 def get_effect_block_files(wildcards):
-    block_file_format = "results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/%s/{ncases}_{ncontrols}/block_%s_sum_stats.tsv.gz"
+    block_file_format = "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/%s/{ncases}_{ncontrols}/chr%d/block_%s_seed_{seed}_sum_stats.tsv.gz"
 
     effect_block_files = []
 
@@ -300,15 +298,15 @@ rule simulate_sum_stats_by_ld_block:
         block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
         ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        "results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/block_{block,\d+}_sum_stats.tsv.gz"
+        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/chr{ch}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
     threads: 1
     resources:
-        mem_mb=get_mem_mb,
-        time = 10
+        mem_mb = get_mem_mb,
+        time = 30
     group: 'simulate'
-    benchmark: 'results/benchmarks/simulate_sum_stats_by_ld_block/
+    benchmark: 'results/benchmarks/simulate_sum_stats_by_ld_block/{no_reps}_reps/{effect_size}/{ncases}_{ncontrols}/chr{ch}/block_{block}_seed_{seed}_sum_stats.txt'
     shell:
-        "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps {wildcards.no_reps} -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps {wildcards.no_reps} --seed {wildcards.seed} -o {output} -nt {threads}"
 
 rule get_causal_variant_by_ld_block:
     input:

@@ -23,12 +23,15 @@ parser$add_argument('--effect_size', type = 'character', help = 'Determines odds
 parser$add_argument('--no_controls', type = 'integer', help = 'No. of controls', default = 10000)
 parser$add_argument('--no_cases', type = 'integer', help = 'No. of cases', default = 10000)
 parser$add_argument('--no_reps', type = 'integer', help = 'No. of replicates', default = 1)
+parser$add_argument('--seed', type = 'integer', help = 'Seed for RNG', default = 1)
 parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
 args <- parser$parse_args()
 
 setDTthreads(args$no_of_threads)
+
+set.seed(args$seed)
 
 leg_dat <- fread(file = args$leg_file, sep = ' ', header = T)
 hap_dat <- fread(file = args$hap_file, sep = ' ', header = F)

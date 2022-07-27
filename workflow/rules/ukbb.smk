@@ -324,6 +324,7 @@ rule excise_mhc_from_pruned_merged_sum_stats:
         ancient("resources/pruned_sum_stats/{join}/all_pruned_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
     output:
         "resources/pruned_sum_stats/{join}/sans_mhc/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
+    params:
+        tmpdir = 'tmp'
     threads: 8
-    shell:
-        "Rscript workflow/scripts/excise_mhc_from_sum_stats.R -i {input} -o {output} -nt {threads}"
+    script: "../scripts/excise_mhc_from_sum_stats.R"

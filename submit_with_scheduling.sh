@@ -71,4 +71,4 @@ source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 
-python3 -m snakemake -j 300 --default-resources time=5 mem_mb=3420 --use-conda --scheduler greedy --profile "$HOME/.config/snakemake/slurm" "${@}"
+python3 -m snakemake -j 300 --default-resources time=5 mem_mb=3420 tmpdir='tmp' --use-conda --scheduler greedy --profile "$HOME/.config/snakemake/slurm" "${@}"
