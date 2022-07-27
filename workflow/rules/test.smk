@@ -4,7 +4,7 @@ rule test_one:
         "test_one_{number}.txt"
     group: "test"
     resources:
-        time = 1
+        runtime = 1
     shell:
         "touch {output}"
 
@@ -15,6 +15,6 @@ rule test_two:
         "test_two_{number}.txt"
     group: "test"
     resources:
-        time = 1
+        runtime = 1
     shell:
         "touch {output}"

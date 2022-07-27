@@ -9,7 +9,7 @@ rule compute_gps_for_sim_pair:
         a_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_A)+1),
         b_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_B)+1)
     resources:
-        time = 2
+        runtime = 2
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     shell:
         "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -l -o {output}"
@@ -25,7 +25,7 @@ rule permute_sim_pair:
     threads: 8
     resources:
         mem_mb = get_mem_mb,
-        time = get_permute_time,
+        runtime = get_permute_time,
     group: "permutation"
     shell:
         "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws}"
@@ -37,7 +37,7 @@ rule fit_gev_and_compute_gps_pvalue_for_sim_pair:
     output:
         "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{draws,\d+}_permutations/{effect_blocks_A,[smlh\d-]+}_{effect_blocks_B,[smlh\d-]+}_{shared_effect_blocks,[smlh\d-]+}_seed_{seed,\d+}_tags_{tag_A,[a-z]}{tag_B,[a-z]}_gps_pvalue.tsv"
     resources:
-        time = 2
+        runtime = 2
     group: "permutation"
     shell:
       "Rscript workflow/scripts/fit_gev_and_compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.effect_blocks_A} -b {wildcards.effect_blocks_B} -o {output}"
@@ -52,7 +52,7 @@ rule compute_hoeffdings_for_sim_pair:
         b_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_B)+1)
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     resources:
-        time = 2
+        runtime = 2
     shell:
         """
         Rscript workflow/scripts/compute_hoeffdings.R -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -o {output} -nt 1

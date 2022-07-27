@@ -11,7 +11,7 @@ rule compute_gps_for_trait_pair:
         no_of_perturbations = 1
     group: "gps"
     resources:
-        time = 10
+        runtime = 10
     shell:
       "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -p {params.no_of_perturbations} -l -o {output} -g {log}"
 
@@ -26,7 +26,7 @@ rule compute_gps_for_trait_pair_with_naive_ecdf_algo:
         no_of_pert_iterations = 0
     threads: 10
     resources:
-        time = 30
+        runtime = 30
     group: "gps"
     shell:
         "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -n {threads} -p {params.no_of_pert_iterations} -o {output}"
@@ -43,7 +43,7 @@ rule permute_trait_pair:
     threads: 8
     resources:
         mem_mb = get_mem_mb,
-        time = get_permute_time,
+        runtime = get_permute_time,
     group: "gps"
     shell:
       "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {threads} -n {wildcards.draws} -p {params.no_of_perturbations}"
@@ -55,7 +55,7 @@ rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
     output:
         "results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_pvalue.tsv"
     resources:
-        time = 5
+        runtime = 5
     group: "gps"
     shell:
       "Rscript workflow/scripts/fit_gev_and_compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
@@ -67,7 +67,7 @@ rule collate_gps_pvalue_data:
     output:
         combined_pvalue_file = "results/gps/combined/{snp_set}/window_{window}_step_{step}/gps_pvalues_{draws}_permutations_with_labels.tsv"
     resources:
-        time = 5
+        runtime = 5
     run:
         print(output)
         with open(output.combined_pvalue_file, 'w') as outfile:
@@ -91,7 +91,7 @@ rule compute_gps_for_trait_pair_and_write_out_intermediate_values:
         temp("results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_intermediates.tsv")
     threads: 12
     resources:
-        time = 30
+        runtime = 30
     group: "gps"
     shell:
         "workflow/scripts/gps_cpp/build/apps/fitAndEvaluateEcdfsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -n {threads} -o {output}"

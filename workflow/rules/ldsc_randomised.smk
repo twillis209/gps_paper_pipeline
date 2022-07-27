@@ -9,7 +9,7 @@ rule munge_randomised_sum_stats:
          pvalue_col = lambda wildcards: tag_pvalue_dict[wildcards.tag]
     threads: 2
     resources:
-        time = 10
+        runtime = 10
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     conda:
         "envs/ldsc.yaml"
@@ -37,7 +37,7 @@ rule estimate_rg_for_randomised_sum_stats:
         h2_intercept = lambda wildcards: "--intercept-h2 1,1" if wildcards.h2_intercept == "fixed" else "",
         rg_intercept = lambda wildcards: "--intercept-gencov 0,0" if wildcards.rg_intercept == "fixed" else ""
     resources:
-        time = 2
+        runtime = 2
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     conda:
         "envs/ldsc.yaml"
@@ -53,7 +53,7 @@ rule write_out_randomised_blocks_for_pair:
     params:
         chrom_block_tuples = lambda wildcards: get_randomised_chrom_block_tuples_for_pair(wildcards),
     resources:
-        time = 2
+        runtime = 2
     group: "calculate_theoretical_rg"
     run:
         _, _, _, shared_chrom_block_dict, a_chrom_block_dict, b_chrom_block_dict = params.chrom_block_tuples
@@ -86,7 +86,7 @@ rule calculate_theoretical_rg_for_randomised_sum_stats:
         population_prevalence_B = 0.02,
         sample_prevalence_B = 0.5,
     resources:
-        time = 2
+        runtime = 2
     group: "calculate_theoretical_rg"
     shell:
         "Rscript workflow/scripts/ldsc/calculate_theoretical_rg_randomised_blocks.R --cv_file {input.combined_causal_variants_file} --a_blocks_file {input.a_chrom_blocks_file} --b_blocks_file {input.b_chrom_blocks_file} --P_a {params.sample_prevalence_A} --P_b {params.sample_prevalence_B} --K_a {params.population_prevalence_A} --K_b {params.population_prevalence_B} -o {output.theo_rg_file} -nt {threads}"

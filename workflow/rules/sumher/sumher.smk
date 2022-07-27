@@ -72,7 +72,7 @@ rule process_combined_simgwas_sum_stats:
         sample_size = lambda wildcards: int(wildcards.ncases_A)+int(wildcards.ncontrols_A)
     threads: 2
     resources:
-        time = 10
+        runtime = 10
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     script:
         "process_combined_simgwas_sum_stats_for_sumher.R"
@@ -88,7 +88,7 @@ rule process_ukbb_sum_stats:
         sample_size_colname = lambda wildcards: '.'.join(['n_complete_samples', wildcards.trait_code])
     threads: 8
     resources:
-        time = 10
+        runtime = 10
     group: "sumher"
     script:
         "process_ukbb_sum_stats.R"
@@ -109,7 +109,7 @@ rule estimate_rg_with_ldak_thin_for_simgwas:
     params:
         output_stem = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}"
     resources:
-        time = 5
+        runtime = 5
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     shell:
         """
@@ -132,7 +132,7 @@ rule estimate_rg_with_ldak_thin_for_ukbb:
     params:
         output_stem = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}"
     resources:
-        time = 5
+        runtime = 5
     group: "sumher"
     shell:
         """

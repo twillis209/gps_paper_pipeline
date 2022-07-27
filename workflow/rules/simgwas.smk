@@ -286,7 +286,7 @@ rule compute_block_ld_matrix:
         "results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData"
     threads: 4
     resources:
-        time = 60,
+        runtime = 60,
         mem_mb=get_mem_mb
     shell:
         "Rscript workflow/scripts/simgwas/compute_block_ld_matrix.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --output_file {output} -nt {threads}"
@@ -302,7 +302,7 @@ rule simulate_sum_stats_by_ld_block:
     threads: 1
     resources:
         mem_mb = get_mem_mb,
-        time = 30
+        runtime = 30
     group: 'simulate'
     benchmark: 'results/benchmarks/simulate_sum_stats_by_ld_block/{no_reps}_reps/{effect_size}/{ncases}_{ncontrols}/chr{ch}/block_{block}_seed_{seed}_sum_stats.txt'
     shell:
@@ -319,7 +319,7 @@ rule get_causal_variant_by_ld_block:
     threads: 4
     resources:
         mem_mb=get_mem_mb,
-        time = 1
+        runtime = 1
     shell:
         "Rscript workflow/scripts/simgwas/get_causal_variant_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 -o {output} -nt {threads}"
 
