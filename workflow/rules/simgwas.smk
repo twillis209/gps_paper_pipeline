@@ -4,204 +4,11 @@ import random
 
 block_daf = pd.read_csv("resources/ldetect/available_blocks.tsv", sep = "\t")
 
-block_dict = {}
-
-for i in range(1,23):
-    block_dict[i] = list(block_daf[block_daf["chr"] == i][block_daf["available"] == True]["block"])
+block_daf = block_daf.query('available == True')
 
 effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'intermediate'}
 
-def get_null_block_files(wildcards):
-    null_block_file_format = "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/null/{ncases}_{ncontrols}/chr%d/block_%s_seed_{seed}_sum_stats.tsv.gz"
-
-    effect_block_files = get_effect_block_files(wildcards)
-
-    null_block_files_to_omit = [re.sub('small|medium|large|vlarge|huge|intermediate|random_\d+-\d+', 'null', x) for x in effect_block_files]
-
-    null_block_files = []
-
-    for chrom, blocks in block_dict.items():
-        null_block_files += [null_block_file_format % (chrom, y) for y in blocks]
-
-    for x in null_block_files_to_omit:
-        if x in null_block_files:
-            null_block_files.remove(x)
-
-    return null_block_files
-
-def get_effect_block_files(wildcards):
-    block_file_format = "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/%s/{ncases}_{ncontrols}/chr%d/block_%s_seed_{seed}_sum_stats.tsv.gz"
-
-    effect_block_files = []
-
-    if wildcards.effect_blocks == 'null':
-        return []
-
-    for x in wildcards.effect_blocks.split('/')[-1].split('+'):
-        block_match = re.match('^(\d+)-(.+)', x)
-
-        chrom = int(block_match.group(1))
-
-        if ':' in block_match.group(2):
-            range_match = re.match('([smlvhi]|r\d+-\d+-)(\d+):(\d+)', block_match.group(2))
-
-            if 'r' in range_match.group(1):
-                effect = 'random_' + range_match.group(1)[1:-1]
-
-                effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1) if y in block_dict[chrom]]
-            else:
-                effect = effect_size_dict[range_match.group(1)]
-
-                effect_block_files += [block_file_format % (chrom, effect, y) for y in range(int(range_match.group(2)), int(range_match.group(3))+1) if y in block_dict[chrom]]
-        else:
-            singleton_match = re.match('([smlvhi]|r\d+-\d+-)(\d+)', x)
-
-            if 'r' in x:
-                effect = 'random_' + singleton_match.group(1)[1:-1]
-
-                if int(singleton_match.group(2)) in block_dict[chrom]:
-                    effect_block_files += [block_file_format % (chrom, effect, int(singleton_match.group(2)))]
-            else:
-                effect = effect_size_dict[singleton_match.group(1)]
-
-                if int(singleton_match.group(2)) in block_dict[chrom]:
-                    effect_block_files.append(block_file_format % (chrom, effect, int(singleton_match.group(2))))
-
-    return effect_block_files
-
-# NB: Implements a messy anti-pattern of behaviour, shouldn't be called outside the context of the rule combine_randomised_effect_blocks
-def get_randomised_block_files(wildcards):
-        block_files = []
-
-        if wildcards.effect_blocks != 'null':
-            block_match = re.match('([smlvh])(\d+)', wildcards.effect_blocks)
-
-            if not block_match:
-                raise ValueError("Invalid block format: %s" % wildcards.effect_blocks)
-
-            effect = effect_size_dict[block_match.group(1)]
-            no_of_blocks = int(block_match.group(2))
-
-            effect_block_files = []
-
-            for i in range(no_of_blocks):
-                chrom = random.choice(list(block_dict.keys()))
-                block_no = random.choice(block_dict[chrom])
-                effect_block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/{effect}/{wildcards.ncases}_{wildcards.ncontrols}/block_{block_no}_sum_stats.tsv.gz")
-
-            for chrom in block_dict.keys():
-                for block_no in block_dict[chrom]:
-                    if f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/{effect}/{wildcards.ncases}_{wildcards.ncontrols}/block_{block_no}_sum_stats.tsv.gz" not in effect_block_files:
-                        block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases}_{wildcards.ncontrols}/block_{block_no}_sum_stats.tsv.gz")
-
-            block_files += effect_block_files
-        else:
-            for chrom in block_dict.items():
-                for block_no in block_dict[chrom]:
-                    block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases}_{wildcards.ncontrols}/block_{block_no}_sum_stats.tsv.gz")
-
-        with open(f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised_blocks_logs/{wildcards.ncases}_{wildcards.ncontrols}/{wildcards.effect_blocks}_sum_stats.log", 'w') as outfile:
-            for x in block_files:
-                outfile.write(f"{x}\n")
-
-        return block_files
-
-# NB: Implements a messy anti-pattern of behaviour, shouldn't be called outside the context of the rule combine_randomised_block_sum_stats_for_pair
-def get_randomised_block_files_for_pair(wildcards):
-    random.seed(wildcards.seed)
-
-    shared_chrom_block_nos = []
-
-    if wildcards.shared_effect_blocks != 'null':
-        block_match = re.match('([smlvh])(\d+)', wildcards.shared_effect_blocks)
-
-        if not block_match:
-            raise ValueError("Invalid block format: %s" % wildcards.shared_effect_blocks)
-
-        effect = effect_size_dict[block_match.group(1)]
-        no_of_shared_blocks = int(block_match.group(2))
-
-        for i in range(no_of_shared_blocks):
-            chrom = random.choice(list(block_dict.keys()))
-            block_no = random.choice(block_dict[chrom])
-
-            shared_chrom_block_nos.append((chrom, block_no))
-
-    a_chrom_block_nos = []
-
-    if wildcards.effect_blocks_A != 'null':
-        block_match_a = re.match('([smlvh])(\d+)', wildcards.effect_blocks_A)
-
-        if not block_match_a:
-            raise ValueError("Invalid block format: %s" % wildcards.effect_blocks_A)
-
-        effect_a = effect_size_dict[block_match_a.group(1)]
-        no_of_blocks_a = int(block_match_a.group(2))
-
-        i = 0
-
-        while i < max(no_of_blocks_a-no_of_shared_blocks, 0):
-            chrom = random.choice(list(block_dict.keys()))
-            block_no = random.choice(block_dict[chrom])
-
-            if (chrom, block_no) not in shared_chrom_block_nos:
-                a_chrom_block_nos.append((chrom, block_no))
-                i += 1
-
-    b_chrom_block_nos = []
-
-    if wildcards.effect_blocks_B != 'null':
-        block_match_b = re.match('([smlvh])(\d+)', wildcards.effect_blocks_B)
-
-        if not block_match_b:
-            raise ValueError("Invalid block format: %s" % wildcards.effect_blocks_B)
-
-        effect_b = effect_size_dict[block_match_b.group(1)]
-        no_of_blocks_b = int(block_match_b.group(2))
-
-        i = 0
-
-        while i < max(no_of_blocks_b-no_of_shared_blocks, 0):
-            chrom = random.choice(list(block_dict.keys()))
-            block_no = random.choice(block_dict[chrom])
-
-            if (chrom, block_no) not in shared_chrom_block_nos:
-                b_chrom_block_nos.append((chrom, block_no))
-                i += 1
-
-    block_files = []
-
-    a_block_files = []
-    b_block_files = []
-
-    for x in shared_chrom_block_nos:
-        block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-        a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-        b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-        if wildcards.ncases_A != wildcards.ncases_B or wildcards.ncontrols_A != wildcards.ncontrols_B:
-            block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-
-    for x in a_chrom_block_nos:
-        block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_a}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-        a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_a}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{x[1]}_sum_stats.tsv.gz")
-
-    for x in b_chrom_block_nos:
-        b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_b}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-        if f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_b}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz" not in block_files:
-            block_files.append(f"results/simgwas/simulated_sum_stats/chr{x[0]}/block_sum_stats/{effect_b}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{x[1]}_sum_stats.tsv.gz")
-
-    for chrom in block_dict.keys():
-        for block_no in block_dict[chrom]:
-            # if not in a block files or not in b block files, handle case where ncases/ncontrols are not the same
-            if (chrom, block_no) not in a_chrom_block_nos and (chrom, block_no) not in shared_chrom_block_nos:
-                block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{block_no}_sum_stats.tsv.gz")
-                a_block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_A}_{wildcards.ncontrols_A}/block_{block_no}_sum_stats.tsv.gz")
-            if (chrom, block_no) not in b_chrom_block_nos and (chrom, block_no) not in shared_chrom_block_nos:
-                b_block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{block_no}_sum_stats.tsv.gz")
-                if f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{block_no}_sum_stats.tsv.gz" not in block_files:
-                    block_files.append(f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/block_{block_no}_sum_stats.tsv.gz")
-
-    return (block_files, a_block_files, b_block_files)
+include: "simgwas_functions.py"
 
 rule get_legend_files_with_euro_common_maf:
     input:
@@ -249,29 +56,21 @@ rule get_euro_hap_files_with_metadata:
         rm {params.temp_eur_cols_file} {params.temp_hap_file} {params.temp_hap_filtered_maf_file} {params.temp_hap_with_maf_file}
         """
 
-rule write_out_available_blocks:
-    output:
-        "resources/simgwas/available_blocks.tsv"
-    run:
-        with open(output[0], 'w') as outfile:
-            outfile.write("chr\tblock\n")
-            for x in sorted(block_dict.items()):
-                for y in x[1]:
-                    outfile.write(f"{x[0]}\t{y}\n")
-
 # Generates rules to generate LD block files for whole genome
 # After https://stackoverflow.com/a/49004234
-for chrom, blocks in block_dict.items():
+for chrom in range(1,23):
+    blocks = block_daf.query('chr == @chrom')['block']
+
     rule:
         input:
-            haplotype_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap.gz".format(ch = chrom),
-            legend_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend.gz".format(ch = chrom),
+            haplotype_file = f"resources/simgwas/1000g/1000GP_Phase3_chr{chrom}_with_meta_eur_common_maf.hap.gz",
+            legend_file = f"resources/simgwas/1000g/1000GP_Phase3_chr{chrom}_eur_common_maf.legend.gz",
             block_file = "resources/ldetect/blocks.txt"
         output:
-            ["resources/simgwas/1000g/blockwise/chr{ch}/block_{block_no}.hap.gz".format(ch = chrom, block_no = x) for x in blocks],
-            ["resources/simgwas/1000g/blockwise/chr{ch}/block_{block_no}.legend.gz".format(ch = chrom, block_no = x) for x in blocks]
+            [f"resources/simgwas/1000g/blockwise/chr{chrom}/block_{block}.hap.gz" for block in blocks],
+            [f"resources/simgwas/1000g/blockwise/chr{chrom}/block_{block}.legend.gz" for block in blocks]
         params:
-            output_root = "resources/simgwas/1000g/blockwise/chr{ch}".format(ch = chrom),
+            output_root = f"resources/simgwas/1000g/blockwise/chr{chrom}",
             chr_no = chrom
         threads: 4
         shell:
@@ -302,7 +101,7 @@ rule simulate_sum_stats_by_ld_block:
     threads: 1
     resources:
         mem_mb = get_mem_mb,
-        runtime = 30
+        runtime = get_simulation_runtime
     group: 'simulate'
     benchmark: 'results/benchmarks/simulate_sum_stats_by_ld_block/{no_reps}_reps/{effect_size}/{ncases}_{ncontrols}/chr{ch}/block_{block}_seed_{seed}_sum_stats.txt'
     shell:
@@ -315,7 +114,7 @@ rule get_causal_variant_by_ld_block:
         block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
         ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        temp("results/simgwas/simulated_sum_stats/chr{ch}/block_sum_stats/null/10000_10000/block_{block}_causal_variant.tsv")
+        temp("results/simgwas/simulated_sum_stats/block_sum_stats/chr{ch}/null/10000_10000/block_{block}_causal_variant.tsv")
     threads: 4
     resources:
         mem_mb=get_mem_mb,
@@ -328,14 +127,14 @@ rule combine_block_sum_stats:
         null_block_files = ancient(get_null_block_files),
         effect_block_files = ancient(get_effect_block_files)
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases,\d+}_{ncontrols,\d+}/{effect_blocks}_sum_stats.tsv.gz")
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/{ncases,\d+}_{ncontrols,\d+}/{effect_blocks}_sum_stats.tsv.gz")
     run:
         for x in input:
             shell(f"cat {x} >> {output}")
 
 rule make_whole_genome_metadata_file:
     input:
-        [["results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/10000_10000/block_%d_sum_stats.tsv.gz" % (chrom, block) for block in block_dict[chrom]] for chrom in range(1,23)]
+        [["results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/10000_10000/block_%d_sum_stats.tsv.gz" % (chrom, block) for block in block_daf.query('chr == @chrom')['block']] for chrom in range(1,23)]
     output:
         temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/metadata_only.tsv.gz")
     params:
@@ -389,7 +188,7 @@ rule prune_merged_sim_sum_stats:
 # TODO chr6:block86 CV duplication problem
 rule get_causal_variants:
     input:
-        [["results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/10000_10000/block_%d_causal_variant.tsv" % (x,y) for y in block_dict[x]] for x in range(1,23)]
+        [[f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/10000_10000/block_{block}_causal_variant.tsv" for block in block_daf.query('chr == @chrom')['block']] for chrom in range(1,23)]
     output:
         "results/simgwas/combined_causal_variants.tsv"
     run:

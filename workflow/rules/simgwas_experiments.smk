@@ -43,6 +43,15 @@ mixed_effect_sample_sizes = [(500, 10000, 500, 10000),
                              (100000, 100000, 100000, 100000),
                              (250000, 250000, 250000, 250000)]
 
+sample_sizes = [(500, 10000, 500, 10000),
+                (1000, 10000, 1000, 10000),
+                (2000, 10000, 2000, 10000),
+                (5000, 10000, 5000, 10000),
+                (10000, 10000, 10000, 10000),
+                (50000, 50000, 50000, 50000),
+                (100000, 100000, 100000, 100000),
+                (250000, 250000, 250000, 250000)]
+
 medium_effect_rg_estimate_files  = [f"results/ldsc/rg/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in medium_effect_sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
 
 medium_effect_rg_estimate_free_h2_free_rg_files = [f"results/ldsc/rg/free_h2_free_rg_intercept/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in medium_effect_sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]

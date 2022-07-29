@@ -3,8 +3,8 @@
 #SBATCH -A MRC-BSU-SL2-CPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=1
+#SBATCH --time=2:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH -p cclake,cclake-himem,icelake,icelake-himem,skylake,skylake-himem
 #SBATCH -o logs/gps_paper_pipeline_scheduler/%j.out
@@ -71,4 +71,7 @@ source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 
-python3 -m snakemake -j 300 --default-resources time=5 mem_mb=3420 tmpdir='tmp' --use-conda --scheduler greedy --profile "$HOME/.config/snakemake/slurm" "${@}"
+# --resources threads=12 should constrain max. no. of threads per group submission to 12 as per new group resources
+# By default, mem_mb, disk_mb, and threads are local, so per-group constraint, rest are across all groups/the whole workflow, but this can be modified with --set-resource-scopes
+# TODO perhaps I need to do something in the config? Submitting group jobs with number of cores exceeding the limit specified with --resources
+python3 -m snakemake -j 300 --resources threads=16 --default-resources runtime=5 mem_mb=3420 tmpdir='tmp' --group-components simulate=10 --use-conda --scheduler greedy --profile "$HOME/.config/snakemake/slurm" "${@}"
