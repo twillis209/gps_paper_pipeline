@@ -1,3 +1,17 @@
+def get_all_block_files(sample_sizes):
+
+    block_files = []
+
+    for row in block_daf.itertuples():
+        for sample_size in sample_sizes:
+            block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/null/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{row.null_seed}_sum_stats.tsv.gz")
+            block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/small/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{row.small_seed}_sum_stats.tsv.gz")
+            block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/medium/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{row.medium_seed}_sum_stats.tsv.gz")
+
+    return block_files
+
+
+
 def parse_effect_token_to_odds_ratios(token):
     return ','.join([str(odds_ratio_dict[re.match('[smlhv]', x).group()]) for x in token.split('-')])
 

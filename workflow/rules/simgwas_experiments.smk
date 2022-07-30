@@ -4,54 +4,29 @@ from numpy import nan
 
 include: 'simgwas_experiments_functions.py'
 
-tag_pairs = [tags[i]+tags[i+1] for i in range(0, 19, 2)]
-
 odds_ratio_dict = {"s": 1.05, "m": 1.2, 'l': 1.4, 'v': 2, 'r': 'random', 'n' : 1, 'i' : 1.1}
 
-# 22
-medium_effect_tuples = [f"m50_m50_m{x}" for x in [0, 10, 20, 30, 40, 50]]+[f"m25_m25_m{x}" for x in [0, 5, 10, 15, 20, 25]]+[f"m50_m50_m{x}" for x in [2, 5, 7, 12, 15, 17]]+[f"m25_m25_m{x}" for x in [2, 7, 12, 17]]
+sample_sizes = [(500, 10000),
+                (1000, 10000),
+                (2000, 10000),
+                (5000, 10000),
+                (10000, 10000),
+                (50000, 50000),
+                (100000, 100000),
+                (250000, 250000)]
 
-#+[f"s400_s400_s{x}" for x in [10, 20, 30, 40]]
-small_effect_tuples = [f"s400_s400_s{x}" for x in range(0, 401, 100)]+[f"s400_s400_s{x}" for x in range(50, 351, 100)]
+rule run_all_block_simulations:
+    input:
+        block_files = get_all_block_files(sample_sizes)
 
-mixed_effect_tuples = [f"s200-m25_s200-m25_s{x}-m{y}" for x in range(0, 201, 50) for y in range(0, 26, 5)]
+rule write_out_simulation_parameters_file:
+    output:
+        "results/simgwas/simulation_parameters.tsv"
+    params:
+        sample_sizes = sample_sizes
+    script: "../scripts/simgwas/write_out_simulation_parameters.py"
 
-medium_effect_sample_sizes = [(10000, 10000, 10000, 10000),
-                (50000, 50000, 50000, 50000),
-                (100000, 100000, 100000, 100000),
-                (250000, 250000, 250000, 250000),
-                (500, 10000, 500, 10000),
-                (1000, 10000, 1000, 10000),
-                (2000, 10000, 2000, 10000),
-                (5000, 10000, 5000, 10000)]
-
-small_effect_sample_sizes = [(500, 10000, 500, 10000),
-                (1000, 10000, 1000, 10000),
-                (2000, 10000, 2000, 10000),
-                (5000, 10000, 5000, 10000),
-                (10000, 10000, 10000, 10000),
-                (50000, 50000, 50000, 50000),
-                (100000, 100000, 100000, 100000),
-                (250000, 250000, 250000, 250000)]
-
-mixed_effect_sample_sizes = [(500, 10000, 500, 10000),
-                             (1000, 10000, 1000, 10000),
-                             (2000, 10000, 2000, 10000),
-                             (5000, 10000, 5000, 10000),
-                             (10000, 10000, 10000, 10000),
-                             (50000, 50000, 50000, 50000),
-                             (100000, 100000, 100000, 100000),
-                             (250000, 250000, 250000, 250000)]
-
-sample_sizes = [(500, 10000, 500, 10000),
-                (1000, 10000, 1000, 10000),
-                (2000, 10000, 2000, 10000),
-                (5000, 10000, 5000, 10000),
-                (10000, 10000, 10000, 10000),
-                (50000, 50000, 50000, 50000),
-                (100000, 100000, 100000, 100000),
-                (250000, 250000, 250000, 250000)]
-
+"""
 medium_effect_rg_estimate_files  = [f"results/ldsc/rg/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in medium_effect_sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
 
 medium_effect_rg_estimate_free_h2_free_rg_files = [f"results/ldsc/rg/free_h2_free_rg_intercept/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in medium_effect_sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
@@ -308,3 +283,4 @@ rule compile_results:
         "results/hoeffdings/simgwas/randomised/window_1000kb_step_50/compiled_s_hoeffdings_results.tsv",
         "results/hoeffdings/simgwas/randomised/window_1000kb_step_50/compiled_m_hoeffdings_results.tsv",
         "results/hoeffdings/simgwas/randomised/window_1000kb_step_50/compiled_mixed_hoeffdings_results.tsv"
+"""
