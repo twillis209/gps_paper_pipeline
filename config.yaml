@@ -1,0 +1,30 @@
+cluster: "mkdir -p logs/{name} &&
+  sbatch
+  -J {name}
+  -o logs/{name}/%j.out
+  -e logs/{name}/%j.err
+  --export ALL,OMP_NUM_THREADS={threads}
+  --account MRC-BSU-SL2-CPU 
+  --time {resources.runtime}
+  --nodes 1
+  --ntasks 1
+  --cpus-per-task {threads}
+  --mail-type FAIL
+  --partition cclake,cclake-himem,skylake-himem,skylake,icelake,icelake-himem"
+jobs: 300
+local-cores: 2
+cores: 16
+default-resources:
+  - runtime=5
+  - mem_mb=3420
+  - tmpdir='tmp'
+set-threads:
+  - merge_randomised_simulated_sum_stats=16
+  - prune_merged_randomised_simulated_sum_stats=16
+group-components:
+  - simulate=400
+keep-going: True
+use-conda: True
+scheduler: greedy
+rerun-incomplete: True
+retries: 3
