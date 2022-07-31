@@ -19,10 +19,14 @@ default-resources:
   - mem_mb=3420
   - tmpdir='tmp'
 set-threads:
-  - merge_randomised_simulated_sum_stats=16
-  - prune_merged_randomised_simulated_sum_stats=16
+  - merge_randomised_simulated_sum_stats=1
+  - prune_merged_randomised_simulated_sum_stats=1
+set-resources:
+  - merge_randomised_simulated_sum_stats:runtime=25
+  - prune_merged_randomised_simulated_sum_stats:runtime=25
 group-components:
   - simulate=400
+  - process_randomised_simgwas=16
 keep-going: True
 use-conda: True
 scheduler: greedy

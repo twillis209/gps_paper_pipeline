@@ -2,12 +2,13 @@ import os
 
 rule compute_gps_for_sim_pair:
     input:
-        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}{tag_B}.tsv"
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz"
     output:
-        temp("results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}_gps_value.tsv")
+        temp("results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}_gps_value.tsv")
     params:
-        a_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_A)+1),
-        b_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_B)+1)
+        a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
+        b_colname = lambda wildcards: f"p.{wildcards.tag_B}"
+    threads: 1
     resources:
         runtime = 2
     group: "ldsc_hoeffding_and_gps_sans_permutation"
@@ -16,12 +17,12 @@ rule compute_gps_for_sim_pair:
 
 rule permute_sim_pair:
     input:
-        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}{tag_B}.tsv"
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz"
     output:
-        "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws,\d+}_permutations/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A,[a-z]}{tag_B,[a-z]}.tsv"
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/{draws,\d+}_permutations/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}.tsv"
     params:
-        a_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_A)+1),
-        b_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_B)+1)
+        a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
+        b_colname = lambda wildcards: f"p.{wildcards.tag_B}"
     threads: 8
     resources:
         mem_mb = get_mem_mb,
@@ -32,10 +33,10 @@ rule permute_sim_pair:
 
 rule fit_gev_and_compute_gps_pvalue_for_sim_pair:
     input:
-        gps_file = "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}_gps_value.tsv",
-        perm_file = "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{draws}_permutations/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}{tag_B}.tsv"
+        gps_file = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A}-{tag_B}_gps_value.tsv",
+        perm_file = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/{draws}_permutations/seed_{seed}_tags_{tag_A}-{tag_B}.tsv"
     output:
-        "results/gps/simgwas/randomised/window_{window}_step_{step}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{draws,\d+}_permutations/{effect_blocks_A,[smlh\d-]+}_{effect_blocks_B,[smlh\d-]+}_{shared_effect_blocks,[smlh\d-]+}_seed_{seed,\d+}_tags_{tag_A,[a-z]}{tag_B,[a-z]}_gps_pvalue.tsv"
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlh\d-]+}_{effect_blocks_B,[smlh\d-]+}_{shared_effect_blocks,[smlh\d-]+}/window_{window}_step_{step}/{draws,\d+}_permutations/seed_{seed,\d+}_tags_{tag_A,\d+}-{tag_B,\d+}_gps_pvalue.tsv"
     resources:
         runtime = 2
     group: "permutation"
@@ -44,12 +45,12 @@ rule fit_gev_and_compute_gps_pvalue_for_sim_pair:
 
 rule compute_hoeffdings_for_sim_pair:
     input:
-        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}{tag_B}.tsv"
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz"
     output:
-        "results/hoeffdings/simgwas/randomised/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed,\d+}_tags_{tag_A,[a-z]}{tag_B,[a-z]}_hoeffdings.tsv"
+        "results/hoeffdings/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed,\d+}_tags_{tag_A,\d+}-{tag_B,\d+}_hoeffdings.tsv"
     params:
-        a_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_A)+1),
-        b_colname = lambda wildcards: "p.%d" % (tags.index(wildcards.tag_B)+1)
+        a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
+        b_colname = lambda wildcards: f"p.{wildcards.tag_B}"
     group: "ldsc_hoeffding_and_gps_sans_permutation"
     resources:
         runtime = 2
@@ -62,12 +63,11 @@ rule compute_hoeffdings_for_sim_pair:
 
 rule generate_ecdf_values_for_simgwas_trait_pair:
     input:
-        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A,[a-z]}{tag_B,[a-z]}.tsv"
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz"
     output:
-        temp("results/gps/simgwas/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}_ecdf.tsv")
+        temp("results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}_ecdf.tsv")
     params:
-        pvalue_col_one = lambda wildcards: tag_pvalue_dict[wildcards.tag_A],
-        pvalue_col_two = lambda wildcards: tag_pvalue_dict[wildcards.tag_B]
+        a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
+        b_colname = lambda wildcards: f"p.{wildcards.tag_B}"
     shell:
-        # TODO fix this: need to number p.x and p.y with x and y being the 
-        "workflow/scripts/gps_cpp/build/apps/fitAndEvaluateEcdfsCLI -i {input.sum_stats_file} -a {params.pvalue_col_one} -b {params.pvalue_col_two} -o {output}"
+        "workflow/scripts/gps_cpp/build/apps/fitAndEvaluateEcdfsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -o {output}"
