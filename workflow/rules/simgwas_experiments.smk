@@ -26,6 +26,24 @@ rule write_out_simulation_parameters_file:
         sample_sizes = sample_sizes
     script: "../scripts/simgwas/write_out_simulation_parameters.py"
 
+rule test_new_randomised_simgwas_code:
+    input:
+        "results/ldsc/simgwas/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/rg/fixed_h2_free_rg_intercept/seed_5_3-4.log",
+        "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/window_1000kb_step_50/3000_permutations/seed_5_tags_3-4_gps_pvalue.tsv",
+        "results/hoeffdings/simgwas/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/window_1000kb_step_50/seed_5_tags_3-4_hoeffdings.tsv",
+        "results/ldak/ldak-thin/simgwas/400_reps/randomised/rg/10000_10000_10000_10000/s200_s200_s10/seed_5_tags_3-4.cors"
+
+
+
+
+"""
+        pruned_sum_stats = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/window_1000kb_step_50/seed_5_pruned_sum_stats_tags_3-4.tsv.gz",
+sum_stats_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/seed_5_sum_stats_A_tag_3_of_3-4.tsv.gz",
+sum_stats_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/seed_5_sum_stats_B_tag_4_of_3-4.tsv.gz"
+
+
+"""
+
 """
 medium_effect_rg_estimate_files  = [f"results/ldsc/rg/whole_genome/randomised/{size[0]}_{size[1]}_{size[2]}_{size[3]}/{effect_tuple}_seed_%d_{tag_pair}.log" for size in medium_effect_sample_sizes for tag_pair in tag_pairs for effect_tuple in medium_effect_tuples]
 
