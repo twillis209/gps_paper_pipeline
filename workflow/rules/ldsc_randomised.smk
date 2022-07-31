@@ -11,7 +11,7 @@ rule munge_randomised_sum_stats:
     threads: 1
     resources:
         runtime = 10
-    group: "ldsc_hoeffding_and_gps_sans_permutation"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     conda:
         "envs/ldsc.yaml"
     shell:
@@ -23,14 +23,14 @@ rule estimate_rg_for_randomised_sum_stats:
     input:
         ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
         ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
-        sum_stats_A = "results/simgwas/simulated_sum_stats/munged_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_A_{tag_A}_of_{tag_A}-{tag_B}.tsv.sumstats.gz"
-        sum_stats_A = "results/simgwas/simulated_sum_stats/munged_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_B_{tag_B}_of_{tag_A}-{tag_B}.tsv.sumstats.gz"
+        sum_stats_A = "results/simgwas/simulated_sum_stats/munged_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_A_{tag_A}_of_{tag_A}-{tag_B}.tsv.sumstats.gz",
+        sum_stats_B = "results/simgwas/simulated_sum_stats/munged_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_B_{tag_B}_of_{tag_A}-{tag_B}.tsv.sumstats.gz"
     output:
-        "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/rg/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/seed_{seed}_{tag_A}-{tag_B}.log"
+        "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/rg/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/seed_{seed}_tags_{tag_A}-{tag_B}.log"
     log:
-        log = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/rg/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/seed_{seed}_{tag_A}-{tag_B}.actual_log"
+        log = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/rg/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/seed_{seed}_tags_{tag_A}-{tag_B}.actual_log"
     params:
-        log_file_par = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/rg/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/seed_{seed}_{tag_A}-{tag_B}",
+        log_file_par = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/rg/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/seed_{seed}_tags_{tag_A}-{tag_B}",
         # NB: Trailing '/' is needed in ld_score_root
         ld_score_root = "resources/ldsc/eur_w_ld_chr/",
         population_prevalence = 0.02,
@@ -39,7 +39,7 @@ rule estimate_rg_for_randomised_sum_stats:
         rg_intercept = lambda wildcards: "--intercept-gencov 0,0" if wildcards.rg_intercept == "fixed" else ""
     resources:
         runtime = 2
-    group: "ldsc_hoeffding_and_gps_sans_permutation"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     conda:
         "envs/ldsc.yaml"
     shell:

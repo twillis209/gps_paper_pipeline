@@ -1,5 +1,3 @@
-from string import ascii_lowercase
-
 tags = [str(x) for x in range(1, 401)]
 
 include: "simgwas_randomised_functions.py"

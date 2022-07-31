@@ -13,7 +13,7 @@ rule thin_predictors:
     params:
         input_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
         output_stem = "results/ldak/ldak-thin/weights/{join}/{chr}/thin"
-    group: "sumher"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """
         $ldakRoot/ldak --thin {params.output_stem} --bfile {params.input_stem} --window-prune .98 --window-kb 100 > {log.log_file};
@@ -33,7 +33,7 @@ rule calculate_ldak_thin_taggings_for_chromosome:
     params:
         input_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
         output_stem = "results/ldak/ldak-thin/taggings/{join}/{chr}"
-    group: "sumher"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         "$ldakRoot/ldak --calc-tagging {params.output_stem} --bfile {params.input_stem} --weights {input.weights_file} --chr {wildcards.chr} --window-kb 1000 --power -.25 > {log.log_file}"
 
@@ -47,7 +47,7 @@ rule join_ldak_thin_taggings:
         log_file = "results/ldak/ldak-thin/{join}/whole_genome.tagging.log"
     params:
         output_stem = "results/ldak/ldak-thin/{join}/whole_genome"
-    group: "sumher"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """
         for x in {input}; do
@@ -73,7 +73,7 @@ rule process_combined_simgwas_sum_stats:
     threads: 2
     resources:
         runtime = 10
-    group: "ldsc_hoeffding_and_gps_sans_permutation"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script:
         "process_combined_simgwas_sum_stats_for_sumher.R"
 
@@ -89,7 +89,7 @@ rule process_ukbb_sum_stats:
     threads: 8
     resources:
         runtime = 10
-    group: "sumher"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script:
         "process_ukbb_sum_stats.R"
 
@@ -105,12 +105,12 @@ rule estimate_rg_with_ldak_thin_for_simgwas:
 #        labels_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors.labels",
 #        overlap_file = "results/ldak/ldak-thin/1000g/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_{tag_A}{tag_B}.cors.overlap",
     log:
-        log_file = "results/ldak/ldak-thin/simgwas/randomised/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_{tag_A}-{tag_B}.log"
+        log_file = "results/ldak/ldak-thin/simgwas/{no_reps}_reps/randomised/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_{tag_A}-{tag_B}.log"
     params:
         output_stem = "results/ldak/ldak-thin/simgwas/randomised/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_{tag_A}-{tag_B}"
     resources:
         runtime = 5
-    group: "ldsc_hoeffding_and_gps_sans_permutation"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """
         $ldakRoot/ldak --sum-cors {params.output_stem} --tagfile {input.wg_tagging_file} --summary {input.sum_stats_file_A} --summary2 {input.sum_stats_file_B} --allow-ambiguous YES --check-sums NO --cutoff 0.01 > {log.log_file}
@@ -133,7 +133,7 @@ rule estimate_rg_with_ldak_thin_for_ukbb:
         output_stem = "results/ldak/ldak-thin/ukbb/rg/{trait_A}-{trait_B}"
     resources:
         runtime = 5
-    group: "sumher"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """
         $ldakRoot/ldak --sum-cors {params.output_stem} --tagfile {input.wg_tagging_file} --summary {input.sum_stats_file_A} --summary2 {input.sum_stats_file_B} --allow-ambiguous YES --check-sums NO --cutoff 0.01 > {log.log_file}

@@ -146,24 +146,6 @@ rule deduplicate_variants:
     shell:
         "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --rm-dup 'force-first' --make-bed --silent --out {params.output_stem}"
 
-rule retain_only_snp_variants:
-    input:
-        "resources/1000g/euro/qc/nodup/{chr}.bed",
-        "resources/1000g/euro/qc/nodup/{chr}.bim",
-        "resources/1000g/euro/qc/nodup/{chr}.fam"
-    output:
-        "resources/1000g/euro/qc/nodup/snps_only/1000g/{chr}.bed",
-        "resources/1000g/euro/qc/nodup/snps_only/1000g/{chr}.bim",
-        "resources/1000g/euro/qc/nodup/snps_only/1000g/{chr}.fam"
-    params:
-        input_stem = "resources/1000g/euro/qc/nodup/{chr}",
-        output_stem = "resources/1000g/euro/qc/nodup/snps_only/1000g/{chr}"
-    threads: 8
-    resources:
-        mem_mb=get_mem_mb
-    shell:
-        "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --snps-only --make-bed --silent --out {params.output_stem}"
-
 rule subset_snp_variants:
     input:
         "resources/1000g/euro/qc/nodup/{chr}.bed",

@@ -27,6 +27,8 @@ set-resources:
 group-components:
   - simulate=400
   - process_randomised_simgwas=16
+  - permute=1
+  - ldsc_hoeffding_sumher_gps_sans_permutation=10
 keep-going: True
 use-conda: True
 scheduler: greedy

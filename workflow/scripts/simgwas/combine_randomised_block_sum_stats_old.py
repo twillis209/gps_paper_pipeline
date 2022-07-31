@@ -28,9 +28,9 @@ with open(snakemake.log.log, 'w') as logfile:
 
     logfile.write("\n")
 
-    z_column_name_B = f"zsim.{snakemake.wildcards.tag_A}"
-    beta_column_name_B = f"betasim.{snakemake.wildcards.tag_A}"
-    p_column_name_B = f"p.{snakemake.wildcards.tag_A}"
+    z_column_name_B = f"zsim.{snakemake.wildcards.tag_B}"
+    beta_column_name_B = f"betasim.{snakemake.wildcards.tag_B}"
+    p_column_name_B = f"p.{snakemake.wildcards.tag_B}"
 
     header_string_B = "\t".join(["position", "a0", "a1", "id", "block", "TYPE", "EUR", z_column_name_B, beta_column_name_B, p_column_name_B, "ncases", "ncontrols", "chr", "block_effect_size"])
 

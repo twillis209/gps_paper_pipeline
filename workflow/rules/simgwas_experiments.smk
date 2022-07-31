@@ -28,7 +28,7 @@ rule write_out_simulation_parameters_file:
 
 rule test_new_randomised_simgwas_code:
     input:
-        "results/ldsc/simgwas/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/rg/fixed_h2_free_rg_intercept/seed_5_3-4.log",
+        "results/ldsc/simgwas/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/rg/fixed_h2_free_rg_intercept/seed_5_tags_3-4.log",
         "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/window_1000kb_step_50/3000_permutations/seed_5_tags_3-4_gps_pvalue.tsv",
         "results/hoeffdings/simgwas/400_reps/randomised/10000_10000_10000_10000/s200_s200_s10/window_1000kb_step_50/seed_5_tags_3-4_hoeffdings.tsv",
         "results/ldak/ldak-thin/simgwas/400_reps/randomised/rg/10000_10000_10000_10000/s200_s200_s10/seed_5_tags_3-4.cors"
