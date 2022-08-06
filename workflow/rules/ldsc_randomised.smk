@@ -5,9 +5,11 @@ rule munge_randomised_sum_stats:
         temp("results/simgwas/simulated_sum_stats/munged_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed,\d+}_{pair_label,[AB]}_{tag,\d+}_of_{tag_A,\d+}-{tag_B,\d+}.tsv.sumstats.gz")
     params:
         output_filename = "results/simgwas/simulated_sum_stats/munged_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_{pair_label}_{tag}_of_{tag_A}-{tag_B}.tsv",
-        # TODO don't understand the format of this parameter
-         signed_sumstats_col = lambda wildcards: f"betasim.{wildcards.tag},{int(wildcards.tag) + 17}",
-         pvalue_col = lambda wildcards: f"p.{wildcards.tag}"
+        # NB: The '0' below gives the null value for beta
+        signed_sumstats_col = lambda wildcards: f"betasim.{wildcards.tag},0",
+        pvalue_col = lambda wildcards: f"p.{wildcards.tag}"
+    log:
+        log = "results/simgwas/simulated_sum_stats/munged_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed,\d+}_{pair_label,[AB]}_{tag,\d+}_of_{tag_A,\d+}-{tag_B,\d+}.tsv.log"
     threads: 1
     resources:
         runtime = 10
@@ -16,7 +18,7 @@ rule munge_randomised_sum_stats:
         "envs/ldsc.yaml"
     shell:
         """
-        python $ldsc/munge_sumstats.py --sumstats {input} --N-con-col ncontrols --N-cas-col ncases --snp id --out {params.output_filename} --signed-sumstats {params.signed_sumstats_col} --p {params.pvalue_col} --a1 a0 --a2 a1 --frq EUR --a1-inc;
+        python $ldsc/munge_sumstats.py --sumstats {input} --N-con-col ncontrols --N-cas-col ncases --snp id --out {params.output_filename} --signed-sumstats {params.signed_sumstats_col} --p {params.pvalue_col} --a1 a1 --a2 a0 --frq EUR;
         """
 
 rule estimate_rg_for_randomised_sum_stats:
