@@ -15,6 +15,8 @@ sample_sizes = [(500, 10000),
                 (100000, 100000),
                 (250000, 250000)]
 
+#localrules: simulation_result_quartet
+
 rule run_all_block_simulations:
     input:
         block_files = get_all_block_files(sample_sizes)
@@ -25,6 +27,13 @@ rule write_out_simulation_parameters_file:
     params:
         sample_sizes = sample_sizes
     script: "../scripts/simgwas/write_out_simulation_parameters.py"
+
+rule simulation_result_quartet_with_values:
+    input:
+        "results/ldsc/simgwas/400_reps/randomised/500_10000_500_10000/s400_s400_s0/rg/fixed_h2_free_rg_intercept/seed_1_tags_1-2.log",
+        "results/gps/simgwas/400_reps/randomised/500_10000_500_10000/s400_s400_s0/window_1000kb_step_50/3000_permutations/seed_1_tags_1-2_gps_pvalue.tsv",
+        "results/hoeffdings/simgwas/400_reps/randomised/500_10000_500_10000/s400_s400_s0/window_1000kb_step_50/seed_1_tags_1-2_hoeffdings.tsv",
+        "results/ldak/ldak-thin/simgwas/400_reps/randomised/rg/500_10000_500_10000/s400_s400_s0/seed_1_tags_1-2.cors"
 
 rule simulation_result_quartet:
     input:
@@ -39,7 +48,12 @@ rule simulation_result_quartet:
 # TODO simulation parameters probably needs to be a resource as we can't induce its production with this rule
 rule run_all_simulations:
     input:
-        input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv")[:1]
-    output:
-        "results/simgwas/done/{no_reps}_reps.done"
-    shell: "touch {output}"
+        input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400)
+
+rule run_five_simulations:
+    input:
+        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_1_tags_1-2.done",
+        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_2_tags_3-4.done",
+        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_3_tags_5-6.done",
+        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_4_tags_7-8.done",
+        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_5_tags_9-10.done",

@@ -11,7 +11,7 @@ cluster: "mkdir -p logs/{name} &&
   --cpus-per-task {threads}
   --mail-type FAIL
   --partition cclake,cclake-himem,skylake-himem,skylake,icelake,icelake-himem"
-jobs: 300
+jobs: 300 
 local-cores: 2
 cores: 16
 default-resources:
@@ -33,4 +33,5 @@ keep-going: True
 use-conda: True
 scheduler: greedy
 rerun-incomplete: True
-retries: 3
+dry-run: False
+verbose: True
