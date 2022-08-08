@@ -13,7 +13,7 @@ def get_all_block_files(sample_sizes):
 def get_all_simulation_done_files(simulation_pars_file, reps):
     daf = pd.read_csv(simulation_pars_file, sep = '\t')
 
-    return [f"results/simgwas/done/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.done" for row in daf.itertuples()][:10]
+    return [f"results/simgwas/done/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.done" for row in daf.itertuples()]
 
 def parse_effect_token_to_odds_ratios(token):
     return ','.join([str(odds_ratio_dict[re.match('[smlhv]', x).group()]) for x in token.split('-')])

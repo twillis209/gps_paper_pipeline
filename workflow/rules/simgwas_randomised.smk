@@ -63,6 +63,6 @@ rule unzip_pruned_merged_randomised_simulated_sum_stats:
     threads: 1
     resources:
         runtime = 10
-    group: "ldsc_hoeffding_and_gps_sans_permutation"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         "gunzip -c {input} >{output}"

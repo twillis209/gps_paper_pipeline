@@ -15,7 +15,7 @@ sample_sizes = [(500, 10000),
                 (100000, 100000),
                 (250000, 250000)]
 
-#localrules: simulation_result_quartet
+localrules: simulation_result_quartet
 
 rule run_all_block_simulations:
     input:
@@ -49,11 +49,3 @@ rule simulation_result_quartet:
 rule run_all_simulations:
     input:
         input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400)
-
-rule run_five_simulations:
-    input:
-        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_1_tags_1-2.done",
-        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_2_tags_3-4.done",
-        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_3_tags_5-6.done",
-        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_4_tags_7-8.done",
-        "results/simgwas/done/400_reps/randomised/500_10000_500_10000/s400_s400_s0/seed_5_tags_9-10.done",

@@ -11,9 +11,12 @@ cluster: "mkdir -p logs/{name} &&
   --cpus-per-task {threads}
   --mail-type FAIL
   --partition cclake,cclake-himem,skylake-himem,skylake,icelake,icelake-himem"
-jobs: 300 
+jobs: 1000
 local-cores: 2
 cores: 16
+keep-going: True
+use-conda: True
+scheduler: greedy
 default-resources:
   - runtime=5
   - mem_mb=3420
@@ -21,17 +24,21 @@ default-resources:
 set-threads:
   - merge_randomised_simulated_sum_stats=1
   - prune_merged_randomised_simulated_sum_stats=1
+  - process_combined_simgwas_sum_stats=1
 set-resources:
-  - merge_randomised_simulated_sum_stats:runtime=25
-  - prune_merged_randomised_simulated_sum_stats:runtime=25
+  - merge_randomised_simulated_sum_stats:
+      - runtime=25
+  - prune_merged_randomised_simulated_sum_stats:
+      - runtime=25
+  - process_combined_simgwas_sum_stats:
+      - runtime=25
 group-components:
   - simulate=400
   - process_randomised_simgwas=16
   - permute=1
-  - ldsc_hoeffding_sumher_gps_sans_permutation=10
-keep-going: True
-use-conda: True
-scheduler: greedy
+  - ldsc_hoeffding_sumher_gps_sans_permutation=1
 rerun-incomplete: True
 dry-run: False
 verbose: True
+# TODO cluster-cancel doesn't work
+cluster-cancel: scancel
