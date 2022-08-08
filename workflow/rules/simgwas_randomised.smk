@@ -20,7 +20,7 @@ rule combine_randomised_block_sum_stats_for_pair:
         runtime = 180,
         mem_mb = get_mem_mb,
         tmpdir = 'tmp'
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "process_randomised_simgwas"
     benchmark:
         "results/benchmarks/combine_randomised_block_sum_stats_for_pair/{no_reps}_reps/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}_{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}-{tag_B}.txt"
     script: "../scripts/simgwas/combine_randomised_block_sum_stats_old.py"
@@ -37,7 +37,7 @@ rule merge_randomised_simulated_sum_stats:
         file_B_stat_cols = lambda wildcards: f"p.{wildcards.tag_B}"
     resources:
         runtime = 10
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "process_randomised_simgwas"
     shell:
         "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --file_A_stat_cols {params.file_A_stat_cols} --file_B_stat_cols {params.file_B_stat_cols} -o {output} -nt {threads}"
 
@@ -51,7 +51,7 @@ rule prune_merged_randomised_simulated_sum_stats:
     threads: 4
     resources:
         runtime = 10
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "process_randomised_simgwas"
     shell:
         "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
 
@@ -63,6 +63,6 @@ rule unzip_pruned_merged_randomised_simulated_sum_stats:
     threads: 1
     resources:
         runtime = 10
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "process_randomised_simgwas"
     shell:
         "gunzip -c {input} >{output}"
