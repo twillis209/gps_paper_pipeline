@@ -26,7 +26,7 @@ rule write_out_simulation_parameters_file:
         "results/simgwas/simulation_parameters.tsv"
     params:
         sample_sizes = sample_sizes
-    script: "../scripts/simgwas/write_out_simulation_parameters.py"
+    script: "../../scripts/simgwas/write_out_simulation_parameters.py"
 
 rule simulation_result_quartet_with_values:
     input:

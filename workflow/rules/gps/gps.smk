@@ -65,11 +65,10 @@ rule collate_gps_pvalue_data:
         pvalue_files = ["results/gps/ukbb/{snp_set}/window_{window}_step_{step}/%s_{draws}_permutations_gps_pvalue.tsv" % x for x in ukbb_trait_pairs],
         lookup_file = "resources/ukbb_sum_stats/trait_metadata.tsv"
     output:
-        combined_pvalue_file = "results/gps/combined/{snp_set}/window_{window}_step_{step}/gps_pvalues_{draws}_permutations_with_labels.tsv"
+        combined_pvalue_file = "results/gps/combined/{snp_set}/window_{window}_step_{step}/gps_pvalues_{draws}_permutations.tsv"
     resources:
         runtime = 5
     run:
-        print(output)
         with open(output.combined_pvalue_file, 'w') as outfile:
             outfile.write(("\t".join(["trait_A", "trait_B", "gps", "n", "loc", "loc.sd", "scale", "scale.sd", "shape", "shape.sd", "pval"]))+"\n")
             for i,x in enumerate(input.pvalue_files):
@@ -80,7 +79,6 @@ rule collate_gps_pvalue_data:
                     m = re.match("results/gps/ukbb/%s/window_%s_step_%s/(\w+)-(\w+)_%s_permutations_gps_pvalue.tsv" % (wildcards.snp_set, wildcards.window, wildcards.step, wildcards.draws), x)
 
                 outfile.write(("\t".join([m[1], m[2], line])))
-        shell("Rscript workflow/scripts/add_trait_labels_to_gps_results.R -p {output} -l {input.lookup_file} -o {output}")
 
 rule compute_gps_for_trait_pair_and_write_out_intermediate_values:
     input:
@@ -104,7 +102,7 @@ rule annotate_intermediate_gps_output:
         "results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_intermediates_annot.tsv"
     group: "gps"
     threads: 4
-    script: "../scripts/annotate_intermediate_gps_output.R"
+    script: "../../scripts/annotate_intermediate_gps_output.R"
 
 rule plot_denominator_heatmap:
     input:
@@ -227,4 +225,4 @@ rule compile_top_maximands_for_ukbb_traits:
     output:
         "results/gps/ukbb/{snp_set}/window_1000kb_step_50/compiled_top_maximands.tsv"
     threads: 4
-    script: "../scripts/compile_top_maximands_for_ukbb_traits.R"
+    script: "../../scripts/compile_top_maximands_for_ukbb_traits.R"

@@ -23,7 +23,7 @@ rule combine_randomised_block_sum_stats_for_pair:
     group: "process_randomised_simgwas"
     benchmark:
         "results/benchmarks/combine_randomised_block_sum_stats_for_pair/{no_reps}_reps/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}_{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}-{tag_B}.txt"
-    script: "../scripts/simgwas/combine_randomised_block_sum_stats_old.py"
+    script: "../../scripts/simgwas/combine_randomised_block_sum_stats_old.py"
 
 rule merge_randomised_simulated_sum_stats:
     input:

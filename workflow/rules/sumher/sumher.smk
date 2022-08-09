@@ -75,7 +75,7 @@ rule process_combined_simgwas_sum_stats:
         runtime = 10
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script:
-        "process_combined_simgwas_sum_stats_for_sumher.R"
+        "../../process_combined_simgwas_sum_stats_for_sumher.R"
 
 # NB: Currently assuming in the script that ncases_A == ncases_B and ncontrols_A == ncontrols_B
 rule process_ukbb_sum_stats:
@@ -91,7 +91,7 @@ rule process_ukbb_sum_stats:
         runtime = 10
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script:
-        "process_ukbb_sum_stats.R"
+        "../../process_ukbb_sum_stats.R"
 
 rule estimate_rg_with_ldak_thin_for_simgwas:
     input:
