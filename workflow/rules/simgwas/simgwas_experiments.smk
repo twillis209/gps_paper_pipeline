@@ -46,6 +46,11 @@ rule simulation_result_quartet:
     shell: "touch {output}"
 
 # TODO simulation parameters probably needs to be a resource as we can't induce its production with this rule
+
+rule tabulate_all_randomised_block_files:
+    input:
+        input_files = get_all_randomised_block_files("results/simgwas/simulation_parameters.tsv", reps = 400)
+
 rule run_all_simulations:
     input:
         input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400)

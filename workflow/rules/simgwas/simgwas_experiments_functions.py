@@ -15,6 +15,14 @@ def get_all_simulation_done_files(simulation_pars_file, reps):
 
     return [f"results/simgwas/done/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.done" for row in daf.itertuples()]
 
+def get_all_randomised_block_files(simulation_pars_file, reps):
+    daf = pd.read_csv(simulation_pars_file, sep = '\t')
+
+    a_block_files =  [f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_sum_stats_A_tags_{row.tag_A}-{row.tag_B}_files.txt" for row in daf.itertuples()]
+    b_block_files = [f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_sum_stats_B_tags_{row.tag_A}-{row.tag_B}_files.txt" for row in daf.itertuples()]
+
+    return a_block_files+b_block_files
+
 def parse_effect_token_to_odds_ratios(token):
     return ','.join([str(odds_ratio_dict[re.match('[smlhv]', x).group()]) for x in token.split('-')])
 

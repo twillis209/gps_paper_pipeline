@@ -153,12 +153,6 @@ def get_randomised_block_files_for_pair(wildcards):
                 if b_file not in block_files:
                     block_files.append(b_file)
 
-    print(len(block_files))
-    print(len(a_block_files))
-    print(len(b_block_files))
-
     all_files = block_files+a_block_files+b_block_files
 
     return all_files
-
-    #return (block_files, a_block_files, b_block_files)
