@@ -16,7 +16,7 @@ def get_permute_time(wildcards, threads):
 include: "rules/1000g_reference.smk"
 include: "rules/ukbb.smk"
 include: "rules/gps/gps.smk"
-include: "rules/gps/hoeffdings.smk"
+include: "rules/hoeffdings.smk"
 include: "rules/simgwas/simgwas.smk"
 include: "rules/simgwas/simgwas_randomised.smk"
 include: "rules/ldsc/ldsc.smk"

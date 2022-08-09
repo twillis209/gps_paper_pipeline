@@ -153,17 +153,12 @@ def get_randomised_block_files_for_pair(wildcards):
                 if b_file not in block_files:
                     block_files.append(b_file)
 
-    return (block_files, a_block_files, b_block_files)
+    print(len(block_files))
+    print(len(a_block_files))
+    print(len(b_block_files))
 
-#def chrom_block_dict_to_dataframe(chrom_block_dict):
-#    cols = ['chr', 'block', 'effect']
-#    daf = pd.DataFrame(columns = cols)
-#
-#    for k in chrom_block_dict.keys():
-#        daf = pd.concat([
-#            daf, pd.DataFrame(
-#            [(v[0], v[1], k) for v in chrom_block_dict[k]], columns = cols
-#        )
-#        ])
-#
-#    return daf
+    all_files = block_files+a_block_files+b_block_files
+
+    return all_files
+
+    #return (block_files, a_block_files, b_block_files)

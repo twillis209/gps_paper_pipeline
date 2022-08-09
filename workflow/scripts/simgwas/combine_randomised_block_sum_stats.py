@@ -1,5 +1,11 @@
 from snakemake.shell import shell
 
+def read_block_files(input_file):
+    with open(input_file, "r") as fh:
+        lines = fh.readlines()
+
+    return [x.strip('\n') for x in lines]
+
 with open(snakemake.log.log, 'w') as logfile:
     z_column_name_A = f"zsim.{snakemake.wildcards.tag_A}"
     beta_column_name_A = f"betasim.{snakemake.wildcards.tag_A}"
@@ -20,7 +26,9 @@ with open(snakemake.log.log, 'w') as logfile:
 
     shell("echo -e \"{header_string_A}\" > {snakemake.params.uncomp_sum_stats_A}")
 
-    for x in snakemake.input.a_block_files:
+    a_block_files = read_block_files(snakemake.input.a_block_file)
+
+    for x in a_block_files:
         shell("zcat {x} | cut -f{cut_string_A} >> {snakemake.params.uncomp_sum_stats_A}")
         logfile.write(f"{x}\n")
 
@@ -42,7 +50,9 @@ with open(snakemake.log.log, 'w') as logfile:
 
     shell("echo -e \"{header_string_B}\" > {snakemake.params.uncomp_sum_stats_B}")
 
-    for x in snakemake.input.b_block_files:
+    b_block_files = read_block_files(snakemake.input.b_block_file)
+
+    for x in b_block_files:
         shell("zcat {x} | cut -f{cut_string_B} >> {snakemake.params.uncomp_sum_stats_B}")
         logfile.write(f"{x}\n")
 
