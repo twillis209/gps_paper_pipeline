@@ -4,7 +4,6 @@ machine.file.*
 resources
 .snakemake
 logs
-submit_with*
 Rplots.pdf
 .Rhistory
 extra_scripts
