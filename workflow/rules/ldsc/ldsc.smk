@@ -45,20 +45,23 @@ rule calculate_theoretical_h2:
     threads: 4
     shell:
         "Rscript workflow/scripts/ldsc/calculate_theoretical_h2.R --cv_file {input} --effect_blocks {wildcards.effect_blocks} --odds_ratio {params.odds_ratio} -P {params.sample_prevalence} -K {params.population_prevalence} -o {output} -nt {threads}"
-"""
+
 rule preprocess_ukbb_sum_stats_trait:
     input:
+        flag_file = "resources/ukbb_sum_stats/{trait}.done",
         sum_stats_file = "resources/ukbb_sum_stats/{join}/merged_ukbb_sum_stats.tsv.gz",
-        ld_score_snps = "resources/ldsc/ldsc_snps.tsv.gz"
+        snplist_file = "resources/ldsc/ldsc_snps.tsv.gz"
     params:
         pval_col = lambda wildcards: f"pval.{wildcards.trait}",
         tstat_col = lambda wildcards: f"tstat.{wildcards.trait}",
         n_col = lambda wildcards: f"n_complete_samples.{wildcards.trait}",
     output:
-        "results/ldsc/munged_sum_stats/ukbb/{trait}_preprocessed_sum_stats.tsv.gz",
+        "results/ldsc/munged_sum_stats/ukbb/{join}/{trait}_preprocessed_sum_stats.tsv.gz",
     threads: 4
-    script: "../../ldsc/scripts/preprocess_ukbb_sum_stats_for_ldsc.R"
-"""
+    resources:
+        tmpdir = 'tmp'
+    script: "../../scripts/ldsc/preprocess_ukbb_sum_stats_for_ldsc.R"
+
         # TODO some of the variants specified seems to be missing from the cv_dat, 1_100, 5_108, 6_6, 6_25, 6_38, 8_22
 #rule calculate_theoretical_rg:
 #    input:
