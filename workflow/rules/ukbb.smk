@@ -274,11 +274,12 @@ rule decompress_ukbb_sum_stats:
         gunzip -c {input} >{output.decomp_file} && touch {output.flag_file}
         """
 
+        # TODO need to fix other rules which have old input file resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz
 rule merge_ukbb_sum_stats:
     input:
         ukbb_files = ancient(["resources/ukbb_sum_stats/%s.gwas.imputed_v3.both_sexes.tsv" % x for x in ukbb_trait_codes])
     output:
-        merged_file = "resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz"
+        merged_file = "resources/ukbb_sum_stats/all/merged_ukbb_sum_stats.tsv.gz"
     params:
         ukbb_trait_codes = ukbb_trait_codes
     threads: 8
@@ -324,6 +325,16 @@ rule excise_mhc_from_pruned_merged_sum_stats:
         ancient("resources/pruned_sum_stats/{join}/all_pruned_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
     output:
         "resources/pruned_sum_stats/{join}/sans_mhc/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
+    params:
+        tmpdir = 'tmp'
+    threads: 8
+    script: "../scripts/excise_mhc_from_sum_stats.R"
+
+rule excise_mhc_from_merged_sum_stats:
+    input:
+        ancient("resources/ukbb_sum_stats/all/merged_ukbb_sum_stats.tsv.gz")
+    output:
+        "resources/ukbb_sum_stats/sans_mhc/merged_ukbb_sum_stats.tsv.gz"
     params:
         tmpdir = 'tmp'
     threads: 8

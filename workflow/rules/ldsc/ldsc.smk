@@ -23,6 +23,15 @@ rule extract_ld_scores:
     shell:
         "tar -xjf {input} -C {params.output_root}"
 
+rule write_out_ld_score_snps:
+    input:
+        ldsc_files = ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
+        snplist_file = "resources/ldsc/eur_w_ld_chr/w_hm3.snplist",
+    output:
+        "resources/ldsc/ldsc_snps.tsv.gz"
+    threads: 4
+    script: "../../scripts/ldsc/write_out_ld_score_snps.R"
+
 # TODO Fix like I fixed theoretical rg
 rule calculate_theoretical_h2:
     input:
@@ -36,7 +45,20 @@ rule calculate_theoretical_h2:
     threads: 4
     shell:
         "Rscript workflow/scripts/ldsc/calculate_theoretical_h2.R --cv_file {input} --effect_blocks {wildcards.effect_blocks} --odds_ratio {params.odds_ratio} -P {params.sample_prevalence} -K {params.population_prevalence} -o {output} -nt {threads}"
-
+"""
+rule preprocess_ukbb_sum_stats_trait:
+    input:
+        sum_stats_file = "resources/ukbb_sum_stats/{join}/merged_ukbb_sum_stats.tsv.gz",
+        ld_score_snps = "resources/ldsc/ldsc_snps.tsv.gz"
+    params:
+        pval_col = lambda wildcards: f"pval.{wildcards.trait}",
+        tstat_col = lambda wildcards: f"tstat.{wildcards.trait}",
+        n_col = lambda wildcards: f"n_complete_samples.{wildcards.trait}",
+    output:
+        "results/ldsc/munged_sum_stats/ukbb/{trait}_preprocessed_sum_stats.tsv.gz",
+    threads: 4
+    script: "../../ldsc/scripts/preprocess_ukbb_sum_stats_for_ldsc.R"
+"""
         # TODO some of the variants specified seems to be missing from the cv_dat, 1_100, 5_108, 6_6, 6_25, 6_38, 8_22
 #rule calculate_theoretical_rg:
 #    input:
