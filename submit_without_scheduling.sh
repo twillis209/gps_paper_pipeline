@@ -71,4 +71,4 @@ source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 
-snakemake --cores 4 -j 300 --keep-going --use-conda --scheduler greedy --rerun-incomplete --default-resources runtime=5 mem_mb=3420 tmpdir='tmp'
+snakemake --cores 4 -j 300 --keep-going --use-conda --scheduler greedy --rerun-incomplete --default-resources runtime=5 mem_mb=3420 tmpdir='tmp' "${@}"
