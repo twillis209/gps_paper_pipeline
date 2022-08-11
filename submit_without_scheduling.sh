@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=4:10:00
+#SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH -p cclake,cclake-himem,icelake,icelake-himem,skylake,skylake-himem
 #SBATCH -o unscheduled_gps_paper_pipeline/%j.out

@@ -145,6 +145,7 @@ setnames(result_dat, 'or', 'chosen_or')
 
 result_dat[, `:=` (ncases = args$no_cases, ncontrols = args$no_controls)]
 
+# This merging step confines our SNPs to those present in the bim file; we keep the same order of a0 and a1 alleles, even if this differs in the bim file
 result_dat <- merge(result_dat, bim_dat[, .(bim.id, bp, A1, A2)], by.x = 'position', by.y = 'bp', all.x = T)
 
 result_dat <- result_dat[(a0 == A2 & a1 == A1) | (a0 == A1 & a1 == A2)]

@@ -56,11 +56,35 @@ rule preprocess_ukbb_sum_stats_trait:
         tstat_col = lambda wildcards: f"tstat.{wildcards.trait}",
         n_col = lambda wildcards: f"n_complete_samples.{wildcards.trait}",
     output:
-        "results/ldsc/munged_sum_stats/ukbb/{join}/{trait}_preprocessed_sum_stats.tsv.gz",
+        temp("results/ldsc/munged_sum_stats/ukbb/{join}/{trait}_preprocessed_sum_stats.tsv.gz")
     threads: 4
     resources:
         tmpdir = 'tmp'
     script: "../../scripts/ldsc/preprocess_ukbb_sum_stats_for_ldsc.R"
+
+rule munge_ukbb_sum_stats:
+    input:
+        "results/ldsc/munged_sum_stats/ukbb/{join}/{trait}_preprocessed_sum_stats.tsv.gz"
+    output:
+        "results/ldsc/munged_sum_stats/ukbb/{join}/{trait}.tsv.sumstats.gz"
+    params:
+        output_filename = "results/ldsc/munged_sum_stats/ukbb/{join}/{trait}.tsv",
+        # NB: The '0' below gives the null value for beta
+        signed_sumstats_col = lambda wildcards: f"tstat.{wildcards.trait},0",
+        pvalue_col = lambda wildcards: f"pval.{wildcards.trait}",
+        n_col = lambda wildcards: f"n_complete_samples.{wildcards.trait}",
+        id_col = "SNP"
+    log:
+        log = "results/ldsc/munged_sum_stats/ukbb/{join}/{trait}.log"
+    threads: 1
+    resources:
+        runtime = 10
+    conda:
+        "envs/ldsc.yaml"
+    shell:
+        """
+        python $ldsc/munge_sumstats.py --sumstats {input} --N-col {params.n_col} --snp {params.id_col} --out {params.output_filename} --signed-sumstats {params.signed_sumstats_col} --p {params.pvalue_col} --a1 a1 --a2 a2 --frq EUR;
+        """
 
         # TODO some of the variants specified seems to be missing from the cv_dat, 1_100, 5_108, 6_6, 6_25, 6_38, 8_22
 #rule calculate_theoretical_rg:

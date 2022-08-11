@@ -67,8 +67,8 @@ rule process_combined_simgwas_sum_stats:
         z_colname = lambda wildcards: f'zsim.{wildcards.tag}',
         chr_colname = 'chr',
         bp_colname = 'position',
-        a1_colname = 'a0',
-        a2_colname = 'a1',
+        a1_colname = 'a1',
+        a2_colname = 'a0',
         sample_size = lambda wildcards: int(wildcards.ncases_A)+int(wildcards.ncontrols_A)
     threads: 2
     resources:

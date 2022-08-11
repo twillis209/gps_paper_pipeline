@@ -9,8 +9,6 @@ parser$add_argument('--leg_file', type = 'character', help = 'Path to legend fil
 parser$add_argument('--output_file', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-#test_args <- c('--hap_file', 'resources/simgwas/1000g/blockwise/chr3/block_0.hap.gz', '--leg_file', 'resources/simgwas/1000g/blockwise/chr3/block_0.legend.gz', '--output_file', 'results/simgwas/chr3_ld_matrices/block_0_ld_matrix.RData', '-nt', 4)
-
 args <- parser$parse_args()
 
 setDTthreads(args$no_of_threads)

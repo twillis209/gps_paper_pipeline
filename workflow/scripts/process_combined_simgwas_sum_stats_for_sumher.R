@@ -11,7 +11,7 @@ n <- snakemake@params[['sample_size']]
 
 dat <- fread(snakemake@input[[1]], sep = '\t', header = T, select = c(chr_colname, bp_colname, a1_colname, a2_colname, z_colname))
 
-setnames(dat, c(a1_colname, a2_colname, z_colname), c('A2', 'A1', 'Z'))
+setnames(dat, c(a1_colname, a2_colname, z_colname), c('A1', 'A2', 'Z'))
 
 dat[, Predictor := paste(get(chr_colname), get(bp_colname), A2, A1, sep = ':')]
 
