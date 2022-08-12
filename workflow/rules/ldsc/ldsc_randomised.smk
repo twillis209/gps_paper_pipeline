@@ -14,6 +14,7 @@ rule munge_randomised_sum_stats:
     resources:
         runtime = 10
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    priority: 1
     conda:
         "envs/ldsc.yaml"
     shell:
@@ -42,6 +43,7 @@ rule estimate_rg_for_randomised_sum_stats:
     resources:
         runtime = 2
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    priority: 1
     conda:
         "envs/ldsc.yaml"
     shell:

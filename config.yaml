@@ -11,7 +11,7 @@ cluster: "mkdir -p logs/{name} &&
   --cpus-per-task {threads}
   --mail-type FAIL
   --partition cclake,cclake-himem,skylake-himem,skylake,icelake,icelake-himem"
-jobs: 2000
+jobs: 200
 local-cores: 2
 cores: 10
 keep-going: True

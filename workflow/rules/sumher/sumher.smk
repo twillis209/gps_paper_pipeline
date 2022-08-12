@@ -74,8 +74,9 @@ rule process_combined_simgwas_sum_stats:
     resources:
         runtime = 10
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    priority: 1
     script:
-        "../../process_combined_simgwas_sum_stats_for_sumher.R"
+        "../../scripts/process_combined_simgwas_sum_stats_for_sumher.R"
 
 # NB: Currently assuming in the script that ncases_A == ncases_B and ncontrols_A == ncontrols_B
 rule process_ukbb_sum_stats:
@@ -91,7 +92,7 @@ rule process_ukbb_sum_stats:
         runtime = 10
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script:
-        "../../process_ukbb_sum_stats.R"
+        "../../scripts/process_ukbb_sum_stats.R"
 
 rule estimate_rg_with_ldak_thin_for_simgwas:
     input:
@@ -111,6 +112,7 @@ rule estimate_rg_with_ldak_thin_for_simgwas:
     resources:
         runtime = 5
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    priority: 1
     shell:
         """
         $ldakRoot/ldak --sum-cors {params.output_stem} --tagfile {input.wg_tagging_file} --summary {input.sum_stats_file_A} --summary2 {input.sum_stats_file_B} --allow-ambiguous YES --check-sums NO --cutoff 0.01 > {log.log_file}

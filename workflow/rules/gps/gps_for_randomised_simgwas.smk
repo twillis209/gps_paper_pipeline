@@ -12,6 +12,7 @@ rule compute_gps_for_sim_pair:
     resources:
         runtime = 2
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    priority: 1
     shell:
         "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -l -o {output}"
 
@@ -28,6 +29,7 @@ rule permute_sim_pair:
         mem_mb = get_mem_mb,
         runtime = get_permute_time,
     group: "permutation"
+    priority: 1
     shell:
         "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws}"
 
@@ -40,6 +42,7 @@ rule fit_gev_and_compute_gps_pvalue_for_sim_pair:
     resources:
         runtime = 2
     group: "permutation"
+    priority: 1
     shell:
       "Rscript workflow/scripts/fit_gev_and_compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.effect_blocks_A} -b {wildcards.effect_blocks_B} -o {output}"
 
@@ -52,6 +55,7 @@ rule compute_hoeffdings_for_sim_pair:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}"
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    priority: 1
     resources:
         runtime = 2
     shell:
