@@ -11,9 +11,9 @@ cluster: "mkdir -p logs/{name} &&
   --cpus-per-task {threads}
   --mail-type FAIL
   --partition cclake,cclake-himem,skylake-himem,skylake,icelake,icelake-himem"
-jobs: 200
-local-cores: 2
-cores: 10
+jobs: 1000
+local-cores: 5
+cores: 8
 keep-going: True
 use-conda: True
 scheduler: greedy
@@ -34,11 +34,11 @@ set-resources:
       - runtime=25
 group-components:
   - simulate=400
-  - process_randomised_simgwas=1
   - permute=1
-  - ldsc_hoeffding_sumher_gps_sans_permutation=16
+  - ldsc_hoeffding_sumher_gps_sans_permutation=6
 rerun-incomplete: True
 dry-run: False
-verbose: True
+verbose: False
+nolock: True
 # TODO cluster-cancel doesn't work
 cluster-cancel: scancel

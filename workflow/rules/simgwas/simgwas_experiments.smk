@@ -54,3 +54,8 @@ rule tabulate_all_randomised_block_files:
 rule run_all_simulations:
     input:
         input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400)
+
+# TODO correct name
+rule run_m50_simulations:
+    input:
+        input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 'm25')
