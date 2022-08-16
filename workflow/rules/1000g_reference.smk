@@ -127,7 +127,6 @@ rule cat_bim_files:
     shell:
         "for x in {input}; do cat $x >>{output}; done"
 
-
 rule deduplicate_variants:
     input:
         "resources/1000g/euro/qc/{chr}_qc.bed",

@@ -285,25 +285,45 @@ rule merge_ukbb_sum_stats:
     threads: 8
     script: "../scripts/merge_ukbb_sum_stats.R"
 
-# SNP sets differ between UKBB pairs and PID-UKBB pairs
 rule make_ukbb_plink_ranges:
     input:
-      sum_stats_file = ancient("resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz"),
+      sum_stats_file = ancient("resources/ukbb_sum_stats/{join}/merged_ukbb_sum_stats.tsv.gz"),
       bim_files = ancient([("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
       "resources/1000g/euro/qc/chrX_qc.bim"])
     output:
-      bim_files = [("resources/plink_ranges/ukbb/chr%d.txt" % x for x in range(1,23)),
-      "resources/plink_ranges/ukbb/chrX.txt"]
+      bim_files = [("resources/plink_ranges/ukbb/{join}/chr%d.txt" % x for x in range(1,23)),
+      "resources/plink_ranges/ukbb/{join}/chrX.txt"]
+    params:
+        sans_mhc = lambda wildcards: True if wildcards.join == 'sans_mhc' else False
     threads: 8
     script: "../scripts/make_ukbb_plink_ranges.R"
 
+rule subset_ukbb_snp_variants:
+    input:
+        "resources/1000g/euro/qc/nodup/{chr}.bed",
+        "resources/1000g/euro/qc/nodup/{chr}.bim",
+        "resources/1000g/euro/qc/nodup/{chr}.fam",
+        range_file = "resources/plink_ranges/ukbb/{join}/{chr}.txt"
+    output:
+        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.bed",
+        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.bim",
+        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.fam"
+    params:
+        input_stem = "resources/1000g/euro/qc/nodup/{chr}",
+        output_stem = "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    shell:
+        "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --snps-only --make-bed --extract {input.range_file} --silent --out {params.output_stem}"
+
 rule prune_merged_sum_stats:
     input:
-      sum_stats_file = ancient("resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz"),
+      sum_stats_file = ancient("resources/ukbb_sum_stats/{join}/merged_ukbb_sum_stats.tsv.gz"),
       bim_file = ancient("resources/plink_subsets/{join}/all.bim"),
       pruned_range_file = ancient("resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/all.prune.in")
     output:
-        "resources/pruned_sum_stats/{join}/all_pruned_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
+        "resources/pruned_sum_stats/{join}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
     threads: 8
     shell:
       """
@@ -313,7 +333,7 @@ rule prune_merged_sum_stats:
 
 rule downsample_pruned_merged_sum_stats:
     input:
-        ancient("resources/pruned_sum_stats/{join}/all_pruned_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
+        ancient("resources/pruned_sum_stats/{join}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
     output:
         temp("resources/pruned_sum_stats/{join}/{no_snps}_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
     threads: 8
@@ -322,9 +342,9 @@ rule downsample_pruned_merged_sum_stats:
 
 rule excise_mhc_from_pruned_merged_sum_stats:
     input:
-        ancient("resources/pruned_sum_stats/{join}/all_pruned_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
+        ancient("resources/pruned_sum_stats/all/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
     output:
-        "resources/pruned_sum_stats/{join}/sans_mhc/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
+        "resources/pruned_sum_stats/sans_mhc/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
     params:
         tmpdir = 'tmp'
     threads: 8

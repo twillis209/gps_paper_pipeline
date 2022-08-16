@@ -40,5 +40,6 @@ rerun-incomplete: True
 dry-run: False
 verbose: False
 nolock: True
+rerun-triggers: 'mtime'
 # TODO cluster-cancel doesn't work
 cluster-cancel: scancel
