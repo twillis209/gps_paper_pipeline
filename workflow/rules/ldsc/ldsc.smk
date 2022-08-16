@@ -86,6 +86,31 @@ rule munge_ukbb_sum_stats:
         python $ldsc/munge_sumstats.py --sumstats {input} --N-col {params.n_col} --snp {params.id_col} --out {params.output_filename} --signed-sumstats {params.signed_sumstats_col} --p {params.pvalue_col} --a1 a1 --a2 a2 --frq EUR;
         """
 
+rule estimate_rg_for_ukbb_sum_stats:
+    input:
+        ["resources/ldsc/eur_w_ld_chr/%d.l2.ldscore.gz" % i for i in range(1,23)],
+        ["resources/ldsc/eur_w_ld_chr/%d.l2.M_5_50" % i for i in range(1,23)],
+        sum_stats_A = "results/ldsc/munged_sum_stats/ukbb/{join}/{trait_A}.tsv.sumstats.gz",
+        sum_stats_B = "results/ldsc/munged_sum_stats/ukbb/{join}/{trait_B}.tsv.sumstats.gz"
+    output:
+        "results/ldsc/rg/ukbb/{join}/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/{trait_A}-{trait_B}.log"
+    log:
+        log = "results/ldsc/rg/ukbb/{join}/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/{trait_A}-{trait_B}.actual_log"
+    params:
+        log_file_par = "results/ldsc/rg/ukbb/{join}/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/{trait_A}-{trait_B}",
+        # NB: Trailing '/' is needed in ld_score_root
+        ld_score_root = "resources/ldsc/eur_w_ld_chr/",
+        h2_intercept = lambda wildcards: "--intercept-h2 1,1" if wildcards.h2_intercept == "fixed" else "",
+        rg_intercept = lambda wildcards: "--intercept-gencov 0,0" if wildcards.rg_intercept == "fixed" else ""
+    resources:
+        runtime = 2
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    conda:
+        "envs/ldsc.yaml"
+    shell:
+        # Hacky fix to retain 'log' file (the output is regrettably so-called), which we need whether or not the estimation process failed
+        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} {params.h2_intercept} {params.rg_intercept} >{log.log} || true"
+
         # TODO some of the variants specified seems to be missing from the cv_dat, 1_100, 5_108, 6_6, 6_25, 6_38, 8_22
 #rule calculate_theoretical_rg:
 #    input:
