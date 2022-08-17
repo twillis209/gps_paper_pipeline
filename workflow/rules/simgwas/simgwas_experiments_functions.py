@@ -35,6 +35,14 @@ def get_all_randomised_block_files(simulation_pars_file, reps):
 def parse_effect_token_to_odds_ratios(token):
     return ','.join([str(odds_ratio_dict[re.match('[smlhv]', x).group()]) for x in token.split('-')])
 
+def get_theo_rg_files(simulation_pars_file, reps, subset = None):
+    daf = pd.read_csv(simulation_pars_file, sep = '\t')
+
+    if subset:
+        daf = daf.query('a_blocks == @subset & b_blocks == @subset')
+
+    return [f"results/ldsc/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/theoretical_rg/seed_{row.seed}_{row.tag_A}-{row.tag_B}_theo_rg.tsv" for row in daf.itertuples()]
+
 def compile_theoretical_rg_results(input, output):
     with open(output[0], 'w') as outfile:
         outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\tseed\ttag_pair\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tshared_blocks\th2.theo.obs.A\th2.theo.obs.B\th2.theo.liab.A\th2.theo.liab.B\tV_A.A\tV_A.B\tC_A.AB\tr_A.AB\n")
@@ -326,7 +334,6 @@ def compile_hoeffdings_results_into_daf(input_files):
         )
 
     return pd.DataFrame(d)
-
 
 def compile_gps_results_into_daf(input_files):
     daf = pd.DataFrame()

@@ -51,6 +51,10 @@ rule run_all_simulations:
 rule run_m25_simulations:
     input:
         input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 'm25')
+        
+rule run_m25_theo_rg:
+    input:
+        input_files = get_theo_rg_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 'm25')
 
         # Doesn't work atm
 rule compile_m25_existing_files:

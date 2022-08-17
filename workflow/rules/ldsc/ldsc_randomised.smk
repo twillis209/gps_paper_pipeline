@@ -113,7 +113,7 @@ rule calculate_theoretical_rg_for_randomised_sum_stats:
         a_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_A,\d+}_{tag_A,\d+}-{tag_B,\d+}.tsv",
         b_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_B,\d+}_{tag_A,\d+}-{tag_B,\d+}.tsv"
     output:
-        theo_rg_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_A,\d+}-{tag_B,\d+}_theo_rg.tsv",
+        theo_rg_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/seed_{seed,\d+}_{tag_A,\d+}-{tag_B,\d+}_theo_rg.tsv",
     params:
         population_prevalence_A = 0.02,
         sample_prevalence_A = 0.5,
@@ -122,5 +122,4 @@ rule calculate_theoretical_rg_for_randomised_sum_stats:
     resources:
         runtime = 2
     group: "calculate_theoretical_rg"
-    shell:
-        "Rscript workflow/scripts/ldsc/calculate_theoretical_rg_randomised_blocks.R --cv_file {input.combined_causal_variants_file} --a_blocks_file {input.a_chrom_blocks_file} --b_blocks_file {input.b_chrom_blocks_file} --P_a {params.sample_prevalence_A} --P_b {params.sample_prevalence_B} --K_a {params.population_prevalence_A} --K_b {params.population_prevalence_B} -o {output.theo_rg_file} -nt {threads}"
+    script: "../../scripts/ldsc/calculate_theoretical_rg_randomised_blocks.R"
