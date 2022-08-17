@@ -38,7 +38,7 @@ rule combine_randomised_block_sum_stats_for_pair:
         log = "logs/combine_randomised_block_sum_stats_for_pair/{no_reps}_reps/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}_{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}-{tag_B}.log"
     threads: 1
     resources:
-        runtime = 220,
+        runtime = 270,
         mem_mb = get_mem_mb,
         tmpdir = 'tmp'
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"

@@ -28,13 +28,6 @@ rule write_out_simulation_parameters_file:
         sample_sizes = sample_sizes
     script: "../../scripts/simgwas/write_out_simulation_parameters.py"
 
-rule simulation_result_quartet_with_values:
-    input:
-        "results/ldsc/simgwas/400_reps/randomised/500_10000_500_10000/s400_s400_s0/rg/fixed_h2_free_rg_intercept/seed_1_tags_1-2.log",
-        "results/gps/simgwas/400_reps/randomised/500_10000_500_10000/s400_s400_s0/window_1000kb_step_50/3000_permutations/seed_1_tags_1-2_gps_pvalue.tsv",
-        "results/hoeffdings/simgwas/400_reps/randomised/500_10000_500_10000/s400_s400_s0/window_1000kb_step_50/seed_1_tags_1-2_hoeffdings.tsv",
-        "results/ldak/ldak-thin/simgwas/400_reps/randomised/rg/500_10000_500_10000/s400_s400_s0/seed_1_tags_1-2.cors"
-
 rule simulation_result_quartet:
     input:
         "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/rg/fixed_h2_free_rg_intercept/seed_{seed}_tags_{tag_A}-{tag_B}.log",
@@ -55,7 +48,21 @@ rule run_all_simulations:
     input:
         input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400)
 
-# TODO correct name
-rule run_m50_simulations:
+rule run_m25_simulations:
     input:
         input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 'm25')
+
+rule get_m25_existing_files:
+    input:
+        ldsc_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = 'm25')),
+        sumher_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = 'm25')),
+        hoeffdings_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = 'm25')),
+        gps_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = 'm25'))
+    output:
+        ldsc_out = "results/ldsc/simgwas/400_reps/randomised/compiled_m25_results.tsv",
+        sumher_out = "results/ldak/ldak-thin/simgwas/400_reps/randomised/rg/compiled_m25_results.tsv",
+        hoeffdings_out = "results/hoeffdings/simgwas/400_reps/randomised/compiled_m25_results.tsv",
+        gps_out = "results/gps/simgwas/400_reps/randomised/compiled_m25_results.tsv"
+    run:
+        sumher_daf = compile_sumher_results_into_daf(input.sumher_files)
+        sumher_daf.to_csv(output.sumher_out, sep = '\t')
