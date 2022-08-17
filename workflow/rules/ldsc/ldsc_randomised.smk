@@ -1,3 +1,5 @@
+import re
+
 rule munge_randomised_sum_stats:
     input:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{pair_label}_tag_{tag}_of_{tag_A}-{tag_B}.tsv.gz"
@@ -49,38 +51,67 @@ rule estimate_rg_for_randomised_sum_stats:
         "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} {params.h2_intercept} {params.rg_intercept} >{log.log} || true"
 
 rule write_out_randomised_blocks_for_pair:
+    input: 
+        a_block_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tags_{tag_A}-{tag_B}_files.txt",
+        b_block_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tags_{tag_A}-{tag_B}_files.txt"
     output:
-        a_chrom_blocks_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed}_{tag_A}_{tag_A}-{tag_B}.tsv",
-        b_chrom_blocks_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed}_{tag_B}_{tag_A}-{tag_B}.tsv",
-        shared_chrom_blocks_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed}_{tag_A}-{tag_B}.tsv"
-    params:
-        chrom_block_tuples = lambda wildcards: get_randomised_chrom_block_tuples_for_pair(wildcards),
+        a_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_A,\d+}_{tag_A}-{tag_B,\d+}.tsv",
+        b_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_B,\d+}_{tag_A,\d+}-{tag_B}.tsv"
     resources:
-        runtime = 2
+        runtime = 10
     group: "calculate_theoretical_rg"
     run:
-        _, _, _, shared_chrom_block_dict, a_chrom_block_dict, b_chrom_block_dict = params.chrom_block_tuples
+        with open(input.a_block_file, 'r') as a_in:
+            a_lines = [x.strip() for x in a_in.readlines()]
 
-        block_a_daf = chrom_block_dict_to_dataframe(a_chrom_block_dict)
+        with open(input.b_block_file, 'r') as b_in:
+            b_lines = [x.strip() for x in b_in.readlines()]
+
+        file_m = re.compile("results/simgwas/simulated_sum_stats/block_sum_stats/(?P<no_reps>\d+)_reps/(?P<effect>\w+)/(?P<ncases>\d+)_(?P<ncontrols>\d+)/chr(?P<chr>\d+)/block_(?P<block_no>\d+)_seed_(?P<seed>\d+)_sum_stats\.tsv\.gz")
+
+        a_dicts = []
+
+        for x in a_lines:
+            m = file_m.match(x)
+
+            a_dicts.append(
+                {
+                    "chr" : m.group("chr"),
+                    "block" : m.group("block_no"),
+                    "effect" : m.group("effect")
+                }
+            )
+
+        block_a_daf = pd.DataFrame(a_dicts)
+
         block_a_daf.sort_values(by = ['chr', 'block', 'effect'], inplace = True)
 
-        block_b_daf = chrom_block_dict_to_dataframe(b_chrom_block_dict)
+        b_dicts = []
+
+        for x in b_lines:
+            m = file_m.match(x)
+
+            b_dicts.append(
+                {
+                    "chr" : m.group("chr"),
+                    "block" : m.group("block_no"),
+                    "effect" : m.group("effect")
+                }
+            )
+
+        block_b_daf = pd.DataFrame(b_dicts)
+
         block_b_daf.sort_values(by = ['chr', 'block', 'effect'], inplace = True)
 
-        shared_block_daf = chrom_block_dict_to_dataframe(shared_chrom_block_dict)
-        shared_block_daf.sort_values(by = ['chr', 'block', 'effect'], inplace = True)
+        block_a_daf.to_csv(output.a_block_file, index = False, sep = '\t')
 
-        pd.concat([block_a_daf, shared_block_daf]).to_csv(output.a_chrom_blocks_file, index = False, sep = '\t')
-
-        pd.concat([block_b_daf, shared_block_daf]).to_csv(output.b_chrom_blocks_file, index = False, sep = '\t')
-
-        shared_block_daf.to_csv(output.shared_chrom_blocks_file, index = False, sep = '\t')
+        block_b_daf.to_csv(output.b_block_file, index = False, sep = '\t')
 
 rule calculate_theoretical_rg_for_randomised_sum_stats:
     input:
         combined_causal_variants_file = "results/simgwas/combined_causal_variants.tsv",
-        a_chrom_blocks_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed}_{tag_A}_{tag_A}-{tag_B}.tsv",
-        b_chrom_blocks_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed}_{tag_B}_{tag_A}-{tag_B}.tsv"
+        a_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_A,\d+}_{tag_A,\d+}-{tag_B,\d+}.tsv",
+        b_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_B,\d+}_{tag_A,\d+}-{tag_B,\d+}.tsv"
     output:
         theo_rg_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_A,\d+}-{tag_B,\d+}_theo_rg.tsv",
     params:

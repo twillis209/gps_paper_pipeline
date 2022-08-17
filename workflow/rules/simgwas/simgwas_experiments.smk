@@ -52,7 +52,8 @@ rule run_m25_simulations:
     input:
         input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 'm25')
 
-rule get_m25_existing_files:
+        # Doesn't work atm
+rule compile_m25_existing_files:
     input:
         ldsc_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = 'm25')),
         sumher_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = 'm25')),
@@ -64,5 +65,18 @@ rule get_m25_existing_files:
         hoeffdings_out = "results/hoeffdings/simgwas/400_reps/randomised/compiled_m25_results.tsv",
         gps_out = "results/gps/simgwas/400_reps/randomised/compiled_m25_results.tsv"
     run:
+        ldsc_daf = compile_ldsc_results_into_daf(input.ldsc_files)
+        ldsc_daf.to_csv(output.ldsc_out, sep = '\t', index = False)
+
         sumher_daf = compile_sumher_results_into_daf(input.sumher_files)
-        sumher_daf.to_csv(output.sumher_out, sep = '\t')
+        sumher_daf.to_csv(output.sumher_out, sep = '\t', index = False)
+
+        hoeffdings_daf = compile_hoeffdings_results_into_daf(input.hoeffdings_files)
+        hoeffdings_daf.to_csv(output.hoeffdings_out, sep = '\t', index = False)
+
+        gps_daf = compile_gps_results_into_daf(input.gps_files)
+        gps_daf.to_csv(output.gps_out, sep = '\t', index = False)
+
+rule run_s400_simulations:
+    input:
+        input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 's400')

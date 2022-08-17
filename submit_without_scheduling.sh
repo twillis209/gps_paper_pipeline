@@ -3,8 +3,8 @@
 #SBATCH -A MRC-BSU-SL2-CPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=6
+#SBATCH --time=4:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH -p cclake,cclake-himem,icelake,icelake-himem,skylake,skylake-himem
 #SBATCH -o unscheduled_gps_paper_pipeline/%j.out
@@ -71,4 +71,4 @@ source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 
-snakemake --cores 4 -j 300 --keep-going --use-conda --scheduler greedy --rerun-incomplete "${@}"
+snakemake --nolock --cores 6 -j 300 --keep-going --use-conda --scheduler greedy --rerun-incomplete "${@}"
