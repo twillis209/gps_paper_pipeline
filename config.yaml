@@ -25,6 +25,7 @@ set-threads:
   - merge_randomised_simulated_sum_stats=1
   - prune_merged_randomised_simulated_sum_stats=1
   - process_combined_simgwas_sum_stats=1
+  - calculate_theoretical_rg=1
 set-resources:
   - merge_randomised_simulated_sum_stats:
       - runtime=25
@@ -36,6 +37,7 @@ group-components:
   - simulate=400
   - permute=1
   - ldsc_hoeffding_sumher_gps_sans_permutation=6
+  - calculate_theoretical_rg=200
 rerun-incomplete: True
 dry-run: False
 verbose: False

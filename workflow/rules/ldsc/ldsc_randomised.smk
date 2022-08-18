@@ -58,7 +58,7 @@ rule write_out_randomised_blocks_for_pair:
         a_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_A,\d+}_{tag_A}-{tag_B,\d+}.tsv",
         b_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_B,\d+}_{tag_A,\d+}-{tag_B}.tsv"
     resources:
-        runtime = 10
+        runtime = 5
     group: "calculate_theoretical_rg"
     run:
         with open(input.a_block_file, 'r') as a_in:
