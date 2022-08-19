@@ -86,8 +86,6 @@ def get_existing_test_files(simulation_pars_file, reps, filetype, subset = None)
     return [x for x in files if os.path.exists(x)]
 
 def compile_sumher_results_into_daf(input_files):
-    daf = pd.DataFrame()
-
     d = []
 
     for x in input_files:
@@ -151,8 +149,6 @@ def compile_sumher_results_into_daf(input_files):
     return pd.DataFrame(d)
 
 def compile_ldsc_results_into_daf(input_files):
-    daf = pd.DataFrame()
-
     d = []
 
     h2_regex = r"Total Liability scale h2: (.+)\s+\((.+)\)"
@@ -304,8 +300,6 @@ def compile_ldsc_results_into_daf(input_files):
     return pd.DataFrame(d)
 
 def compile_hoeffdings_results_into_daf(input_files):
-    daf = pd.DataFrame()
-
     d = []
 
     for x in input_files:
@@ -336,8 +330,6 @@ def compile_hoeffdings_results_into_daf(input_files):
     return pd.DataFrame(d)
 
 def compile_gps_results_into_daf(input_files):
-    daf = pd.DataFrame()
-
     d = []
 
     for x in input_files:
@@ -373,3 +365,40 @@ def compile_gps_results_into_daf(input_files):
         )
 
     return pd.DataFrame(d)
+
+def compile_theo_rg_results_into_daf(input_files):
+    d = []
+
+    for x in input_files:
+
+        m = re.match(r"results/ldsc/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w]+)_(?P<b_blocks>[\w]+)_(?P<shared_blocks>[\w]+)/theoretical_rg/seed_(?P<seed>\w+)_(?P<tag_a>\d+)-(?P<tag_b>\d+)_theo_rg\.tsv", x)
+
+        with open(x, 'r') as infile:
+            lines = [x.strip() for x in infile.readlines()]
+
+        _, _, _, _, _, h2_theo_obs_A, h2_theo_obs_B, h2_theo_liab_A, h2_theo_liab_B, V_A_A, V_A_B, C_A_AB, r_A_AB  = lines[1].split('\t')
+
+        d.append(
+            {
+                'ncases.A' : m.group('ncases_A'),
+                'ncontrols.A' : m.group('ncontrols_A'),
+                'ncases.B' : m.group('ncases_B'),
+                'ncontrols.B' : m.group('ncontrols_B'),
+                'blocks.A' : m.group('a_blocks'),
+                'blocks.B' : m.group('b_blocks'),
+                'shared_blocks' : m.group('shared_blocks'),
+                'tag_pair' : f"{m.group('tag_a')}-{m.group('tag_b')}",
+                'seed' : f"{m.group('seed')}",
+                "h2.theo.obs.A" : float(h2_theo_obs_A),
+                "h2.theo.obs.B" : float(h2_theo_obs_B),
+                "h2.theo.liab.A" : float(h2_theo_liab_A),
+                "h2.theo.liab.B" : float(h2_theo_liab_B),
+                "V_A.A" : float(V_A_A),
+                "V_A.B" : float(V_A_B),
+                "C_A.AB" : float(C_A_AB),
+                "r_A.AB" : float(r_A_AB)
+            }
+        )
+
+    return pd.DataFrame(d)
+

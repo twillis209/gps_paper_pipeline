@@ -78,11 +78,7 @@ rule estimate_rg_with_ldak_thin_for_ukbb:
         sum_stats_file_A = "resources/ukbb_sum_stats/{join}/{trait_A}.assoc",
         sum_stats_file_B = "resources/ukbb_sum_stats/{join}/{trait_B}.assoc"
     output:
-        progress_file = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}.progress",
-        cors_file = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}.cors",
-        cors_full_file = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}.cors.full",
-        labels_file = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}.cors.labels",
-        overlap_file = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}.cors.overlap"
+        cors_full_file = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}.cors.full"
     log:
         log_file = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}.log"
     params:

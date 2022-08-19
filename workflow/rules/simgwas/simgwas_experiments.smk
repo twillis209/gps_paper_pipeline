@@ -44,30 +44,24 @@ rule tabulate_all_randomised_block_files:
     input:
         input_files = get_all_randomised_block_files("results/simgwas/simulation_parameters.tsv", reps = 400)
 
-rule run_all_simulations:
+rule run_simulations:
     input:
-        input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400)
-
-rule run_m25_simulations:
-    input:
-        input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 'm25')
-        
-rule run_m25_theo_rg:
-    input:
-        input_files = get_theo_rg_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 'm25')
-
-        # Doesn't work atm
-rule compile_m25_existing_files:
-    input:
-        ldsc_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = 'm25')),
-        sumher_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = 'm25')),
-        hoeffdings_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = 'm25')),
-        gps_files = ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = 'm25'))
+        input_files = lambda wildcards: get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, subset = wildcards.effect_blocks)
     output:
-        ldsc_out = "results/ldsc/simgwas/400_reps/randomised/compiled_m25_results.tsv",
-        sumher_out = "results/ldak/ldak-thin/simgwas/400_reps/randomised/rg/compiled_m25_results.tsv",
-        hoeffdings_out = "results/hoeffdings/simgwas/400_reps/randomised/compiled_m25_results.tsv",
-        gps_out = "results/gps/simgwas/400_reps/randomised/compiled_m25_results.tsv"
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{effect_blocks}.done"
+    shell: "touch {output}"
+
+rule compile_existing_test_files:
+    input:
+        ldsc_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'ldsc', subset = wildcards.effect_blocks)),
+        sumher_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'sumher', subset = wildcards.effect_blocks)),
+        hoeffdings_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'hoeffdings', subset = wildcards.effect_blocks)),
+        gps_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'gps', subset = wildcards.effect_blocks))
+    output:
+        ldsc_out = "results/ldsc/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
+        sumher_out = "results/ldak/ldak-thin/simgwas/{no_reps}_reps/randomised/rg/compiled_{effect_blocks}_results.tsv",
+        hoeffdings_out = "results/hoeffdings/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
+        gps_out = "results/gps/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv"
     run:
         ldsc_daf = compile_ldsc_results_into_daf(input.ldsc_files)
         ldsc_daf.to_csv(output.ldsc_out, sep = '\t', index = False)
@@ -80,6 +74,15 @@ rule compile_m25_existing_files:
 
         gps_daf = compile_gps_results_into_daf(input.gps_files)
         gps_daf.to_csv(output.gps_out, sep = '\t', index = False)
+
+rule compile_theo_rg_files:
+    input:
+        input_files = lambda wildcards: get_theo_rg_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, subset = wildcards.effect_blocks)
+    output:
+        "results/ldsc/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_theo_rg.tsv"
+    run:
+        daf = compile_theo_rg_results_into_daf(input)
+        daf.to_csv(output, sep = '\t', index = False)
 
 rule run_s400_simulations:
     input:
