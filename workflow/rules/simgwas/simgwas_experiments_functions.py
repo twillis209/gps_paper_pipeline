@@ -401,4 +401,3 @@ def compile_theo_rg_results_into_daf(input_files):
         )
 
     return pd.DataFrame(d)
-
