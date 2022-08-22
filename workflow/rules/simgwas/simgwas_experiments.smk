@@ -83,7 +83,3 @@ rule compile_theo_rg_files:
     run:
         daf = compile_theo_rg_results_into_daf(input)
         daf.to_csv(output, sep = '\t', index = False)
-
-rule run_s400_simulations:
-    input:
-        input_files = get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 's400')
