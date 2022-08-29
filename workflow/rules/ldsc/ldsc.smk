@@ -142,16 +142,16 @@ rule ukbb_ldsc:
                             'trait.A' : m.group('trait_A'),
                             'trait.B' : m.group('trait_B'),
                             'snp.set' : wildcards.join,
-                            'h2.A' : nan,
-                            'h2.A.se' : nan,
-                            'h2.B' : nan,
-                            'h2.B.se' : nan,
-                            'gcov' : nan,
-                            'gcov.se' : nan,
-                            'rg' : nan,
-                            'rg.se' : nan,
-                            'rg.z' : nan,
-                            'rg.p' : nan
+                            'h2.A.obs.ldsc' : nan,
+                            'h2.A.obs.se.ldsc' : nan,
+                            'h2.B.obs.ldsc' : nan,
+                            'h2.B.obs.se.ldsc' : nan,
+                            'gcov.obs.ldsc' : nan,
+                            'gcov.obs.se.ldsc' : nan,
+                            'rg.ldsc' : nan,
+                            'rg.se.ldsc' : nan,
+                            'rg.z.ldsc' : nan,
+                            'rg.p.ldsc' : nan
                         }
                     )
 
@@ -235,16 +235,16 @@ rule ukbb_ldsc:
                             'trait.A' : m.group('trait_A'),
                             'trait.B' : m.group('trait_B'),
                             'snp.set' : wildcards.join,
-                            'h2.A.obs' : h2_A,
-                            'h2.A.obs.se' : h2_A_se,
-                            'h2.B.obs' : h2_B,
-                            'h2.B.obs.se' : h2_B_se,
-                            'gcov.obs' : gcov,
-                            'gcov.obs.se' : gcov_se,
-                            'rg' : rg,
-                            'rg.se' : rg_se,
-                            'rg.z' : rg_z,
-                            'rg.p' : rg_p
+                            'h2.A.obs.ldsc' : h2_A,
+                            'h2.A.obs.se.ldsc' : h2_A_se,
+                            'h2.B.obs.ldsc' : h2_B,
+                            'h2.B.obs.se.ldsc' : h2_B_se,
+                            'gcov.obs.ldsc' : gcov,
+                            'gcov.obs.se.ldsc' : gcov_se,
+                            'rg.ldsc' : rg,
+                            'rg.se.ldsc' : rg_se,
+                            'rg.z.ldsc' : rg_z,
+                            'rg.p.ldsc' : rg_p
                         }
                     )
 

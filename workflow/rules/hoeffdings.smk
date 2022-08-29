@@ -18,12 +18,3 @@ rule collate_hoeffdings_results:
           cat <(tail -n 1 $x) >> {output}
        done
        """
-
-rule add_trait_labels_to_hoeffdings_results:
-    input:
-        results_file = "results/combined/{snp_set}/window_{window}_step_{step}/hoeffdings_results.tsv",
-        lookup_file = "resources/ukbb_sum_stats/trait_metadata.tsv"
-    output:
-        "results/combined/{snp_set}/window_{window}_step_{step}/hoeffdings_results_with_labels.tsv"
-    shell:
-        "Rscript workflow/scripts/add_trait_labels_to_hoeffdings_results.R -r {input.results_file} -l {input.lookup_file} -o {output}"

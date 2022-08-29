@@ -62,8 +62,7 @@ rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
 
 rule collate_gps_pvalue_data:
     input:
-        pvalue_files = ["results/gps/ukbb/{snp_set}/window_{window}_step_{step}/%s_{draws}_permutations_gps_pvalue.tsv" % x for x in ukbb_trait_pairs],
-        lookup_file = "resources/ukbb_sum_stats/trait_metadata.tsv"
+        pvalue_files = ["results/gps/ukbb/{snp_set}/window_{window}_step_{step}/%s_{draws}_permutations_gps_pvalue.tsv" % x for x in ukbb_trait_pairs]
     output:
         combined_pvalue_file = "results/gps/combined/{snp_set}/window_{window}_step_{step}/gps_pvalues_{draws}_permutations.tsv"
     resources:

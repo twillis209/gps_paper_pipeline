@@ -12,7 +12,7 @@ rule tabulate_randomised_block_sum_stats_file_for_pair:
     params:
         no_of_blocks_in_genome = block_daf.shape[0]
     threads: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "tabulate_and_combine_block_files"
     run:
         # Probably too clever by half
         a_block_files = input.block_files[-(2*params.no_of_blocks_in_genome):-params.no_of_blocks_in_genome]
@@ -41,7 +41,7 @@ rule combine_randomised_block_sum_stats_for_pair:
         runtime = 270,
         mem_mb = get_mem_mb,
         tmpdir = 'tmp'
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "tabulate_and_combine_block_files"
     benchmark:
         "results/benchmarks/combine_randomised_block_sum_stats_for_pair/{no_reps}_reps/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}_{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}_seed_{seed}_tags_{tag_A}-{tag_B}.txt"
     script: "../../scripts/simgwas/combine_randomised_block_sum_stats.py"

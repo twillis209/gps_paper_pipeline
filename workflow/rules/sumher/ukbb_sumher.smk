@@ -1,4 +1,5 @@
 from scipy.stats import chi2
+import pandas as pd
 
 rule thin_predictors_for_ukbb:
     input:
@@ -93,29 +94,46 @@ rule estimate_rg_with_ldak_thin_for_ukbb:
 
 rule ukbb_sumher:
     input:
-       sumher_files = [f"results/ldak/ldak-thin/ukbb/{{join}}/rg/{trait_pair}.cors.full" for trait_pair in ukbb_trait_pairs],
-       metadata_file = "resources/ukbb_sum_stats/trait_metadata.tsv"
+       sumher_files = [f"results/ldak/ldak-thin/ukbb/{{join}}/rg/{trait_pair}.cors.full" for trait_pair in ukbb_trait_pairs]
     output:
         "results/ldak/ldak-thin/ukbb/{join}/rg/compiled_ukbb_sumher_results.tsv"
     run:
-        meta_daf = pd.read_csv(input.metadata_file, sep = '\t')
-        with open(output[0], 'w') as outfile:
-            outfile.write("trait_A_code\ttrait_B_code\ttrait_A_name\ttrait_B_name\th2.A\th2.A.se\th2.B\th2.B.se\tgcov\tgcov.se\trg\trg.se\trg.z\trg.p\n")
-            for x in input.sumher_files:
-                head, tail = os.path.split(x)
+        d = []
 
-                trait_A, trait_B = re.match("(\w+)-(\w+).cors.full", tail).groups()
+        for x in input.sumher_files:
+            head, tail = os.path.split(x)
 
-                trait_A_name = meta_daf.loc[meta_daf.code == trait_A, 'long_abbrv'].values[0]
-                trait_B_name = meta_daf.loc[meta_daf.code == trait_B, 'long_abbrv'].values[0]
+            trait_A, trait_B = re.match("(\w+)-(\w+).cors.full", tail).groups()
 
-                with open(x, 'r') as infile:
-                    line = infile.readline()
-                    line = infile.readline()
+            with open(x, 'r') as infile:
+                line = infile.readline()
+                line = infile.readline()
 
-                    # Category Trait1_Her SD Trait2_Her SD Both_Coher SD Correlation SD
-                    _, h2_A, h2_A_se, h2_B, h2_B_se, cov, cov_se, rg, rg_se = line.split()
-                    rg_z = float(rg)/float(rg_se)
+            # Category Trait1_Her SD Trait2_Her SD Both_Coher SD Correlation SD
+            _, h2_A, h2_A_se, h2_B, h2_B_se, cov, cov_se, rg, rg_se = line.split()
 
-                    rg_p = chi2.sf(rg_z**2, df = 1, loc = 0, scale = 1)
-                    outfile.write(f"{trait_A}\t{trait_B}\t{trait_A_name}\t{trait_B_name}\t{float(h2_A)}\t{float(h2_A_se)}\t{float(h2_B)}\t{float(h2_B_se)}\t{float(cov)}\t{float(cov_se)}\t{float(rg)}\t{float(rg_se)}\t{rg_z}\t{rg_p}\n")
+            rg_z = float(rg)/float(rg_se)
+
+            rg_p = chi2.sf(rg_z**2, df = 1, loc = 0, scale = 1)
+
+            d.append(
+                {
+                    'trait.A' : trait_A,
+                    'trait.B' : trait_B,
+                    'snp.set' : wildcards.join,
+                    'h2.A.obs.sr' : float(h2_A),
+                    'h2.A.obs.se.sr' : float(h2_A_se),
+                    'h2.B.obs.sr' : float(h2_B),
+                    'h2.B.obs.se.sr' : float(h2_B_se),
+                    'gcov.obs.sr' : float(cov),
+                    'gcov.obs.se.sr' : float(cov_se),
+                    'rg.sr' : float(rg),
+                    'rg.se.sr' : float(rg_se),
+                    'rg.z.sr' : rg_z,
+                    'rg.p.sr' : rg_p
+                }
+            )
+
+            print(x)
+
+        pd.DataFrame(d).to_csv(output[0], sep = '\t', index = False)
