@@ -2,10 +2,6 @@ import re as re
 import pandas as pd
 import random
 
-block_daf = pd.read_csv("resources/ldetect/available_blocks.tsv", sep = "\t")
-
-block_daf = block_daf.query('available == True')
-
 effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'intermediate'}
 
 include: "simgwas_functions.py"
