@@ -15,9 +15,10 @@ cluster: "mkdir -p logs/{name} &&
 # NB: We need the --parsable option to allow the cluster-status script cluster-cancel command to work 
 jobs: 1000
 local-cores: 5
-cores: 8
+# So I have 9 cores to over which to scatter the 
+cores: 12
 keep-going: True
-use-conda: True
+use-conda: False
 scheduler: greedy
 default-resources:
   - runtime=5
@@ -29,6 +30,7 @@ set-threads:
   - process_combined_simgwas_sum_stats=1
   - calculate_theoretical_rg=1
   - tabulate_and_combine_block_files=1
+  - permute_sim_pair=12
 set-resources:
   - merge_randomised_simulated_sum_stats:
       - runtime=25
@@ -39,7 +41,7 @@ set-resources:
 group-components:
   - simulate=400
   - permute=1
-  - ldsc_hoeffding_sumher_gps_sans_permutation=4
+  - ldsc_hoeffding_sumher_gps_sans_permutation=20
   - calculate_theoretical_rg=200
   - tabulate_and_combine_block_files=1
 rerun-incomplete: True
