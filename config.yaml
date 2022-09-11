@@ -14,11 +14,10 @@ cluster: "mkdir -p logs/{name} &&
   --parsable"
 # NB: We need the --parsable option to allow the cluster-status script cluster-cancel command to work 
 jobs: 1000
-local-cores: 5
-# So I have 9 cores to over which to scatter the 
+local-cores: 2
 cores: 12
 keep-going: True
-use-conda: False
+use-conda: True
 scheduler: greedy
 default-resources:
   - runtime=5
@@ -41,7 +40,7 @@ set-resources:
 group-components:
   - simulate=400
   - permute=1
-  - ldsc_hoeffding_sumher_gps_sans_permutation=20
+  - ldsc_hoeffding_sumher_gps_sans_permutation=48
   - calculate_theoretical_rg=200
   - tabulate_and_combine_block_files=1
 rerun-incomplete: True
@@ -49,6 +48,7 @@ dry-run: False
 verbose: False
 nolock: True
 rerun-triggers: 'mtime'
-max-status-checks-per-second: 1
+max-status-checks-per-second: 10
+latency-wait: 20
 cluster-status: './cluster_status.py' 
 cluster-cancel: 'scancel'
