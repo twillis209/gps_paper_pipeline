@@ -79,7 +79,11 @@ rule gather_split_block_files:
         uncomp_sum_stats_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}-{tag_B}.tsv",
         uncomp_sum_stats_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}-{tag_B}.tsv",
         expected_line_count = 8998662
-    threads: 1
+    log:
+        log = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_gather_tags_{tag_A}-{tag_B}.log"
+    threads: 6
+    resources:
+        mem_mb = get_mem_mb
     group: "tabulate_and_combine_block_files"
     run:
         z_column_name_A = f"zsim.{wildcards.tag_A}"
@@ -90,15 +94,17 @@ rule gather_split_block_files:
 
         shell("echo -e \"{header_string_A}\" > {params.uncomp_sum_stats_A}")
 
-        for x in input.a_files:
-            shell("cat {x} >> {params.uncomp_sum_stats_A}")
+        shell("cat {input.a_files} >> {params.uncomp_sum_stats_A}")
 
-#        line_count_A = shell("wc -l {params.uncomp_sum_stats_A}")
-#
-#        if line_count_A != f"{params.expected_line_count}":
-#            raise Exception(f"File A does not contain expected no. of lines {params.expected_line_count}, has {line_count_A} instead")
+        line_count_A = shell("wc -l {params.uncomp_sum_stats_A}", read = True).split()[0]
 
-        shell("gzip {params.uncomp_sum_stats_A}")
+
+        if line_count_A != str(params.expected_line_count):
+            with open(log.log, 'w') as logfile:
+                logfile.write(f"{line_count_A}\n")
+            raise Exception(f"File A does not contain expected no. of lines {params.expected_line_count}, has {line_count_A} instead")
+
+        shell("gzip -f {params.uncomp_sum_stats_A}")
 
         z_column_name_B = f"zsim.{wildcards.tag_B}"
         beta_column_name_B = f"betasim.{wildcards.tag_B}"
@@ -108,15 +114,16 @@ rule gather_split_block_files:
 
         shell("echo -e \"{header_string_B}\" > {params.uncomp_sum_stats_B}")
 
-        for x in input.b_files:
-            shell("cat {x} >> {params.uncomp_sum_stats_B}")
+        shell("cat {input.b_files} >> {params.uncomp_sum_stats_B}")
 
-#        line_count_B = shell("wc -l {params.uncomp_sum_stats_B}")
+        line_count_B = shell("wc -l {params.uncomp_sum_stats_B}", read = True).split()[0]
 
-#        if line_count_B != f"{params.expected_line_count}":
-#            raise Exception(f"File B does not contain expected no. of lines {params.expected_line_count}, has {line_count_B} instead")
-#
-        shell("gzip {params.uncomp_sum_stats_B}")
+        if line_count_B != str(params.expected_line_count):
+            with open(log.log, 'w') as logfile:
+                logfile.write(f"{line_count_B}\n")
+            raise Exception(f"File B does not contain expected no. of lines {params.expected_line_count}, has {line_count_B} instead")
+
+        shell("gzip -f {params.uncomp_sum_stats_B}")
 
 rule merge_randomised_simulated_sum_stats:
     input:
