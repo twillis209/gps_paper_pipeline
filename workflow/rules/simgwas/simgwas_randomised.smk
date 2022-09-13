@@ -81,9 +81,11 @@ rule gather_split_block_files:
         expected_line_count = 8998662
     log:
         log = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_gather_tags_{tag_A}-{tag_B}.log"
+        # Did this to get more memory but I don't think it helps
     threads: 6
     resources:
-        mem_mb = get_mem_mb
+        mem_mb = get_mem_mb,
+        concurrent_tab_jobs = 1
     group: "tabulate_and_combine_block_files"
     run:
         z_column_name_A = f"zsim.{wildcards.tag_A}"
@@ -137,6 +139,7 @@ rule merge_randomised_simulated_sum_stats:
         file_B_stat_cols = lambda wildcards: f"p.{wildcards.tag_B}"
     resources:
         runtime = 10
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script: "../../scripts/simgwas/merge_sim_sum_stats.R"
 
@@ -162,6 +165,7 @@ rule unzip_pruned_merged_randomised_simulated_sum_stats:
     threads: 1
     resources:
         runtime = 5
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         "gunzip -c {input} >{output}"

@@ -13,6 +13,7 @@ rule thin_predictors:
     params:
         input_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
         output_stem = "results/ldak/ldak-thin/weights/{join}/{chr}/thin"
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """
@@ -33,6 +34,7 @@ rule calculate_ldak_thin_taggings_for_chromosome:
     params:
         input_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
         output_stem = "results/ldak/ldak-thin/taggings/{join}/{chr}"
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         "$ldakRoot/ldak --calc-tagging {params.output_stem} --bfile {params.input_stem} --weights {input.weights_file} --chr {wildcards.chr} --window-kb 1000 --power -.25 > {log.log_file}"
@@ -47,6 +49,7 @@ rule join_ldak_thin_taggings:
         log_file = "results/ldak/ldak-thin/{join}/whole_genome.tagging.log"
     params:
         output_stem = "results/ldak/ldak-thin/{join}/whole_genome"
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """
@@ -73,6 +76,7 @@ rule process_combined_simgwas_sum_stats:
     threads: 2
     resources:
         runtime = 10
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script:
         "../../scripts/process_combined_simgwas_sum_stats_for_sumher.R"
@@ -94,6 +98,7 @@ rule estimate_rg_with_ldak_thin_for_simgwas:
         output_stem = "results/ldak/ldak-thin/simgwas/{no_reps}_reps/randomised/rg/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_tags_{tag_A}-{tag_B}"
     resources:
         runtime = 5
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """

@@ -13,6 +13,7 @@ rule compute_gps_for_sim_pair:
     threads: 1
     resources:
         runtime = 5
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -l -o {output} -p {params.no_of_pert_iterations} -e {params.epsilon_multiple}"
@@ -75,6 +76,7 @@ rule compute_hoeffdings_for_sim_pair:
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}"
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     resources:
         runtime = 2

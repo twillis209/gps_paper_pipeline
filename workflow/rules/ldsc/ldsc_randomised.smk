@@ -15,6 +15,7 @@ rule munge_randomised_sum_stats:
     threads: 1
     resources:
         runtime = 10
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     conda:
         "envs/ldsc.yaml"
@@ -43,6 +44,7 @@ rule estimate_rg_for_randomised_sum_stats:
         rg_intercept = lambda wildcards: "--intercept-gencov 0,0" if wildcards.rg_intercept == "fixed" else ""
     resources:
         runtime = 2
+    priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     conda:
         "envs/ldsc.yaml"
