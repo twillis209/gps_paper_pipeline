@@ -14,7 +14,7 @@ cluster: "mkdir -p logs/{name} &&
   --parsable"
 # NB: We need the --parsable option to allow the cluster-status script cluster-cancel command to work 
 jobs: 1000
-local-cores: 2
+local-cores: 6
 cores: 12
 keep-going: True
 use-conda: True
@@ -24,13 +24,12 @@ default-resources:
   - mem_mb=3420
   - tmpdir='tmp'
 resources:
-  - concurrent_tab_jobs=25
+  - concurrent_sans_permute_jobs=25
 set-threads:
-  - merge_randomised_simulated_sum_stats=1
-  - prune_merged_randomised_simulated_sum_stats=1
-  - process_combined_simgwas_sum_stats=1
+  - merge_randomised_simulated_sum_stats=12
+  - prune_merged_randomised_simulated_sum_stats=12
+  - process_combined_simgwas_sum_stats=12
   - calculate_theoretical_rg=1
-  - tabulate_and_combine_block_files=1
   - permute_sim_pair=12
 set-resources:
   - merge_randomised_simulated_sum_stats:
@@ -41,10 +40,9 @@ set-resources:
       - runtime=25
 group-components:
   - simulate=400
-  - permute=1
-  - ldsc_hoeffding_sumher_gps_sans_permutation=48
+  - permutation=1
+  - ldsc_hoeffding_sumher_gps_sans_permutation=1
   - calculate_theoretical_rg=200
-  - tabulate_and_combine_block_files=1
 rerun-incomplete: True
 dry-run: False
 verbose: False

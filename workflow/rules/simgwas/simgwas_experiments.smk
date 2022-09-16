@@ -72,6 +72,13 @@ rule run_s400_simulations:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/s400.done"
     shell: "touch {output}"
 
+rule run_s200_m25_simulations:
+    input:
+        input_files = lambda wildcards: get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 's200-m25')
+    output:
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/s200-m25.done"
+    shell: "touch {output}"
+
 rule compile_existing_test_files:
     input:
         ldsc_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'ldsc', subset = wildcards.effect_blocks)),

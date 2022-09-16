@@ -12,7 +12,9 @@ rule tabulate_randomised_block_sum_stats_file_for_pair:
     params:
         no_of_blocks_in_genome = block_daf.shape[0]
     threads: 1
-    group: "tabulate_and_combine_block_files"
+    resources:
+        concurrent_sans_permute_jobs = 1
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     run:
         # Probably too clever by half
         a_block_files = input.block_files[-(2*params.no_of_blocks_in_genome):-params.no_of_blocks_in_genome]
@@ -37,7 +39,9 @@ rule split_block_files_for_pair:
     output:
         a_files = temp(scatter.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A,\d+}}_{{ncontrols_A,\d+}}_{{ncases_B,\d+}}_{{ncontrols_B,\d+}}/{{effect_blocks_A,[smlvh\d-]+}}_{{effect_blocks_B,[smlvh\d-]+}}_{{shared_effect_blocks,[smlvh\d-]+}}/seed_{{seed,\d+}}_sum_stats_A_tags_{{tag_A}}-{{tag_B,\d+}}_split_files/a_file_{scatteritem}.txt")),
         b_files = temp(scatter.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A,\d+}}_{{ncontrols_A,\d+}}_{{ncases_B,\d+}}_{{ncontrols_B,\d+}}/{{effect_blocks_A,[smlvh\d-]+}}_{{effect_blocks_B,[smlvh\d-]+}}_{{shared_effect_blocks,[smlvh\d-]+}}/seed_{{seed,\d+}}_sum_stats_B_tags_{{tag_A}}-{{tag_B,\d+}}_split_files/b_file_{scatteritem}.txt"))
-    group: "tabulate_and_combine_block_files"
+    resources:
+        concurrent_sans_permute_jobs = 1
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """
         split --numeric-suffixes=1 -nl/{params.no_of_splits} {input.a_block_file} {params.a_file_prefix} --additional-suffix={params.suffix}
@@ -60,7 +64,7 @@ rule cat_split_block_files:
     output:
         combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_A_tags_{tag_A}-{tag_B,\d+}_split_files/a_stats_{scatteritem}.tsv"),
         combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_B_tags_{tag_A}-{tag_B,\d+}_split_files/b_stats_{scatteritem}.tsv")
-    group: "tabulate_and_combine_block_files"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     resources:
         runtime = lambda wildcards, attempt: 60*attempt,
         mem_mb = get_mem_mb,
@@ -85,8 +89,8 @@ rule gather_split_block_files:
     threads: 6
     resources:
         mem_mb = get_mem_mb,
-        concurrent_tab_jobs = 1
-    group: "tabulate_and_combine_block_files"
+        concurrent_sans_permute_jobs = 1
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     run:
         z_column_name_A = f"zsim.{wildcards.tag_A}"
         beta_column_name_A = f"betasim.{wildcards.tag_A}"
@@ -99,7 +103,6 @@ rule gather_split_block_files:
         shell("cat {input.a_files} >> {params.uncomp_sum_stats_A}")
 
         line_count_A = shell("wc -l {params.uncomp_sum_stats_A}", read = True).split()[0]
-
 
         if line_count_A != str(params.expected_line_count):
             with open(log.log, 'w') as logfile:
