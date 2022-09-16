@@ -53,27 +53,31 @@ rule estimate_rg_for_randomised_sum_stats:
         "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} {params.h2_intercept} {params.rg_intercept} >{log.log} || true"
 
 rule write_out_randomised_blocks_for_pair:
-    input: 
-        a_block_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tags_{tag_A}-{tag_B}_block_files.txt",
-        b_block_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tags_{tag_A}-{tag_B}_block_files.txt"
+    params:
+        no_of_blocks_in_genome = block_daf.shape[0]
     output:
         a_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_A,\d+}_{tag_A}-{tag_B,\d+}.tsv",
         b_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_B,\d+}_{tag_A,\d+}-{tag_B}.tsv"
+    threads: 1
     resources:
         runtime = 2
     group: "calculate_theoretical_rg"
     run:
-        with open(input.a_block_file, 'r') as a_in:
-            a_lines = [x.strip() for x in a_in.readlines()]
 
-        with open(input.b_block_file, 'r') as b_in:
-            b_lines = [x.strip() for x in b_in.readlines()]
+        print("Get block files")
+        block_files = get_randomised_block_files_for_pair(wildcards)
+        print("Got block files")
 
+        # Probably too clever by half
+        a_block_files = block_files[-(2*params.no_of_blocks_in_genome):-params.no_of_blocks_in_genome]
+        b_block_files = block_files[-params.no_of_blocks_in_genome:]
+
+        print("Define regex")
         file_m = re.compile("results/simgwas/simulated_sum_stats/block_sum_stats/(?P<no_reps>\d+)_reps/(?P<effect>\w+)/(?P<ncases>\d+)_(?P<ncontrols>\d+)/chr(?P<chr>\d+)/block_(?P<block_no>\d+)_seed_(?P<seed>\d+)_sum_stats\.tsv\.gz")
 
         a_dicts = []
 
-        for x in a_lines:
+        for x in a_block_files:
             m = file_m.match(x)
 
             a_dicts.append(
@@ -90,7 +94,7 @@ rule write_out_randomised_blocks_for_pair:
 
         b_dicts = []
 
-        for x in b_lines:
+        for x in b_block_files:
             m = file_m.match(x)
 
             b_dicts.append(
