@@ -42,7 +42,7 @@ group-components:
   - simulate=400
   - permutation=1
   - ldsc_hoeffding_sumher_gps_sans_permutation=1
-  - calculate_theoretical_rg=200
+  - calculate_theoretical_rg=1000
 rerun-incomplete: True
 dry-run: False
 verbose: False

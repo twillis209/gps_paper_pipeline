@@ -105,9 +105,9 @@ rule compile_existing_test_files:
 
 rule compile_theo_rg_files:
     input:
-        input_files = lambda wildcards: get_theo_rg_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, subset = wildcards.effect_blocks)
+        input_files = ancient(lambda wildcards: get_theo_rg_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, subset = wildcards.effect_blocks))
     output:
         "results/ldsc/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_theo_rg.tsv"
     run:
-        daf = compile_theo_rg_results_into_daf(input)
-        daf.to_csv(output, sep = '\t', index = False)
+        daf = compile_theo_rg_results_into_daf(input.input_files)
+        daf.to_csv(output[0], sep = '\t', index = False)

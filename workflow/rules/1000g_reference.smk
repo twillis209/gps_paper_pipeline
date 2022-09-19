@@ -80,14 +80,14 @@ rule subset_reference:
       "resources/1000g/euro/qc/{chr}_qc.bed",
       "resources/1000g/euro/qc/{chr}_qc.bim",
       "resources/1000g/euro/qc/{chr}_qc.fam",
-      range_file = "resources/plink_ranges/{join}/{chr}.txt"
+      range_file = "resources/plink_ranges/{join}/{snp_set}/{chr}.txt"
     output:
-      "resources/plink_subsets/{join}/{chr}.bed",
-      "resources/plink_subsets/{join}/{chr}.bim",
-      "resources/plink_subsets/{join}/{chr}.fam"
+      "resources/plink_subsets/{join}/{snp_set}/{chr}.bed",
+      "resources/plink_subsets/{join}/{snp_set}/{chr}.bim",
+      "resources/plink_subsets/{join}/{snp_set}/{chr}.fam"
     params:
       bfile = "resources/1000g/euro/qc/{chr}_qc",
-      out = "resources/plink_subsets/{join}/{chr}"
+      out = "resources/plink_subsets/{join}/{snp_set}/{chr}"
     threads: 8
     resources:
         mem_mb=get_mem_mb
@@ -96,15 +96,15 @@ rule subset_reference:
 
 rule make_pruned_ranges:
     input:
-      "resources/plink_subsets/{join}/{chr}.bed",
-      "resources/plink_subsets/{join}/{chr}.bim",
-      "resources/plink_subsets/{join}/{chr}.fam"
+      "resources/plink_subsets/{join}/{snp_set}/{chr}.bed",
+      "resources/plink_subsets/{join}/{snp_set}/{chr}.bim",
+      "resources/plink_subsets/{join}/{snp_set}/{chr}.fam"
     output:
-      "resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/{chr}.prune.in",
-      "resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/{chr}.prune.out"
+      "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/{chr}.prune.in",
+      "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/{chr}.prune.out"
     params:
-      bfile = "resources/plink_subsets/{join}/{chr}",
-      prune_out = "resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/{chr}"
+      bfile = "resources/plink_subsets/{join}/{snp_set}/{chr}",
+      prune_out = "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/{chr}"
     threads: 8
     resources:
         mem_mb=get_mem_mb
@@ -113,17 +113,17 @@ rule make_pruned_ranges:
 
 rule cat_pruned_ranges:
     input:
-      ("resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/chr%d.prune.in" % x for x in range(1,23))
+      ("resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/chr%d.prune.in" % x for x in range(1,23))
     output:
-        "resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/all.prune.in"
+        "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/all.prune.in"
     shell:
       "for x in {input}; do cat $x >>{output}; done"
 
 rule cat_bim_files:
     input:
-        ("resources/plink_subsets/{join}/chr%d.bim" % x for x in range(1,23))
+        ("resources/plink_subsets/{join}/{snp_set}/chr%d.bim" % x for x in range(1,23))
     output:
-        "resources/plink_subsets/{join}/all.bim"
+        "resources/plink_subsets/{join}/{snp_set}/all.bim"
     shell:
         "for x in {input}; do cat $x >>{output}; done"
 
@@ -150,14 +150,14 @@ rule subset_snp_variants:
         "resources/1000g/euro/qc/nodup/{chr}.bed",
         "resources/1000g/euro/qc/nodup/{chr}.bim",
         "resources/1000g/euro/qc/nodup/{chr}.fam",
-        range_file = "resources/plink_ranges/{join}/{chr}.txt"
+        range_file = "resources/plink_ranges/{join}/{snp_set}/{chr}.txt"
     output:
-        "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.bed",
-        "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.bim",
-        "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.fam"
+        "resources/1000g/euro/qc/nodup/snps_only/{join}/{snp_set}/{chr}.bed",
+        "resources/1000g/euro/qc/nodup/snps_only/{join}/{snp_set}/{chr}.bim",
+        "resources/1000g/euro/qc/nodup/snps_only/{join}/{snp_set}/{chr}.fam"
     params:
         input_stem = "resources/1000g/euro/qc/nodup/{chr}",
-        output_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
+        output_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{snp_set}{chr}",
     threads: 8
     resources:
         mem_mb=get_mem_mb

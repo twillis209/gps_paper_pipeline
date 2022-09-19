@@ -63,16 +63,12 @@ rule write_out_randomised_blocks_for_pair:
         runtime = 2
     group: "calculate_theoretical_rg"
     run:
-
-        print("Get block files")
         block_files = get_randomised_block_files_for_pair(wildcards)
-        print("Got block files")
 
         # Probably too clever by half
         a_block_files = block_files[-(2*params.no_of_blocks_in_genome):-params.no_of_blocks_in_genome]
         b_block_files = block_files[-params.no_of_blocks_in_genome:]
 
-        print("Define regex")
         file_m = re.compile("results/simgwas/simulated_sum_stats/block_sum_stats/(?P<no_reps>\d+)_reps/(?P<effect>\w+)/(?P<ncases>\d+)_(?P<ncontrols>\d+)/chr(?P<chr>\d+)/block_(?P<block_no>\d+)_seed_(?P<seed>\d+)_sum_stats\.tsv\.gz")
 
         a_dicts = []

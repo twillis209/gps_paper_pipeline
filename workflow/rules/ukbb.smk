@@ -287,14 +287,14 @@ rule merge_ukbb_sum_stats:
 
 rule make_ukbb_plink_ranges:
     input:
-      sum_stats_file = ancient("resources/ukbb_sum_stats/{join}/merged_ukbb_sum_stats.tsv.gz"),
+      sum_stats_file = ancient("resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz"),
       bim_files = ancient([("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
       "resources/1000g/euro/qc/chrX_qc.bim"])
     output:
-      bim_files = [("resources/plink_ranges/ukbb/{join}/chr%d.txt" % x for x in range(1,23)),
-      "resources/plink_ranges/ukbb/{join}/chrX.txt"]
+      bim_files = [("resources/plink_ranges/ukbb/{snp_set}/chr%d.txt" % x for x in range(1,23)),
+      "resources/plink_ranges/ukbb/{snp_set}/chrX.txt"]
     params:
-        sans_mhc = lambda wildcards: True if wildcards.join == 'sans_mhc' else False
+        sans_mhc = lambda wildcards: True if wildcards.snp_set == 'sans_mhc' else False
     threads: 8
     script: "../scripts/make_ukbb_plink_ranges.R"
 
@@ -303,14 +303,14 @@ rule subset_ukbb_snp_variants:
         "resources/1000g/euro/qc/nodup/{chr}.bed",
         "resources/1000g/euro/qc/nodup/{chr}.bim",
         "resources/1000g/euro/qc/nodup/{chr}.fam",
-        range_file = "resources/plink_ranges/ukbb/{join}/{chr}.txt"
+        range_file = "resources/plink_ranges/ukbb/{snp_set}/{chr}.txt"
     output:
-        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.bed",
-        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.bim",
-        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.fam"
+        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.bed",
+        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.bim",
+        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.fam"
     params:
         input_stem = "resources/1000g/euro/qc/nodup/{chr}",
-        output_stem = "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}"
+        output_stem = "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}"
     threads: 8
     resources:
         mem_mb=get_mem_mb
@@ -319,43 +319,21 @@ rule subset_ukbb_snp_variants:
 
 rule prune_merged_sum_stats:
     input:
-      sum_stats_file = ancient("resources/ukbb_sum_stats/{join}/merged_ukbb_sum_stats.tsv.gz"),
-      bim_file = ancient("resources/plink_subsets/{join}/all.bim"),
-      pruned_range_file = ancient("resources/plink_ranges/{join}/pruned_ranges/window_{window}_step_{step}/all.prune.in")
+      sum_stats_file = ancient("resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz"),
+      bim_file = ancient("resources/plink_subsets/{join}/{snp_set}/all.bim"),
+      pruned_range_file = ancient("resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/all.prune.in")
     output:
-        "resources/pruned_sum_stats/{join}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
+        "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
+    params:
+        sans_mhc = lambda wildcards: True if wildcards.snp_set == "sans_mhc" else False
     threads: 8
-    shell:
-      """
-      Rscript workflow/scripts/prune_merged_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --range_file {input.pruned_range_file} -o {output} -nt {threads};
-      sed -i 's/pval\.//g' {output}
-      """
+    script: "../scripts/prune_merged_sum_stats.R"
 
 rule downsample_pruned_merged_sum_stats:
     input:
-        ancient("resources/pruned_sum_stats/{join}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
+        ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
     output:
-        temp("resources/pruned_sum_stats/{join}/{no_snps}_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
+        temp("resources/pruned_sum_stats/{join}/{snp_set}/{no_snps}_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
     threads: 8
     shell:
      "Rscript workflow/scripts/downsample_sum_stats.R -i {input} -n {wildcards.no_snps} -o {output} -nt {threads}"
-
-rule excise_mhc_from_pruned_merged_sum_stats:
-    input:
-        ancient("resources/pruned_sum_stats/all/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
-    output:
-        "resources/pruned_sum_stats/sans_mhc/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
-    params:
-        tmpdir = 'tmp'
-    threads: 8
-    script: "../scripts/excise_mhc_from_sum_stats.R"
-
-rule excise_mhc_from_merged_sum_stats:
-    input:
-        ancient("resources/ukbb_sum_stats/all/merged_ukbb_sum_stats.tsv.gz")
-    output:
-        "resources/ukbb_sum_stats/sans_mhc/merged_ukbb_sum_stats.tsv.gz"
-    params:
-        tmpdir = 'tmp'
-    threads: 8
-    script: "../scripts/excise_mhc_from_sum_stats.R"

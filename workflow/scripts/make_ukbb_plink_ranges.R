@@ -6,7 +6,8 @@ sum_stats_dat <- fread(snakemake@input[['sum_stats_file']], sep = '\t', header =
 sum_stats_dat[, c('chr', 'bp') := tstrsplit(variant, split = ':', keep = 1:2)]
 
 if(snakemake@params[['sans_mhc']] == T) {
-  sum_stats_dat <- sum_stats_dat[!(chr == 6 & bp %between% c(24e6, 45e6))]
+  #sum_stats_dat <- sum_stats_dat[!(chr == 6 & bp %between% c(24e6, 45e6))]
+  sum_stats_dat <- sum_stats_dat[!(chr == 6 & bp %between% c(28477797, 33448354))]
 }
 
 for(i in 1:22) {

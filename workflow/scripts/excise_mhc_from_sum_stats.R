@@ -6,7 +6,8 @@ sum_stats_dat <- fread(snakemake@input[[1]], sep = '\t', header = T, tmpdir = sn
 
 sum_stats_dat[, c('chr', 'bp') := tstrsplit(variant, split = ':', keep = 1:2)]
 
-sum_stats_dat <- sum_stats_dat[!(chr == 6 & bp %between% c(24e6, 45e6))]
+# GRC hg19 MHC coordinates
+sum_stats_dat <- sum_stats_dat[!(chr == 6 & bp %between% c(28477797, 33448354))]
 
 sum_stats_dat[, c('chr', 'bp') := NULL]
 
