@@ -103,8 +103,8 @@ def get_randomised_block_files_for_pair(wildcards):
         for v in shared_chrom_block_dict[k]:
             seed = block_daf.query('chr == @v[0] & block == @v[1]')[seed_label].values[0]
 
-            a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
-            b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
+            a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv"
+            b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv"
             block_files.append(a_file)
 
             a_block_files.append(a_file)
@@ -119,7 +119,7 @@ def get_randomised_block_files_for_pair(wildcards):
         for v in a_chrom_block_dict[k]:
             seed = block_daf.query('chr == @v[0] & block == @v[1]')[seed_label].values[0]
 
-            a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
+            a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv"
 
             block_files.append(a_file)
             a_block_files.append(a_file)
@@ -130,7 +130,7 @@ def get_randomised_block_files_for_pair(wildcards):
         for v in b_chrom_block_dict[k]:
             seed = block_daf.query('chr == @v[0] & block == @v[1]')[seed_label].values[0]
 
-            b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
+            b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv"
 
             b_block_files.append(b_file)
 
@@ -142,12 +142,12 @@ def get_randomised_block_files_for_pair(wildcards):
             seed = block_daf.query('chr == @chrom & block == @block')['null_seed'].values[0]
 
             if (chrom, block) not in a_chrom_block_nos and (chrom, block) not in shared_chrom_block_nos:
-                a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/null/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{chrom}/block_{block}_seed_{seed}_sum_stats.tsv.gz"
+                a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/null/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{chrom}/block_{block}_seed_{seed}_sum_stats.tsv"
                 block_files.append(a_file)
                 a_block_files.append(a_file)
 
             if (chrom, block) not in b_chrom_block_nos and (chrom, block) not in shared_chrom_block_nos:
-                b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{chrom}/block_{block}_seed_{seed}_sum_stats.tsv.gz"
+                b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/null/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{chrom}/block_{block}_seed_{seed}_sum_stats.tsv"
                 b_block_files.append(b_file)
 
                 if b_file not in block_files:

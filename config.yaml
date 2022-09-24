@@ -14,7 +14,7 @@ cluster: "mkdir -p logs/{name} &&
   --parsable"
 # NB: We need the --parsable option to allow the cluster-status script cluster-cancel command to work 
 jobs: 1000
-local-cores: 6
+local-cores: 8
 cores: 12
 keep-going: True
 use-conda: True
@@ -39,10 +39,11 @@ set-resources:
   - process_combined_simgwas_sum_stats:
       - runtime=25
 group-components:
-  - simulate=400
+  - simulate=2000
   - permutation=1
   - ldsc_hoeffding_sumher_gps_sans_permutation=1
   - calculate_theoretical_rg=1000
+  - unzip=1000
 rerun-incomplete: True
 dry-run: False
 verbose: False
@@ -52,3 +53,4 @@ max-status-checks-per-second: 10
 latency-wait: 20
 cluster-status: './cluster_status.py' 
 cluster-cancel: 'scancel'
+retries: 3

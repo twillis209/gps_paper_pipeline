@@ -51,7 +51,6 @@ rule permute_sim_pair_with_seed:
         mem_mb = get_mem_mb,
         runtime = get_permute_time,
     group: "permutation"
-    retries: 3
     priority: 1
     shell:
         "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws} -p {params.no_of_pert_iterations}"

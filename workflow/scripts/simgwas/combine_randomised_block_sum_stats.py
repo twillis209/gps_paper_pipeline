@@ -20,7 +20,12 @@ cut_string_A = f"1-7,{z_column_index_A},{beta_column_index_A},{p_column_index_A}
 a_block_files = read_block_files(snakemake.input.a_block_file)
 
 for x in a_block_files:
-    shell("zcat {x} | cut -f{cut_string_A} >> {snakemake.output.combined_sum_stats_A}")
+    shell("cut -f{cut_string_A} {x} >> {snakemake.output.combined_sum_stats_A}")
+
+line_count_A = shell("wc -l {snakemake.output.combined_sum_stats_A}", read = True).split()[0]
+
+if int(line_count_A) < snakemake.params.line_count_bound:
+    raise Exception(f"Too many lines in A file")
 
 z_column_index_B = 8 + int(snakemake.wildcards.tag_B)
 beta_column_index_B = 8 + (int(snakemake.wildcards.no_reps) * 2) + int(snakemake.wildcards.tag_B)
@@ -31,4 +36,10 @@ cut_string_B = f"1-7,{z_column_index_B},{beta_column_index_B},{p_column_index_B}
 b_block_files = read_block_files(snakemake.input.b_block_file)
 
 for x in b_block_files:
-    shell("zcat {x} | cut -f{cut_string_B} >> {snakemake.output.combined_sum_stats_B}")
+    shell("cut -f{cut_string_B} {x} >> {snakemake.output.combined_sum_stats_B}")
+
+line_count_B = shell("wc -l {snakemake.output.combined_sum_stats_B}", read = True).split()[0]
+
+if int(line_count_B) < snakemake.params.line_count_bound:
+    raise Exception(f"Too many lines in B file")
+

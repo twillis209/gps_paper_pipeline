@@ -371,7 +371,7 @@ def compile_theo_rg_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/ldsc/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w]+)_(?P<b_blocks>[\w]+)_(?P<shared_blocks>[\w]+)/theoretical_rg/seed_(?P<seed>\w+)_(?P<tag_a>\d+)-(?P<tag_b>\d+)_theo_rg\.tsv", x)
+        m = re.match(r"results/ldsc/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/theoretical_rg/seed_(?P<seed>\w+)_(?P<tag_a>\d+)-(?P<tag_b>\d+)_theo_rg\.tsv", x)
 
         with open(x, 'r') as infile:
             lines = [x.strip() for x in infile.readlines()]

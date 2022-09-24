@@ -3,8 +3,8 @@
 #SBATCH -A MRC-BSU-SL2-CPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=40
-#SBATCH --time=6:00:00
+#SBATCH --cpus-per-task=36
+#SBATCH --time=4:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH -p cclake,cclake-himem,icelake,icelake-himem,skylake,skylake-himem
 #SBATCH -o unscheduled_gps_paper_pipeline/%j.out
@@ -21,7 +21,7 @@ module purge                               # Removes all modules still loaded
 module load rhel7/default-peta4            # REQUIRED - loads the basic environment
 
 #! Insert additional module load commands after this line if needed:
-module load r-4.0.2-gcc-5.4.0-xyx46xb
+module load R/4.0.3
 export R_LIBS=/home/tw395/R/4.0.2/libs:$R_LIBS
 
 workdir="$SLURM_SUBMIT_DIR"
@@ -71,4 +71,4 @@ source  /home/tw395/.bash_profile
 
 conda activate gps_paper_pipeline
 
-python3 -m snakemake --nolock --cores 40 -j 300 --keep-going --use-conda --scheduler greedy --rerun-incomplete "${@}"
+python3 -m snakemake --nolock --cores 36 -j 300 --keep-going --use-conda --scheduler greedy --rerun-incomplete "${@}"
