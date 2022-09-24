@@ -93,7 +93,7 @@ rule simulate_sum_stats_by_ld_block:
         block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
         ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/chr{ch}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
+        temp("results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/chr{ch}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz")
     threads: 3
     resources:
         mem_mb = get_mem_mb,
@@ -112,7 +112,10 @@ rule unzip_block_file:
     resources:
         runtime = 1
     group: "simulate"
-    shell: "gunzip {input}"
+    shell:
+        """
+        zcat {input} >{output}
+        """
 
 rule get_causal_variant_by_ld_block:
     input:

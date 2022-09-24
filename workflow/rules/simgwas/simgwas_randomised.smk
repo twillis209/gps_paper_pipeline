@@ -64,16 +64,16 @@ rule cat_split_block_files:
     output:
         combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_A_tags_{tag_A}-{tag_B,\d+}_split_files/a_stats_{scatteritem}.tsv"),
         combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_B_tags_{tag_A}-{tag_B,\d+}_split_files/b_stats_{scatteritem}.tsv")
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     params:
-        line_count_bound = 850000,
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+        line_count_bound = 850000
+    threads: 1
     resources:
-        runtime = lambda wildcards, attempt: 20*attempt,
+        runtime = lambda wildcards, attempt: 30*attempt,
         mem_mb = get_mem_mb,
         tmpdir = 'tmp'
     retries: 3
-    script: "../../scripts/simgwas/combine_randomised_block_sum_stats.py"
+    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    script: "../../scripts/simgwas/combine_randomised_block_sum_stats.R"
 
 rule gather_split_block_files:
     input:
@@ -89,7 +89,7 @@ rule gather_split_block_files:
     log:
         log = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_gather_tags_{tag_A}-{tag_B}.log"
         # Did this to get more memory but I don't think it helps
-    threads: 6
+    threads: 12
     resources:
         mem_mb = get_mem_mb,
         concurrent_sans_permute_jobs = 1
