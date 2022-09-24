@@ -68,7 +68,7 @@ rule cat_split_block_files:
         line_count_bound = 850000
     threads: 1
     resources:
-        runtime = lambda wildcards, attempt: 30*attempt,
+        runtime = lambda wildcards, attempt: 7*attempt,
         mem_mb = get_mem_mb,
         tmpdir = 'tmp'
     retries: 3
@@ -83,17 +83,16 @@ rule gather_split_block_files:
         combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_A_tag_{tag_A,\d+}_of_{tag_A}-{tag_B,\d+}.tsv.gz"),
         combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_B_tag_{tag_B,\d+}_of_{tag_A,\d+}-{tag_B}.tsv.gz")
     params:
-        uncomp_sum_stats_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}-{tag_B}.tsv",
-        uncomp_sum_stats_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}-{tag_B}.tsv",
         expected_line_count = 8998662
-    log:
-        log = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_gather_tags_{tag_A}-{tag_B}.log"
-        # Did this to get more memory but I don't think it helps
     threads: 12
     resources:
         mem_mb = get_mem_mb,
-        concurrent_sans_permute_jobs = 1
+        concurrent_sans_permute_jobs = 1,
+        runtime = 20
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    script: "../../scripts/simgwas/gather_split_block_files.R"
+
+"""
     run:
         z_column_name_A = f"zsim.{wildcards.tag_A}"
         beta_column_name_A = f"betasim.{wildcards.tag_A}"
@@ -132,6 +131,8 @@ rule gather_split_block_files:
             raise Exception(f"File B does not contain expected no. of lines {params.expected_line_count}, has {line_count_B} instead")
 
         shell("gzip -f {params.uncomp_sum_stats_B}")
+"""
+
 
 rule merge_randomised_simulated_sum_stats:
     input:

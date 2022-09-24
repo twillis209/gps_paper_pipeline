@@ -23,7 +23,7 @@ a_block_files %>%
   lapply(., fread, sep = '\t', header = F, select = a_cols) %>%
   rbindlist -> a_block_dat
 
-fwrite(a_block_dat, file = snakemake@output[['combined_sum_stats_A']], sep = '\t')
+fwrite(a_block_dat, file = snakemake@output[['combined_sum_stats_A']], sep = '\t', col.names = F)
 
 rm(a_block_dat)
 
@@ -37,4 +37,4 @@ b_block_files %>%
   lapply(., fread, sep = '\t', header = F, select = b_cols) %>%
   rbindlist -> b_block_dat
 
-fwrite(b_block_dat, file = snakemake@output[['combined_sum_stats_B']], sep = '\t')
+fwrite(b_block_dat, file = snakemake@output[['combined_sum_stats_B']], sep = '\t', col.names = F)
