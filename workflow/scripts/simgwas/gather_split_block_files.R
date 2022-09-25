@@ -2,8 +2,6 @@ library(data.table)
 setDTthreads(snakemake@threads)
 library(magrittr)
 
-save.image('gather_split_block_files.RData')
-
 z_column_name_A <- sprintf("zsim.%s", snakemake@wildcards[['tag_A']])
 beta_column_name_A <- sprintf("betasim.%s", snakemake@wildcards[['tag_A']])
 p_column_name_A <- sprintf("p.%s", snakemake@wildcards[['tag_A']])

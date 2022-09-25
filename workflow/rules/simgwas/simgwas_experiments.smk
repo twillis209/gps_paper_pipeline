@@ -21,10 +21,6 @@ rule run_all_block_simulations:
     input:
         block_files = get_all_block_files(sample_sizes)
 
-rule unzip_all_block_files:
-    input:
-        block_files = [x.replace('.gz', '') for x in get_all_block_files(sample_sizes)]
-
 rule write_out_simulation_parameters_file:
     output:
         "results/simgwas/simulation_parameters.tsv"
@@ -115,3 +111,7 @@ rule compile_theo_rg_files:
     run:
         daf = compile_theo_rg_results_into_daf(input.input_files)
         daf.to_csv(output[0], sep = '\t', index = False)
+
+rule test_get_nonexisting_test_files:
+    input:
+        ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = 's400', invert = True)

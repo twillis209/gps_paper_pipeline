@@ -93,7 +93,7 @@ rule simulate_sum_stats_by_ld_block:
         block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
         ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        temp("results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/chr{ch}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz")
+        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/chr{ch}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
     threads: 3
     resources:
         mem_mb = get_mem_mb,
@@ -102,20 +102,6 @@ rule simulate_sum_stats_by_ld_block:
     benchmark: 'results/benchmarks/simulate_sum_stats_by_ld_block/{no_reps}_reps/{effect_size}/{ncases}_{ncontrols}/chr{ch}/block_{block}_seed_{seed}_sum_stats.txt'
     shell:
         "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps {wildcards.no_reps} --seed {wildcards.seed} -o {output} -nt {threads}"
-
-rule unzip_block_file:
-    input:
-        ancient("results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases}_{ncontrols}/chr{ch}/block_{block}_seed_{seed}_sum_stats.tsv.gz")
-    output:
-        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/chr{ch}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv"
-    threads: 1
-    resources:
-        runtime = 1
-    group: "simulate"
-    shell:
-        """
-        zcat {input} >{output}
-        """
 
 rule get_causal_variant_by_ld_block:
     input:
