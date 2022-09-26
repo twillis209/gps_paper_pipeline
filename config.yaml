@@ -53,4 +53,3 @@ latency-wait: 20
 cluster-status: './cluster_status.py' 
 cluster-cancel: 'scancel'
 retries: 3
-touch: True

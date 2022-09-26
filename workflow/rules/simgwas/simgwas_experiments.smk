@@ -112,6 +112,6 @@ rule compile_theo_rg_files:
         daf = compile_theo_rg_results_into_daf(input.input_files)
         daf.to_csv(output[0], sep = '\t', index = False)
 
-rule test_get_nonexisting_test_files:
+rule test_get_nonexisting_done_files:
     input:
-        ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = 's400', invert = True)
+        done_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'done', subset = 'a_blocks == \'s200-m25\' & b_blocks == \'s200-m25\' & shared_blocks == \'s0-m0\' & ncases_A == 250000 & tag_A == 1', invert = True)

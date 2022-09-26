@@ -70,7 +70,7 @@ def get_existing_test_files(simulation_pars_file, reps, filetype, subset = None,
     daf = pd.read_csv(simulation_pars_file, sep = '\t')
 
     if subset:
-        daf = daf.query('a_blocks == @subset & b_blocks == @subset')
+        daf = daf.query(subset)
 
     if filetype == 'ldsc':
         files = [f"results/ldsc/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/rg/fixed_h2_free_rg_intercept/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.log" for row in daf.itertuples()]
@@ -80,6 +80,8 @@ def get_existing_test_files(simulation_pars_file, reps, filetype, subset = None,
         files = [f"results/hoeffdings/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_hoeffdings.tsv" for row in daf.itertuples()]
     elif filetype == 'gps':
         files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50/3000_permutations/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_gps_pvalue.tsv" for row in daf.itertuples()]
+    elif filetype == 'done':
+        files = [f"results/simgwas/done/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.done" for row in daf.itertuples()]
     else:
         raise Exception(f"Invalid filetype specified: {filetype}")
 
