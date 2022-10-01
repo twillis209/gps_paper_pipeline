@@ -13,7 +13,8 @@ rule tabulate_randomised_block_sum_stats_file_for_pair:
         no_of_blocks_in_genome = block_daf.shape[0]
     threads: 1
     resources:
-        concurrent_sans_permute_jobs = 1
+        concurrent_sans_permute_jobs = 1,
+        runtime = 2
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     run:
         # Probably too clever by half
@@ -40,7 +41,8 @@ rule split_block_files_for_pair:
         a_files = temp(scatter.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A,\d+}}_{{ncontrols_A,\d+}}_{{ncases_B,\d+}}_{{ncontrols_B,\d+}}/{{effect_blocks_A,[smlvh\d-]+}}_{{effect_blocks_B,[smlvh\d-]+}}_{{shared_effect_blocks,[smlvh\d-]+}}/seed_{{seed,\d+}}_sum_stats_A_tags_{{tag_A}}-{{tag_B,\d+}}_split_files/a_file_{scatteritem}.txt")),
         b_files = temp(scatter.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A,\d+}}_{{ncontrols_A,\d+}}_{{ncases_B,\d+}}_{{ncontrols_B,\d+}}/{{effect_blocks_A,[smlvh\d-]+}}_{{effect_blocks_B,[smlvh\d-]+}}_{{shared_effect_blocks,[smlvh\d-]+}}/seed_{{seed,\d+}}_sum_stats_B_tags_{{tag_A}}-{{tag_B,\d+}}_split_files/b_file_{scatteritem}.txt"))
     resources:
-        concurrent_sans_permute_jobs = 1
+        concurrent_sans_permute_jobs = 1,
+        runtime = 2
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """
@@ -68,7 +70,7 @@ rule cat_split_block_files:
         line_count_bound = 850000
     threads: 1
     resources:
-        runtime = lambda wildcards, attempt: 7*attempt,
+        runtime = lambda wildcards, attempt: 14*attempt,
         mem_mb = get_mem_mb,
         tmpdir = 'tmp'
     retries: 3
@@ -88,7 +90,7 @@ rule gather_split_block_files:
     resources:
         mem_mb = get_mem_mb,
         concurrent_sans_permute_jobs = 1,
-        runtime = 30
+        runtime = 5
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script: "../../scripts/simgwas/gather_split_block_files.R"
 
@@ -103,7 +105,7 @@ rule merge_randomised_simulated_sum_stats:
         file_A_stat_cols = lambda wildcards: f"p.{wildcards.tag_A}",
         file_B_stat_cols = lambda wildcards: f"p.{wildcards.tag_B}"
     resources:
-        runtime = 15
+        runtime = 5
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script: "../../scripts/simgwas/merge_sim_sum_stats.R"

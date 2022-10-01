@@ -203,6 +203,11 @@ rule plot_gev_estimates_for_increasing_no_snps_for_selected_ukbb_traits:
     input:
         ["results/plots/ukbb/window_1000kb_step_50/%s_3000_permutations_variable_no_snps_estimates.png" % x for x in trait_pairs_for_increasing_perm_fits]
 
+rule asthma_hayfever_increasing_no_snps_and_n:
+    input:
+        "results/plots/ukbb/all_pruned_snps/window_1000kb_step_50/20002_1111-22126_1000-10000_permutations_estimates.png",
+         "results/plots/ukbb/window_1000kb_step_50/20002_1111-22126_3000_permutations_variable_no_snps_estimates.png"
+
 rule compile_naive_gps_values:
     input:
         [f"results/ukbb/{{snp_set}}/window_1000kb_step_50/{trait_pair}_naive_gps_value.tsv" for trait_pair in ukbb_trait_pairs]

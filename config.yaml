@@ -24,7 +24,7 @@ default-resources:
   - mem_mb=3420
   - tmpdir='tmp'
 resources:
-  - concurrent_sans_permute_jobs=100
+  - concurrent_sans_permute_jobs=200
 set-threads:
   - merge_randomised_simulated_sum_stats=12
   - prune_merged_randomised_simulated_sum_stats=12

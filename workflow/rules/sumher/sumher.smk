@@ -75,7 +75,7 @@ rule process_combined_simgwas_sum_stats:
         sample_size = lambda wildcards: int(wildcards.ncases_A)+int(wildcards.ncontrols_A)
     threads: 2
     resources:
-        runtime = 10
+        runtime = 5
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script:

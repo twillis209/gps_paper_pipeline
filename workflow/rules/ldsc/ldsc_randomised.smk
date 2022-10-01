@@ -14,7 +14,7 @@ rule munge_randomised_sum_stats:
         log = "results/simgwas/simulated_sum_stats/munged_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed,\d+}_{pair_label,[AB]}_{tag,\d+}_of_{tag_A,\d+}-{tag_B,\d+}.tsv.log"
     threads: 1
     resources:
-        runtime = 10
+        runtime = 5
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     conda:
