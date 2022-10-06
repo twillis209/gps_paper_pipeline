@@ -60,9 +60,9 @@ rule join_ldak_thin_taggings_for_ukbb:
 
 rule process_ukbb_sum_stats:
     input:
-        ancient("resources/ukbb_sum_stats/{join}/merged_ukbb_sum_stats.tsv.gz")
+        "resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz"
     output:
-        "resources/ukbb_sum_stats/{join}/{trait_code}.assoc"
+        "resources/ukbb_sum_stats/{snp_set}/{trait_code}.assoc"
     params:
         z_colname = lambda wildcards: '.'.join(['tstat', wildcards.trait_code]),
         sample_size_colname = lambda wildcards: '.'.join(['n_complete_samples', wildcards.trait_code])

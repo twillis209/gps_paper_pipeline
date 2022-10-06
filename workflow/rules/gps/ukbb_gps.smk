@@ -1,8 +1,8 @@
 rule compute_gps_for_trait_pair:
     input:
-      ancient("resources/ukbb_sum_stats/{trait_A}.done"),
-      ancient("resources/ukbb_sum_stats/{trait_B}.done"),
-      sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"),
+      "resources/ukbb_sum_stats/{trait_A}.done",
+      "resources/ukbb_sum_stats/{trait_B}.done",
+      sum_stats_file = "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv",
     output:
         temp("results/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.tsv")
     log:
@@ -17,9 +17,9 @@ rule compute_gps_for_trait_pair:
 
 rule compute_gps_for_trait_pair_with_naive_ecdf_algo:
     input:
-        ancient("resources/ukbb_sum_stats/{trait_A}.done"),
-        ancient("resources/ukbb_sum_stats/{trait_B}.done"),
-        sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"),
+        "resources/ukbb_sum_stats/{trait_A}.done",
+        "resources/ukbb_sum_stats/{trait_B}.done",
+        sum_stats_file = "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv",
     output:
         "results/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_naive_gps_value.tsv"
     params:
@@ -33,9 +33,9 @@ rule compute_gps_for_trait_pair_with_naive_ecdf_algo:
 
 rule permute_trait_pair:
     input:
-      ancient("resources/ukbb_sum_stats/{trait_A}.done"),
-      ancient("resources/ukbb_sum_stats/{trait_B}.done"),
-      sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"),
+      "resources/ukbb_sum_stats/{trait_A}.done",
+      "resources/ukbb_sum_stats/{trait_B}.done",
+      sum_stats_file = "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv",
     output:
         "results/{join}/{snp_set,all_pruned_snps|sans_mhc}/window_{window}_step_{step}/{draws}_permutations/{trait_A}-{trait_B}.tsv"
     params:
@@ -51,7 +51,7 @@ rule permute_trait_pair:
 rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
     input:
         gps_file = "results/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.tsv",
-        perm_file = ancient("results/{join}/{snp_set}/window_{window}_step_{step}/{draws}_permutations/{trait_A}-{trait_B}.tsv")
+        perm_file = "results/{join}/{snp_set}/window_{window}_step_{step}/{draws}_permutations/{trait_A}-{trait_B}.tsv"
     output:
         "results/gps/{join}/{snp_set}/window_{window}_step_{step}/{trait_A}-{trait_B}_{draws}_permutations_gps_pvalue.tsv"
     resources:
