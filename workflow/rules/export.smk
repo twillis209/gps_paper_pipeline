@@ -13,3 +13,10 @@ rule ukbb_with_mhc:
         "results/ldsc/rg/ukbb/all/fixed_h2_free_rg_intercept/compiled_results.tsv",
         "results/combined/all/window_1000kb_step_50/hoeffdings_results.tsv",
         "results/ldak/ldak-thin/ukbb/all/rg/compiled_ukbb_sumher_results.tsv"
+
+rule run_simulated_analyses:
+    input:
+        "results/s400_400_reps.done",
+        "results/m25_400_reps.done",
+        "results/m50_400_reps.done",
+        "results/s200-m25_400_reps.done"

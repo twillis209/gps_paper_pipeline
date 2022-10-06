@@ -43,12 +43,13 @@ group-components:
   - permutation=1
   - ldsc_hoeffding_sumher_gps_sans_permutation=1
   - calculate_theoretical_rg=1000
+  - sumher=24
 rerun-incomplete: True
 verbose: False
 nolock: True
-#rerun-triggers: 'mtime'
+dry-run: False
 max-status-checks-per-second: 10
 latency-wait: 20
 cluster-status: './cluster_status.py' 
 cluster-cancel: 'scancel'
-retries: 3
+retries: 0

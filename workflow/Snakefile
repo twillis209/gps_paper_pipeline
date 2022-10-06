@@ -3,8 +3,6 @@ import datetime
 import pandas as pd
 from itertools import chain
 
-configfile: "config.yaml"
-
 wildcard_constraints:
     chr = "chr[0-9XY]{1,2}"
 
@@ -35,7 +33,7 @@ include: "rules/gps/ukbb_gps.smk"
 include: "rules/gps/simgwas_gps.smk"
 include: "rules/gps/gof.smk"
 include: "rules/gps/properties.smk"
-include: "rules/simgwas/simgwas_experiments.smk"
+include: "rules/simgwas/simgwas_export.smk"
 include: "rules/sumher/sumher.smk"
 include: "rules/sumher/ukbb_sumher.smk"
 include: "rules/export.smk"

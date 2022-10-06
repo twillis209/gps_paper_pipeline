@@ -32,41 +32,7 @@ def get_all_randomised_block_files(simulation_pars_file, reps):
 
     return a_block_files+b_block_files
 
-def parse_effect_token_to_odds_ratios(token):
-    return ','.join([str(odds_ratio_dict[re.match('[smlhv]', x).group()]) for x in token.split('-')])
-
-def get_theo_rg_files(simulation_pars_file, reps, subset = None):
-    daf = pd.read_csv(simulation_pars_file, sep = '\t')
-
-    if subset:
-        daf = daf.query('a_blocks == @subset & b_blocks == @subset')
-
-    return [f"results/ldsc/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/theoretical_rg/seed_{row.seed}_{row.tag_A}-{row.tag_B}_theo_rg.tsv" for row in daf.itertuples()]
-
-def compile_theoretical_rg_results(input, output):
-    with open(output[0], 'w') as outfile:
-        outfile.write("ncases.A\tncontrols.A\tncases.B\tncontrols.B\tseed\ttag_pair\todds_ratio.A\todds_ratio.B\tblocks.A\tblocks.B\tshared_blocks\th2.theo.obs.A\th2.theo.obs.B\th2.theo.liab.A\th2.theo.liab.B\tV_A.A\tV_A.B\tC_A.AB\tr_A.AB\n")
-
-        for x in input:
-            with open(x, 'r') as infile:
-                head, tail = os.path.split(x)
-
-                ncases_A, ncontrols_A, ncases_B, ncontrols_B = re.match("results/ldsc/rg/whole_genome/randomised/theoretical_rg/(\d+)_(\d+)_(\d+)_(\d+)", head).groups()
-
-
-                effect_blocks_A, effect_blocks_B, shared_effect_blocks, seed, tag_pair = re.match("([smlhv\d-]+)_([smlhv\d-]+)_([smlhv\d-]+)_seed_(\d+)_(\w{2})", tail).groups()
-
-                odds_ratios_A = parse_effect_token_to_odds_ratios(effect_blocks_A)
-                odds_ratios_B = parse_effect_token_to_odds_ratios(effect_blocks_B)
-
-                lines = [y.strip() for y in infile.readlines()]
-
-                h2_theo_obs_A, h2_theo_obs_B, h2_theo_liab_A, h2_theo_liab_B, V_A_A, V_A_B, C_A_AB, r_A_AB = lines[1].split('\t')[5:]
-                outfile.write(f"{ncases_A}\t{ncontrols_A}\t{ncases_B}\t{ncontrols_B}\t{seed}\t{tag_pair}\t{odds_ratios_A}\t{odds_ratios_B}\t{effect_blocks_A}\t{effect_blocks_B}\t{shared_effect_blocks}\t{h2_theo_obs_A}\t{h2_theo_obs_B}\t{h2_theo_liab_A}\t{h2_theo_liab_B}\t{V_A_A}\t{V_A_B}\t{C_A_AB}\t{r_A_AB}\n")
-
-    return
-
-def get_existing_test_files(simulation_pars_file, reps, filetype, subset = None, invert = False):
+def get_test_files(simulation_pars_file, reps, filetype, subset = None):
     daf = pd.read_csv(simulation_pars_file, sep = '\t')
 
     if subset:
@@ -87,10 +53,7 @@ def get_existing_test_files(simulation_pars_file, reps, filetype, subset = None,
     else:
         raise Exception(f"Invalid filetype specified: {filetype}")
 
-    if invert:
-        return [x for x in files if not os.path.exists(x)]
-    else:
-        return [x for x in files if os.path.exists(x)]
+    return files
 
 def compile_sumher_results_into_daf(input_files):
     d = []
@@ -422,53 +385,3 @@ def compile_theo_results_into_daf(input_files):
         )
 
     return pd.DataFrame(d)
-
-def get_missing_s400_files():
-    s400_ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = "a_blocks == \'s400\' & shared_blocks in [\'s0\', \'s50\', \'s100\', \'s150\', \'s200\', \'s250\', \'s300\', \'s350\', \'s400\']", invert = True)
-
-    s400_sumher_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = "a_blocks == \'s400\' & shared_blocks in [\'s0\', \'s50\', \'s100\', \'s150\', \'s200\', \'s250\', \'s300\', \'s350\', \'s400\']", invert = True)
-
-    s400_gps_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = "a_blocks == \'s400\' & shared_blocks in [\'s0\', \'s50\', \'s100\', \'s150\', \'s200\', \'s250\', \'s300\', \'s350\', \'s400\']", invert = True)
-
-    s400_hoeffdings_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = "a_blocks == \'s400\' & shared_blocks in [\'s0\', \'s50\', \'s100\', \'s150\', \'s200\', \'s250\', \'s300\', \'s350\', \'s400\']", invert = True)
-
-    return s400_ldsc_files+s400_sumher_files+s400_gps_files+s400_hoeffdings_files
-
-def get_missing_m25_files():
-    shared_blocks_string = "[\'m0\', \'m5\', \'m10\', \'m15\', \'m20\', \'m25\']"
-
-    m25_ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = f"a_blocks == \'m25\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    m25_sumher_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = f"a_blocks == \'m25\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    m25_gps_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = f"a_blocks == \'m25\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    m25_hoeffdings_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = f"a_blocks == \'m25\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    return m25_ldsc_files+m25_sumher_files+m25_gps_files+m25_hoeffdings_files
-
-def get_missing_m50_files():
-    shared_blocks_string = "[\'m0\', \'m10\', \'m20\', \'m30\', \'m40\', \'m50\']"
-
-    m50_ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = f"a_blocks == \'m50\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    m50_sumher_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = f"a_blocks == \'m50\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    m50_gps_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = f"a_blocks == \'m50\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    m50_hoeffdings_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = f"a_blocks == \'m50\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    return m50_ldsc_files+m50_sumher_files+m50_gps_files+m50_hoeffdings_files
-
-def get_missing_s200_m25_files():
-    shared_blocks_string = "[\'s0-m0\', \'s100-m0\', \'s100-m15\', \'s100-m25\', \'s200-m0\', \'s200-m15\', \'s200-m25\']"
-
-    s200_m25_ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = f"a_blocks == \'s200-m25\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    s200_m25_sumher_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = f"a_blocks == \'s200-m25\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    s200_m25_gps_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = f"a_blocks == \'s200-m25\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    s200_m25_hoeffdings_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = f"a_blocks == \'s200-m25\' & shared_blocks in {shared_blocks_string}", invert = True)
-
-    return s200_m25_ldsc_files+s200_m25_sumher_files+s200_m25_gps_files+s200_m25_hoeffdings_files

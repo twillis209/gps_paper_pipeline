@@ -156,32 +156,6 @@ rule make_simgwas_plink_ranges:
     shell:
         "Rscript workflow/scripts/simgwas/make_simgwas_plink_ranges.R --sum_stats_file {input.sum_stats_metadata_file} --input_bim_file {input.bim_file} --output_range_files {output} -nt {threads} --bp_pos 1 --chr_pos 92 --a0_pos 3 --a1_pos 4"
 
-rule merge_simulated_sum_stats:
-    input:
-        sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_A}_{ncontrols_A}/{effect_blocks_A}_sum_stats.tsv.gz",
-        sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{ncases_B}_{ncontrols_B}/{effect_blocks_B}_sum_stats.tsv.gz"
-    output:
-        temp("results/simgwas/simulated_sum_stats/merged/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv.gz")
-    params:
-        no_reps = 20
-    threads: 4
-    shell:
-        "Rscript workflow/scripts/simgwas/merge_sim_sum_stats.R --sum_stats_file_A {input.sum_stats_file_A} --sum_stats_file_B {input.sum_stats_file_B} --no_reps {params.no_reps} -o {output} -nt {threads}"
-
-rule prune_merged_sim_sum_stats:
-    input:
-        bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
-        pruned_range_file = "resources/plink_ranges/1000g/pruned_ranges/window_{window}_step_{step}/all.prune.in",
-        sum_stats_file = "results/simgwas/simulated_sum_stats/merged/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv.gz"
-    output:
-        temp("results/simgwas/simulated_sum_stats/pruned/window_{window}_step_{step}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_sum_stats.tsv")
-    params:
-        no_reps = 20
-    threads: 4
-    shell:
-        "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads} --no_reps {params.no_reps}"
-
-# TODO chr6:block86 CV duplication problem
 rule get_causal_variants:
     input:
         [[f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/10000_10000/block_{block}_causal_variant.tsv" for block in block_daf.query('chr == @chrom')['block']] for chrom in range(1,23)]
