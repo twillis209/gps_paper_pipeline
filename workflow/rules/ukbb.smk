@@ -258,6 +258,9 @@ trait_pairs_for_increasing_perm_fits = ["20002_1220-K80", "20002_1452-22126", "2
 rule download_ukbb_sum_stats:
     output:
         "resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv.bgz"
+    resources:
+        runtime = 5
+    group: 'ukbb'
     shell:
         """
         wget https://broad-ukb-sumstats-us-east-1.s3.amazonaws.com/round2/additive-tsvs/{wildcards.id}.gwas.imputed_v3.both_sexes.tsv.bgz -O resources/ukbb_sum_stats/{wildcards.id}.gwas.imputed_v3.both_sexes.tsv.bgz
@@ -269,12 +272,14 @@ rule decompress_ukbb_sum_stats:
     output:
         decomp_file = temp("resources/ukbb_sum_stats/{id}.gwas.imputed_v3.both_sexes.tsv"),
         flag_file = "resources/ukbb_sum_stats/{id}.done"
+    resources:
+        runtime = 5
+    group: 'ukbb'
     shell:
         """
         gunzip -c {input} >{output.decomp_file} && touch {output.flag_file}
         """
 
-        # TODO need to fix other rules which have old input file resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz
 rule merge_ukbb_sum_stats:
     input:
         ukbb_files = ancient(["resources/ukbb_sum_stats/%s.gwas.imputed_v3.both_sexes.tsv" % x for x in ukbb_trait_codes])
@@ -284,6 +289,9 @@ rule merge_ukbb_sum_stats:
         ukbb_trait_codes = ukbb_trait_codes,
         sans_mhc = lambda wildcards: True if wildcards.snp_set == 'sans_mhc' else False
     threads: 8
+    resources:
+        runtime = 45
+    group: 'ukbb'
     script: "../scripts/merge_ukbb_sum_stats.R"
 
 rule make_ukbb_plink_ranges:
@@ -297,6 +305,7 @@ rule make_ukbb_plink_ranges:
     params:
         sans_mhc = lambda wildcards: True if wildcards.snp_set == 'sans_mhc' else False
     threads: 8
+    group: 'ukbb'
     script: "../scripts/make_ukbb_plink_ranges.R"
 
 rule subset_ukbb_snp_variants:
@@ -315,12 +324,13 @@ rule subset_ukbb_snp_variants:
     threads: 8
     resources:
         mem_mb=get_mem_mb
+    group: 'ukbb'
     shell:
         "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --snps-only --make-bed --extract {input.range_file} --silent --out {params.output_stem}"
 
 rule prune_merged_sum_stats:
     input:
-      sum_stats_file = ancient("resources/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz"),
+      sum_stats_file = ancient("resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz"),
       bim_file = ancient("resources/plink_subsets/{join}/{snp_set}/all.bim"),
       pruned_range_file = ancient("resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/all.prune.in")
     output:
@@ -328,6 +338,9 @@ rule prune_merged_sum_stats:
     params:
         sans_mhc = lambda wildcards: True if wildcards.snp_set == "sans_mhc" else False
     threads: 8
+    resources:
+        runtime = 30
+    group: 'ukbb'
     script: "../scripts/prune_merged_sum_stats.R"
 
 rule downsample_pruned_merged_sum_stats:
@@ -336,5 +349,6 @@ rule downsample_pruned_merged_sum_stats:
     output:
         temp("resources/pruned_sum_stats/{join}/{snp_set}/{no_snps}_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
     threads: 8
+    group: 'ukbb'
     shell:
      "Rscript workflow/scripts/downsample_sum_stats.R -i {input} -n {wildcards.no_snps} -o {output} -nt {threads}"

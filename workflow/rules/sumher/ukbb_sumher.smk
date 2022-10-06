@@ -14,7 +14,7 @@ rule thin_predictors_for_ukbb:
     params:
         input_stem = "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}",
         output_stem = "results/ldak/ldak-thin/weights/ukbb/{join}/{chr}/thin"
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "sumher"
     shell:
         """
         $ldakRoot/ldak --thin {params.output_stem} --bfile {params.input_stem} --window-prune .98 --window-kb 100 > {log.log_file};
@@ -34,7 +34,7 @@ rule calculate_ldak_thin_taggings_for_chromosome_for_ukbb:
     params:
         input_stem = "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}",
         output_stem = "results/ldak/ldak-thin/taggings/ukbb/{join}/{chr}"
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "sumher"
     shell:
         "$ldakRoot/ldak --calc-tagging {params.output_stem} --bfile {params.input_stem} --weights {input.weights_file} --chr {wildcards.chr} --window-kb 1000 --power -.25 > {log.log_file}"
 
@@ -48,7 +48,7 @@ rule join_ldak_thin_taggings_for_ukbb:
         log_file = "results/ldak/ldak-thin/ukbb/{join}/whole_genome.tagging.log"
     params:
         output_stem = "results/ldak/ldak-thin/ukbb/{join}/whole_genome"
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "sumher"
     shell:
         """
         for x in {input}; do
@@ -69,7 +69,7 @@ rule process_ukbb_sum_stats:
     threads: 8
     resources:
         runtime = 10
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "sumher"
     script:
         "../../scripts/process_ukbb_sum_stats.R"
 
@@ -86,7 +86,7 @@ rule estimate_rg_with_ldak_thin_for_ukbb:
         output_stem = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}"
     resources:
         runtime = 5
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "sumher"
     shell:
         """
         $ldakRoot/ldak --sum-cors {params.output_stem} --tagfile {input.wg_tagging_file} --summary {input.sum_stats_file_A} --summary2 {input.sum_stats_file_B} --allow-ambiguous YES --check-sums NO --cutoff 0.01 > {log.log_file}

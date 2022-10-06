@@ -44,10 +44,9 @@ group-components:
   - ldsc_hoeffding_sumher_gps_sans_permutation=1
   - calculate_theoretical_rg=1000
 rerun-incomplete: True
-dry-run: False
 verbose: False
 nolock: True
-rerun-triggers: 'mtime'
+#rerun-triggers: 'mtime'
 max-status-checks-per-second: 10
 latency-wait: 20
 cluster-status: './cluster_status.py' 
