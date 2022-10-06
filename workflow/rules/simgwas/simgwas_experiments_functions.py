@@ -80,6 +80,8 @@ def get_existing_test_files(simulation_pars_file, reps, filetype, subset = None,
         files = [f"results/hoeffdings/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_hoeffdings.tsv" for row in daf.itertuples()]
     elif filetype == 'gps':
         files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50/3000_permutations/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_gps_pvalue.tsv" for row in daf.itertuples()]
+    elif filetype == 'theo':
+        files = [f"results/ldsc/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/theoretical_rg/seed_{row.seed}_{row.tag_A}-{row.tag_B}_theo_rg.tsv" for row in daf.itertuples()]
     elif filetype == 'done':
         files = [f"results/simgwas/done/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.done" for row in daf.itertuples()]
     else:
@@ -95,7 +97,7 @@ def compile_sumher_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/ldak/ldak-thin/simgwas/(?P<no_reps>\d+)_reps/randomised/rg/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w]+)_(?P<b_blocks>[\w]+)_(?P<shared_blocks>[\w]+)/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.cors", x)
+        m = re.match(r"results/ldak/ldak-thin/simgwas/(?P<no_reps>\d+)_reps/randomised/rg/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.cors", x)
 
         #odds_ratios_A = parse_effect_token_to_odds_ratios(m.group('a_blocks'))
         #odds_ratios_B = parse_effect_token_to_odds_ratios(m.group('b_blocks'))
@@ -166,7 +168,7 @@ def compile_ldsc_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/ldsc/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w]+)_(?P<b_blocks>[\w]+)_(?P<shared_blocks>[\w]+)/rg/fixed_h2_free_rg_intercept/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.log", x)
+        m = re.match(r"results/ldsc/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/rg/fixed_h2_free_rg_intercept/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.log", x)
 
         try:
             with open(x, 'r') as infile:
@@ -306,6 +308,8 @@ def compile_ldsc_results_into_daf(input_files):
                 )
         except FileNotFoundError:
             continue
+        except AttributeError:
+            print(x)
 
 
     return pd.DataFrame(d)
@@ -315,7 +319,7 @@ def compile_hoeffdings_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/hoeffdings/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w]+)_(?P<b_blocks>[\w]+)_(?P<shared_blocks>[\w]+)/window_1000kb_step_50/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_hoeffdings\.tsv", x)
+        m = re.match(r"results/hoeffdings/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_hoeffdings\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -348,7 +352,7 @@ def compile_gps_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w]+)_(?P<b_blocks>[\w]+)_(?P<shared_blocks>[\w]+)/window_1000kb_step_50/3000_permutations/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_gps_pvalue\.tsv", x)
+        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50/3000_permutations/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_gps_pvalue\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -383,7 +387,7 @@ def compile_gps_results_into_daf(input_files):
 
     return pd.DataFrame(d)
 
-def compile_theo_rg_results_into_daf(input_files):
+def compile_theo_results_into_daf(input_files):
     d = []
 
     for x in input_files:
@@ -418,3 +422,53 @@ def compile_theo_rg_results_into_daf(input_files):
         )
 
     return pd.DataFrame(d)
+
+def get_missing_s400_files():
+    s400_ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = "a_blocks == \'s400\' & shared_blocks in [\'s0\', \'s50\', \'s100\', \'s150\', \'s200\', \'s250\', \'s300\', \'s350\', \'s400\']", invert = True)
+
+    s400_sumher_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = "a_blocks == \'s400\' & shared_blocks in [\'s0\', \'s50\', \'s100\', \'s150\', \'s200\', \'s250\', \'s300\', \'s350\', \'s400\']", invert = True)
+
+    s400_gps_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = "a_blocks == \'s400\' & shared_blocks in [\'s0\', \'s50\', \'s100\', \'s150\', \'s200\', \'s250\', \'s300\', \'s350\', \'s400\']", invert = True)
+
+    s400_hoeffdings_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = "a_blocks == \'s400\' & shared_blocks in [\'s0\', \'s50\', \'s100\', \'s150\', \'s200\', \'s250\', \'s300\', \'s350\', \'s400\']", invert = True)
+
+    return s400_ldsc_files+s400_sumher_files+s400_gps_files+s400_hoeffdings_files
+
+def get_missing_m25_files():
+    shared_blocks_string = "[\'m0\', \'m5\', \'m10\', \'m15\', \'m20\', \'m25\']"
+
+    m25_ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = f"a_blocks == \'m25\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    m25_sumher_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = f"a_blocks == \'m25\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    m25_gps_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = f"a_blocks == \'m25\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    m25_hoeffdings_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = f"a_blocks == \'m25\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    return m25_ldsc_files+m25_sumher_files+m25_gps_files+m25_hoeffdings_files
+
+def get_missing_m50_files():
+    shared_blocks_string = "[\'m0\', \'m10\', \'m20\', \'m30\', \'m40\', \'m50\']"
+
+    m50_ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = f"a_blocks == \'m50\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    m50_sumher_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = f"a_blocks == \'m50\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    m50_gps_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = f"a_blocks == \'m50\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    m50_hoeffdings_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = f"a_blocks == \'m50\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    return m50_ldsc_files+m50_sumher_files+m50_gps_files+m50_hoeffdings_files
+
+def get_missing_s200_m25_files():
+    shared_blocks_string = "[\'s0-m0\', \'s100-m0\', \'s100-m15\', \'s100-m25\', \'s200-m0\', \'s200-m15\', \'s200-m25\']"
+
+    s200_m25_ldsc_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'ldsc', subset = f"a_blocks == \'s200-m25\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    s200_m25_sumher_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'sumher', subset = f"a_blocks == \'s200-m25\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    s200_m25_gps_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = f"a_blocks == \'s200-m25\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    s200_m25_hoeffdings_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'hoeffdings', subset = f"a_blocks == \'s200-m25\' & shared_blocks in {shared_blocks_string}", invert = True)
+
+    return s200_m25_ldsc_files+s200_m25_sumher_files+s200_m25_gps_files+s200_m25_hoeffdings_files

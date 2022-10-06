@@ -16,4 +16,12 @@ for(i in 2:length(sum_stats_files)) {
   left_dat <- merge(left_dat, right_dat, by = 'variant')
 }
 
+if(snakemake@params[['sans_mhc']]) {
+  left_dat[, c('chr', 'bp') := tstrsplit(variant, split = ':', keep = 1:2)]
+
+  left_dat <- left_dat[!(chr == 6 & bp %between% c(24e6, 45e6))]
+
+  left_dat[, c('chr', 'bp') := NULL]
+}
+
 fwrite(left_dat, file = snakemake@output[[1]], sep = '\t')

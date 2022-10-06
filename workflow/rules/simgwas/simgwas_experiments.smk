@@ -74,10 +74,10 @@ rule run_s200_m25_simulations:
 
 rule compile_existing_test_files:
     input:
-        ldsc_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'ldsc', subset = wildcards.effect_blocks)),
-        sumher_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'sumher', subset = wildcards.effect_blocks)),
-        hoeffdings_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'hoeffdings', subset = wildcards.effect_blocks)),
-        gps_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'gps', subset = wildcards.effect_blocks))
+        ldsc_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'ldsc', subset = f"a_blocks == \'{wildcards.effect_blocks}\'")),
+        sumher_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'sumher', subset = f"a_blocks == \'{wildcards.effect_blocks}\'")),
+        hoeffdings_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'hoeffdings', subset = f"a_blocks == \'{wildcards.effect_blocks}\'")),
+        gps_files = lambda wildcards: ancient(get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'gps', subset = f"a_blocks == \'{wildcards.effect_blocks}\'"))
     output:
         ldsc_out = "results/ldsc/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
         sumher_out = "results/ldak/ldak-thin/simgwas/{no_reps}_reps/randomised/rg/compiled_{effect_blocks}_results.tsv",
@@ -105,10 +105,18 @@ rule compile_theo_rg_files:
         daf = compile_theo_rg_results_into_daf(input.input_files)
         daf.to_csv(output[0], sep = '\t', index = False)
 
+rule get_missing_m25_files:
+    input:
+        lambda wildcards: get_missing_m25_files()
+
 rule get_missing_m50_files:
     input:
-         done_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'done', subset = 'a_blocks == \'m50\' & b_blocks == \'m50\'', invert = True),
+        lambda wildcards: get_missing_m50_files()
 
 rule get_missing_s200_m25_files:
     input:
-        done_files = get_existing_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'done', subset = 'a_blocks == \'s200-m25\' & b_blocks == \'s200-m25\'', invert = True),
+        lambda wildcards: get_missing_s200_m25_files()
+
+rule get_missing_s400_files:
+    input:
+        lambda wildcards: get_missing_s400_files()

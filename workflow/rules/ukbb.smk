@@ -279,9 +279,10 @@ rule merge_ukbb_sum_stats:
     input:
         ukbb_files = ancient(["resources/ukbb_sum_stats/%s.gwas.imputed_v3.both_sexes.tsv" % x for x in ukbb_trait_codes])
     output:
-        merged_file = "resources/ukbb_sum_stats/all/merged_ukbb_sum_stats.tsv.gz"
+        merged_file = "resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz"
     params:
-        ukbb_trait_codes = ukbb_trait_codes
+        ukbb_trait_codes = ukbb_trait_codes,
+        sans_mhc = lambda wildcards: True if wildcards.snp_set == 'sans_mhc' else False
     threads: 8
     script: "../scripts/merge_ukbb_sum_stats.R"
 
