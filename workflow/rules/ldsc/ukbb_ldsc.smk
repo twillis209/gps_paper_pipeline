@@ -9,7 +9,7 @@ rule preprocess_ukbb_sum_stats_trait:
         n_col = lambda wildcards: f"n_complete_samples.{wildcards.trait}",
     output:
         temp("results/ldsc/munged_sum_stats/ukbb/{snp_set}/{trait}_preprocessed_sum_stats.tsv.gz")
-    threads: 4
+    threads: 12
     resources:
         tmpdir = 'tmp'
     script: "../../scripts/ldsc/preprocess_ukbb_sum_stats_for_ldsc.R"

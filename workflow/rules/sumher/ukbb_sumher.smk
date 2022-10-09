@@ -3,17 +3,17 @@ import pandas as pd
 
 rule thin_predictors_for_ukbb:
     input:
-        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.bed",
-        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.bim",
-        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.fam"
+        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.bed",
+        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.bim",
+        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.fam"
     output:
-        thin_file = "results/ldak/ldak-thin/weights/ukbb/{join}/{chr}/thin.in",
-        weights_file = "results/ldak/ldak-thin/weights/ukbb/{join}/{chr}/weights.thin"
+        thin_file = "results/ldak/ldak-thin/weights/ukbb/{snp_set}/{chr}/thin.in",
+        weights_file = "results/ldak/ldak-thin/weights/ukbb/{snp_set}/{chr}/weights.thin"
     log:
-        log_file = "results/ldak/ldak-thin/weights/ukbb/{join}/{chr}/thin.log"
+        log_file = "results/ldak/ldak-thin/weights/ukbb/{snp_set}/{chr}/thin.log"
     params:
-        input_stem = "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}",
-        output_stem = "results/ldak/ldak-thin/weights/ukbb/{join}/{chr}/thin"
+        input_stem = "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}",
+        output_stem = "results/ldak/ldak-thin/weights/ukbb/{snp_set}/{chr}/thin"
     group: "sumher"
     shell:
         """
@@ -23,31 +23,31 @@ rule thin_predictors_for_ukbb:
 
 rule calculate_ldak_thin_taggings_for_chromosome_for_ukbb:
     input:
-        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.bed",
-        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.bim",
-        "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}.fam",
-        weights_file = "results/ldak/ldak-thin/weights/ukbb/{join}/{chr}/weights.thin"
+        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.bed",
+        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.bim",
+        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.fam",
+        weights_file = "results/ldak/ldak-thin/weights/ukbb/{snp_set}/{chr}/weights.thin"
     output:
-        tagging_file = temp("results/ldak/ldak-thin/taggings/ukbb/{join}/{chr}.tagging"),
+        tagging_file = temp("results/ldak/ldak-thin/taggings/ukbb/{snp_set}/{chr}.tagging"),
     log:
-        log_file = "results/ldak/ldak-thin/taggings/ukbb/{join}/{chr}.tagging.log"
+        log_file = "results/ldak/ldak-thin/taggings/ukbb/{snp_set}/{chr}.tagging.log"
     params:
-        input_stem = "resources/ukbb_sum_stats/{join}/nodup/snps_only/{chr}",
-        output_stem = "results/ldak/ldak-thin/taggings/ukbb/{join}/{chr}"
+        input_stem = "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}",
+        output_stem = "results/ldak/ldak-thin/taggings/ukbb/{snp_set}/{chr}"
     group: "sumher"
     shell:
         "$ldakRoot/ldak --calc-tagging {params.output_stem} --bfile {params.input_stem} --weights {input.weights_file} --chr {wildcards.chr} --window-kb 1000 --power -.25 > {log.log_file}"
 
 rule join_ldak_thin_taggings_for_ukbb:
     input:
-        [f"results/ldak/ldak-thin/taggings/ukbb/{{join}}/chr{x}.tagging" for x in range(1, 23)]
+        [f"results/ldak/ldak-thin/taggings/ukbb/{{snp_set}}/chr{x}.tagging" for x in range(1, 23)]
     output:
-        wg_tagging_file = "results/ldak/ldak-thin/ukbb/{join}/whole_genome.tagging",
-        chrom_taggings_file = temp("results/ldak/ldak-thin/ukbb/{join}/taggings.txt")
+        wg_tagging_file = "results/ldak/ldak-thin/ukbb/{snp_set}/whole_genome.tagging",
+        chrom_taggings_file = temp("results/ldak/ldak-thin/ukbb/{snp_set}/taggings.txt")
     log:
-        log_file = "results/ldak/ldak-thin/ukbb/{join}/whole_genome.tagging.log"
+        log_file = "results/ldak/ldak-thin/ukbb/{snp_set}/whole_genome.tagging.log"
     params:
-        output_stem = "results/ldak/ldak-thin/ukbb/{join}/whole_genome"
+        output_stem = "results/ldak/ldak-thin/ukbb/{snp_set}/whole_genome"
     group: "sumher"
     shell:
         """
@@ -66,24 +66,24 @@ rule process_ukbb_sum_stats:
     params:
         z_colname = lambda wildcards: '.'.join(['tstat', wildcards.trait_code]),
         sample_size_colname = lambda wildcards: '.'.join(['n_complete_samples', wildcards.trait_code])
-    threads: 8
+    threads: 12
     resources:
-        runtime = 10
+        runtime = 8
     group: "sumher"
     script:
         "../../scripts/process_ukbb_sum_stats.R"
 
 rule estimate_rg_with_ldak_thin_for_ukbb:
     input:
-        wg_tagging_file = "results/ldak/ldak-thin/ukbb/{join}/whole_genome.tagging",
-        sum_stats_file_A = "resources/ukbb_sum_stats/{join}/{trait_A}.assoc",
-        sum_stats_file_B = "resources/ukbb_sum_stats/{join}/{trait_B}.assoc"
+        wg_tagging_file = "results/ldak/ldak-thin/ukbb/{snp_set}/whole_genome.tagging",
+        sum_stats_file_A = "resources/ukbb_sum_stats/{snp_set}/{trait_A}.assoc",
+        sum_stats_file_B = "resources/ukbb_sum_stats/{snp_set}/{trait_B}.assoc"
     output:
-        cors_full_file = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}.cors.full"
+        cors_full_file = "results/ldak/ldak-thin/ukbb/{snp_set}/rg/{trait_A}-{trait_B}.cors.full"
     log:
-        log_file = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}.log"
+        log_file = "results/ldak/ldak-thin/ukbb/{snp_set}/rg/{trait_A}-{trait_B}.log"
     params:
-        output_stem = "results/ldak/ldak-thin/ukbb/{join}/rg/{trait_A}-{trait_B}"
+        output_stem = "results/ldak/ldak-thin/ukbb/{snp_set}/rg/{trait_A}-{trait_B}"
     resources:
         runtime = 5
     group: "sumher"
@@ -94,9 +94,9 @@ rule estimate_rg_with_ldak_thin_for_ukbb:
 
 rule ukbb_sumher:
     input:
-       sumher_files = [f"results/ldak/ldak-thin/ukbb/{{join}}/rg/{trait_pair}.cors.full" for trait_pair in ukbb_trait_pairs]
+       sumher_files = [f"results/ldak/ldak-thin/ukbb/{{snp_set}}/rg/{trait_pair}.cors.full" for trait_pair in ukbb_trait_pairs]
     output:
-        "results/ldak/ldak-thin/ukbb/{join}/rg/compiled_ukbb_sumher_results.tsv"
+        "results/ldak/ldak-thin/ukbb/{snp_set}/rg/compiled_ukbb_sumher_results.tsv"
     run:
         d = []
 
@@ -120,7 +120,7 @@ rule ukbb_sumher:
                 {
                     'trait.A' : trait_A,
                     'trait.B' : trait_B,
-                    'snp.set' : wildcards.join,
+                    'snp.set' : wildcards.snp_set,
                     'h2.A.obs.sr' : float(h2_A),
                     'h2.A.obs.se.sr' : float(h2_A_se),
                     'h2.B.obs.sr' : float(h2_B),

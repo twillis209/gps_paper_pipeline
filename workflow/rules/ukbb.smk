@@ -290,7 +290,7 @@ rule merge_ukbb_sum_stats:
         sans_mhc = lambda wildcards: True if wildcards.snp_set == 'sans_mhc' else False
     threads: 12
     resources:
-        runtime = 45
+        runtime = 20
     group: 'ukbb'
     script: "../scripts/merge_ukbb_sum_stats.R"
 
@@ -305,6 +305,8 @@ rule make_ukbb_plink_ranges:
     params:
         sans_mhc = lambda wildcards: True if wildcards.snp_set == 'sans_mhc' else False
     threads: 12
+    resources:
+        runtime = 12
     group: 'ukbb'
     script: "../scripts/make_ukbb_plink_ranges.R"
 

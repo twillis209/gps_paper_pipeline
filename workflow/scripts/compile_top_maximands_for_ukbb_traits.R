@@ -2,8 +2,6 @@ library(data.table)
 library(magrittr)
 library(stringr)
 
-save.image('compile_top_maximands_for_ukbb_traits.RData')
-
 setDTthreads(snakemake@threads)
 
 for(i in seq_along(snakemake@input[['annot_files']])) {

@@ -52,7 +52,7 @@ If you are making use of `snakemake`'s `group` feature to bundle together relate
 
 #### Resource allocation
 
-If running `snakemake` in cluster execution mode (it's hard to imagine you would be doing otherwise with this pipeline), you can set the resources for each rule in your profile file. The resource specifications given in the `smk` are to be taken as recommendations rather than hard and fast specifications; what is suitable for execution on your own cluster will vary according to the compute resources available to you. 
+If running `snakemake` in cluster execution mode (it's hard to imagine you would be doing otherwise with this pipeline), you can set the resources for each rule in your profile file. The resource specifications given in the `smk` are to be taken as recommendations rather than hard and fast specifications; what is suitable for execution on your own cluster will depend on the compute resources available to you. 
 
 We ran jobs in bundles and used the relatively new `group-resources` feature when running the pipeline. An excerpt from our profile `config.yaml` file is below:
 
@@ -96,7 +96,7 @@ Note the user-defined `concurrent_sans_permute_jobs` resource. We used this to l
 
 ### `conda` environments
 
-`environment.yaml` specifies the `conda` environment used to run the python scripts in the pipeline with the exception of the LDSC script, which has its own `conda` environment at `workflow/rules/ldsc/envs/ldsc.ymal`. The first environment should be activated prior to launching the pipeline whilst `snakemake` itself should manage the use of the LDSC environment through the `conda` directive in the relevant rules.
+`environment.yaml` specifies the `conda` environment used to run the python scripts in the pipeline with the exception of the LDSC script, which has its own `conda` environment at `workflow/rules/ldsc/envs/ldsc.ymal`. The first environment should be activated prior to launching the pipeline whilst `snakemake` itself should manage the one-timeinstallation and activation of the LDSC environment through the `conda` directive in the relevant rules.
 
 Note that `snakemake` is not contained within the main `conda` environment as the version of `snakemake` with which the pipeline was developed, `7.14.0`, was not available through `conda` at the time of development. The pipeline should be compatible with versions of `snakemake` `>=7.14.0`.
 
