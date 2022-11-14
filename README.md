@@ -111,13 +111,14 @@ LDSC should be installed as directed on the [software's repository](https://gith
 The software to compute the GPS statistic and p-values for the test is a mixture of R and C++. The C++ component is contained in the submodule `workflow/scripts/gps_cpp`. Its programs are built with `cmake` and `make`. To build the software `cd` into `gps_cpp` and run:
 
 ```
+git checkout gps_paper
 mkdir build
 cd build
 cmake ..
 make
 ```
 
-This should build the C++ programs the pipeline depends on.
+This should build the C++ programs the pipeline depends on. The `gps_paper` branch of the repo archives the version of the software we used when generating this paper's results. The `master` branch contains a newer version of the program, in particular one with a faster implementation of the GPS test.
 
 ### SumHer
 
