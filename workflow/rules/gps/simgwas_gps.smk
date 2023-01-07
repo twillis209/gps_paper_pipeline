@@ -8,15 +8,14 @@ rule compute_gps_for_sim_pair:
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
-        no_of_pert_iterations = 100,
-        epsilon_multiple = 2.0
-    threads: 1
+        no_of_pert_iterations = 0
+    threads: 12
     resources:
         runtime = 5
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
-        "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -l -o {output} -p {params.no_of_pert_iterations} -e {params.epsilon_multiple}"
+        "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -p {params.no_of_pert_iterations} -n {threads} -o {output}"
 
 rule permute_sim_pair:
     input:
@@ -26,26 +25,7 @@ rule permute_sim_pair:
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
-        no_of_pert_iterations = 100
-    threads: 12
-    resources:
-        mem_mb = get_mem_mb,
-        runtime = get_permute_time,
-    group: "permutation"
-    retries: 3
-    priority: 1
-    shell:
-        "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws} -p {params.no_of_pert_iterations}"
-
-rule permute_sim_pair_with_seed:
-    input:
-        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
-    output:
-        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/{draws,\d+}_permutations/seed_{seed}_gps_seed_{gps_seed}_tags_{tag_A,\d+}-{tag_B,\d+}.tsv"
-    params:
-        a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
-        b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
-        no_of_pert_iterations = 100
+        no_of_pert_iterations = 1
     threads: 12
     resources:
         mem_mb = get_mem_mb,
