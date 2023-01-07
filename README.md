@@ -123,3 +123,9 @@ This should build the C++ programs the pipeline depends on. The `gps_paper` bran
 ### SumHer
 
 Install LDAK (SumHer's parent software suite) as per the directions on the [software's website](http://dougspeed.com/downloads2/). To use the pipeline as written, create an environment variable `ldakRoot` which points to the directory in which the LDAK binary is located.
+
+### R packages
+
+I've yet to find a method of packaging these up to be installed en bloc; sorry!
+
+A note on `data.table`: install it then run `data.table::update_dev_pkg()` to install the dev version, features of which some of the code depends on.

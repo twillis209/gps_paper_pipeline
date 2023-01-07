@@ -1,6 +1,9 @@
+name: gps_paper_pipeline
 channels:
-  - bioconda
-  - conda-forge
+- conda-forge
+- bioconda
 dependencies:
-  - pandas
-  - scipy
+- python >= 3.11
+- bioconda/noarch::snakemake >= 7.19.1
+- pandas
+- scipy
