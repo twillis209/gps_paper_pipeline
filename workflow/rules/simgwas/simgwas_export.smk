@@ -65,7 +65,7 @@ rule compile_test_files:
         sumher_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'sumher', subset = f"a_blocks == \'{wildcards.effect_blocks}\'"),
         hoeffdings_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'hoeffdings', subset = f"a_blocks == \'{wildcards.effect_blocks}\'"),
         gps_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'gps', subset = f"a_blocks == \'{wildcards.effect_blocks}\'"),
-        theo_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, subset = f"a_blocks == \'{wildcards.effect_blocks}\'")
+        theo_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'theo', subset = f"a_blocks == \'{wildcards.effect_blocks}\'")
     output:
         ldsc_out = "results/ldsc/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
         sumher_out = "results/ldak/ldak-thin/simgwas/{no_reps}_reps/randomised/rg/compiled_{effect_blocks}_results.tsv",
