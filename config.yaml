@@ -45,6 +45,7 @@ group-components:
   - calculate_theoretical_rg=1000
   - sumher=24
 rerun-incomplete: True
+rerun-triggers: 'mtime'
 verbose: False
 nolock: True
 dry-run: False
