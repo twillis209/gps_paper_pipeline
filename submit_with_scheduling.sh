@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --time=6:00:00
 #SBATCH --mail-type=FAIL
-#SBATCH -p cclake,cclake-himem,icelake,icelake-himem,skylake,skylake-himem
+#SBATCH -p cclake
 #SBATCH -o logs/gps_paper_pipeline_scheduler/%j.out
 
 #! Number of nodes and tasks per node allocated by SLURM (do not change):
@@ -19,10 +19,6 @@ mpi_tasks_per_node=$(echo "$SLURM_TASKS_PER_NODE" | sed -e  's/^\([0-9][0-9]*\).
 . /etc/profile.d/modules.sh                # Leave this line (enables the module command)
 module purge                               # Removes all modules still loaded
 module load rhel7/default-peta4            # REQUIRED - loads the basic environment
-
-#! Insert additional module load commands after this line if needed:
-module load r-4.0.2-gcc-5.4.0-xyx46xb
-export R_LIBS=/home/tw395/R/4.0.2/libs:$R_LIBS
 
 workdir="$SLURM_SUBMIT_DIR"
 
@@ -64,11 +60,10 @@ echo -e "\nnumtasks=$numtasks, numnodes=$numnodes, mpi_tasks_per_node=$mpi_tasks
 
 echo -e "\nExecuting command:\n==================\n\n"
 
-# Needed to run the code written to .bashrc by the conda init program
 source  /home/tw395/.bashrc
-# Needed to use my libs
-source  /home/tw395/.bash_profile
+
+export PATH=$PATH:"/home/tw395/opt/mambaforge/bin"
 
 conda activate gps_paper_pipeline
 
-python3 -m snakemake --profile "." "${@}"
+snakemake --profile "." "${@}"

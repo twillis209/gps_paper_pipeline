@@ -35,6 +35,15 @@ rule permute_sim_pair:
     shell:
         "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws} -p {params.no_of_pert_iterations}"
 
+rule compute_li_gps_pvalue_for_sim_pair:
+    input:
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A}-{tag_B}_gps_value.tsv",
+    output:
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlh\d-]+}_{effect_blocks_B,[smlh\d-]+}_{shared_effect_blocks,[smlh\d-]+}/window_{window}_step_{step}/{draws,\d+}_permutations/seed_{seed,\d+}_tags_{tag_A,\d+}-{tag_B,\d+}_li_gps_pvalue.tsv"
+    group: "permutation"
+    script:
+        "../../scripts/compute_li_gps_pvalue.R"
+
 rule fit_gev_and_compute_gps_pvalue_for_sim_pair:
     input:
         gps_file = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A}-{tag_B}_gps_value.tsv",
