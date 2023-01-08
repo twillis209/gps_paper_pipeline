@@ -22,7 +22,7 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
             while i < max(no_of_shared_blocks, 0):
                 chrom = random.choice(range(1, 23))
-                block_no = random.choice(block_daf.query('chr == @chrom')[['block']].values)[0]
+                block_no = random.choice(block_daf.query('chr == @chrom')[['block']].values.transpose().tolist()[0])
 
                 if (chrom, block_no) not in shared_chrom_block_nos:
                     shared_chrom_block_nos.append((chrom, block_no))
@@ -51,7 +51,8 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
             while i < max(no_of_blocks_a-len(shared_chrom_block_dict[effect_a]), 0):
                 chrom = random.choice(range(1, 23))
-                block_no = random.choice(block_daf.query('chr == @chrom')[['block']].values)[0]
+
+                block_no = random.choice(block_daf.query('chr == @chrom')[['block']].values.transpose().tolist()[0])
 
                 if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos:
                     a_chrom_block_nos.append((chrom, block_no))
@@ -80,7 +81,8 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
             while i < max(no_of_blocks_b-len(shared_chrom_block_dict[effect_b]), 0):
                 chrom = random.choice(range(1, 23))
-                block_no = random.choice(block_daf.query('chr == @chrom')[['block']].values)[0]
+                block_no = random.choice(block_daf.query('chr == @chrom')[['block']].values.transpose().tolist()[0])
+
 
                 if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos and (chrom, block_no) not in b_chrom_block_nos:
                     b_chrom_block_nos.append((chrom, block_no))

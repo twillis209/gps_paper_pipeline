@@ -90,3 +90,7 @@ rule compile_test_files:
         theo_daf.to_csv(output[0], sep = '\t', index = False)
 
         shell("touch {output.done_out}")
+
+rule run_s400_li_gps_simulations:
+    input:
+        li_gps_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'s400\'")
