@@ -49,7 +49,7 @@ rerun-triggers: 'mtime'
 verbose: False
 nolock: True
 dry-run: False
-notemp: True
+notemp: False
 max-status-checks-per-second: 10
 latency-wait: 20
 cluster-status: './cluster_status.py' 

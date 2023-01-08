@@ -62,8 +62,6 @@ echo -e "\nExecuting command:\n==================\n\n"
 
 source  /home/tw395/.bashrc
 
-export PATH=$PATH:"/home/tw395/opt/mambaforge/bin"
-
 conda activate gps_paper_pipeline
 
 snakemake --profile "." "${@}"
