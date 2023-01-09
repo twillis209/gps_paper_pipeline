@@ -22,7 +22,6 @@ scheduler: greedy
 default-resources:
   - runtime=5
   - mem_mb=3420
-  - tmpdir='tmp'
 resources:
   - concurrent_sans_permute_jobs=200
 set-threads:

@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
-#SBATCH --time=6:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH -p cclake
 #SBATCH -o logs/gps_paper_pipeline_scheduler/%j.out
