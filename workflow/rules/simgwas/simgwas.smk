@@ -8,11 +8,11 @@ include: "simgwas_functions.py"
 
 rule get_legend_files_with_euro_common_maf:
     input:
-        "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.legend.gz"
+        "resources/simgwas/1000g/1000GP_Phase3_{chr}.legend.gz"
     output:
-        "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend.gz"
+        "resources/simgwas/1000g/1000GP_Phase3_{chr}_eur_common_maf.legend.gz"
     params:
-        "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_eur_common_maf.legend"
+        "resources/simgwas/1000g/1000GP_Phase3_{chr}_eur_common_maf.legend"
     shell:
         """
         zcat {input} | awk -F' ' '($9 >= 0.01 && $9 <= 0.99) || NR == 1' >{params};
@@ -21,17 +21,17 @@ rule get_legend_files_with_euro_common_maf:
 
 rule get_euro_hap_files_with_metadata:
     input:
-        legend_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.legend.gz",
-        hap_file = "resources/simgwas/1000g/1000GP_Phase3_chr{ch}.hap.gz",
-        samples_file = "resources/simgwas/1000g/chr{ch}.samples"
+        legend_file = "resources/simgwas/1000g/1000GP_Phase3_{chr}.legend.gz",
+        hap_file = "resources/simgwas/1000g/1000GP_Phase3_{chr}.hap.gz",
+        samples_file = "resources/simgwas/1000g/{chr}.samples"
     output:
-        output_hap_file = temp("resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap.gz")
+        output_hap_file = temp("resources/simgwas/1000g/1000GP_Phase3_{chr}_with_meta_eur_common_maf.hap.gz")
     params:
-        uncomp_hap_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta_eur_common_maf.hap",
-        temp_hap_with_maf_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_eur_maf.hap",
-        temp_hap_filtered_maf_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_filtered_eur_maf.hap",
-        temp_hap_file =  "resources/simgwas/1000g/1000GP_Phase3_chr{ch}_with_meta.hap",
-        temp_eur_cols_file =  "resources/simgwas/1000g/chr{ch}_EUR_cols.csv"
+        uncomp_hap_file =  "resources/simgwas/1000g/1000GP_Phase3_{chr}_with_meta_eur_common_maf.hap",
+        temp_hap_with_maf_file =  "resources/simgwas/1000g/1000GP_Phase3_{chr}_with_eur_maf.hap",
+        temp_hap_filtered_maf_file =  "resources/simgwas/1000g/1000GP_Phase3_{chr}_filtered_eur_maf.hap",
+        temp_hap_file =  "resources/simgwas/1000g/1000GP_Phase3_{chr}_with_meta.hap",
+        temp_eur_cols_file =  "resources/simgwas/1000g/{chr}_EUR_cols.csv"
     shell:
         """
         paste -d' ' <(zcat {input.hap_file}) <(zcat {input.legend_file} | cut -d' ' -f9 | tail -n +2)  >{params.temp_hap_with_maf_file}
@@ -74,11 +74,11 @@ for chrom in range(1,23):
 
 rule compute_block_ld_matrix:
     input:
-        block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.hap.gz"),
-        block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
+        block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.hap.gz"),
+        block_legend_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.legend.gz"),
         block_file = "resources/ldetect/blocks.txt"
     output:
-        "results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData"
+        "results/simgwas/{chr}_ld_matrices/block_{block}_ld_matrix.RData"
     threads: 4
     resources:
         runtime = 60,
@@ -88,29 +88,29 @@ rule compute_block_ld_matrix:
 
 rule simulate_sum_stats_by_ld_block:
     input:
-        bim_file = ancient("resources/1000g/chr{ch}.bim"),
-        block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.hap.gz"),
-        block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
-        ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
+        bim_file = ancient("resources/1000g/{chr}.bim"),
+        block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.hap.gz"),
+        block_legend_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.legend.gz"),
+        ld_mat_file = ancient("results/simgwas/{chr}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/chr{ch}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
+        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/{chr}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
     threads: 3
     resources:
         mem_mb = get_mem_mb,
         runtime = get_simulation_runtime
     group: 'simulate'
-    benchmark: 'results/benchmarks/simulate_sum_stats_by_ld_block/{no_reps}_reps/{effect_size}/{ncases}_{ncontrols}/chr{ch}/block_{block}_seed_{seed}_sum_stats.txt'
+    benchmark: 'results/benchmarks/simulate_sum_stats_by_ld_block/{no_reps}_reps/{effect_size}/{ncases}_{ncontrols}/{chr}/block_{block}_seed_{seed}_sum_stats.txt'
     shell:
         "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps {wildcards.no_reps} --seed {wildcards.seed} -o {output} -nt {threads}"
 
 rule get_causal_variant_by_ld_block:
     input:
-        bim_file = ancient("resources/1000g/chr{ch}.bim"),
-        block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.hap.gz"),
-        block_legend_file = ancient("resources/simgwas/1000g/blockwise/chr{ch}/block_{block}.legend.gz"),
-        ld_mat_file = ancient("results/simgwas/chr{ch}_ld_matrices/block_{block}_ld_matrix.RData")
+        bim_file = ancient("resources/1000g/{chr}.bim"),
+        block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.hap.gz"),
+        block_legend_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.legend.gz"),
+        ld_mat_file = ancient("results/simgwas/{chr}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        temp("results/simgwas/simulated_sum_stats/block_sum_stats/chr{ch}/null/10000_10000/block_{block}_causal_variant.tsv")
+        temp("results/simgwas/simulated_sum_stats/block_sum_stats/{chr}/null/10000_10000/block_{block}_causal_variant.tsv")
     threads: 4
     resources:
         mem_mb=get_mem_mb,

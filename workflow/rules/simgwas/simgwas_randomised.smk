@@ -135,3 +135,13 @@ rule unzip_pruned_merged_randomised_simulated_sum_stats:
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         "gunzip -c {input} >{output}"
+
+rule write_out_per_chromosome_merged_randomised_simulated_sum_stats:
+    input:
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/window_{window}_step_{step}/seed_{seed,\d+}_pruned_sum_stats_tags_{tag_A,\d+}-{tag_B,\d+}.tsv"
+    output:
+        [f"results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A}}_{{ncontrols_A}}_{{ncases_B}}_{{ncontrols_B}}/{{effect_blocks_A,[smlvh\d-]+}}_{{effect_blocks_B,[smlvh\d-]+}}_{{shared_effect_blocks,[smlvh\d-]+}}/window_{{window}}_step_{{step}}/seed_{{seed,\d+}}_pruned_sum_stats_tags_{{tag_A,\d+}}-{{tag_B,\d+}}_per_chr/chr{x}.tsv" for x in range(1, 23)]
+    params:
+        chr_col = 'CHR38'
+    group: "gwas"
+    script: "../scripts/write_out_summary_statistics_per_chromosome.R"

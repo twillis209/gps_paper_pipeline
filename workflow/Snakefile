@@ -3,9 +3,6 @@ import datetime
 import pandas as pd
 from itertools import chain
 
-wildcard_constraints:
-    chr = "chr[0-9XY]{1,2}"
-
 max_time = 12*60
 
 def get_mem_mb(wildcards, threads):
@@ -21,6 +18,7 @@ block_daf = pd.read_csv("resources/ldetect/available_blocks.tsv", sep = "\t")
 
 block_daf = block_daf.query('available == True')
 
+include: "rules/wildcard_constraints.smk"
 include: "rules/1000g_reference.smk"
 include: "rules/ukbb.smk"
 include: "rules/hoeffdings.smk"
@@ -33,6 +31,7 @@ include: "rules/gps/ukbb_gps.smk"
 include: "rules/gps/simgwas_gps.smk"
 include: "rules/gps/gof.smk"
 include: "rules/gps/properties.smk"
+include: "rules/gps/per_chr_gps.smk"
 include: "rules/simgwas/simgwas_export.smk"
 include: "rules/sumher/sumher.smk"
 include: "rules/sumher/ukbb_sumher.smk"

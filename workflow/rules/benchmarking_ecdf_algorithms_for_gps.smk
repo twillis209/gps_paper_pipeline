@@ -1,3 +1,5 @@
+localrules: benchmark_ecdf_algorithms
+
 rule benchmark_naive_ecdf_algorithm_for_gps_using_sim_pair:
     input:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
@@ -34,6 +36,24 @@ rule benchmark_fast_ecdf_algorithm_for_gps_using_sim_pair:
 
 rule benchmark_ecdf_algorithms:
     input:
-        [f"benchmarks/results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/pert_0/naive/seed_1_pruned_sum_stats_tags_1-2_gps_value_rep_{x}.tsv" for x in range(1,101)],
-        [f"benchmarks/results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/pert_1/pp/seed_1_pruned_sum_stats_tags_1-2_gps_value_rep_{x}.tsv" for x in range(1,101)],
-        [f"benchmarks/results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/pert_100/lw/seed_1_pruned_sum_stats_tags_1-2_gps_value_rep_{x}.tsv" for x in range(1,101)]
+        naive = [f"benchmarks/results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/pert_0/naive/seed_1_pruned_sum_stats_tags_1-2_gps_value_rep_{x}.benchmark.txt" for x in range(1,101)],
+        pp = [f"benchmarks/results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/pert_1/pp/seed_1_pruned_sum_stats_tags_1-2_gps_value_rep_{x}.benchmark.txt" for x in range(1,101)],
+        lw = [f"benchmarks/results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/pert_100/lw/seed_1_pruned_sum_stats_tags_1-2_gps_value_rep_{x}.benchmark.txt" for x in range(1,101)]
+    output:
+        naive = "benchmarks/results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/pert_0/naive/seed_1_pruned_sum_stats_tags_1-2_gps_value_reps_1-100.compiled_benchmarks",
+        pp = "benchmarks/results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/pert_1/pp/seed_1_pruned_sum_stats_tags_1-2_gps_value_reps_1-100.compiled_benchmarks",
+        lw = "benchmarks/results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/pert_100/lw/seed_1_pruned_sum_stats_tags_1-2_gps_value_reps_1-100.compiled_benchmarks"
+    shell:
+        """
+        for x in {input.naive}; do
+            head -n 1 $x | sed 's/^ \(.*\)s wall,.*$/\1/' >>{output.naive}
+        done
+
+        for x in {input.pp}; do
+            head -n 1 $x | sed 's/^ \(.*\)s wall,.*$/\1/' >>{output.pp}
+        done
+
+        for x in {input.lw}; do
+            head -n 1 $x | sed 's/^ \(.*\)s wall,.*$/\1/' >>{output.lw}
+        done
+        """
