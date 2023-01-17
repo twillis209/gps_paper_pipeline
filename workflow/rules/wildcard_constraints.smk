@@ -1,4 +1,4 @@
-effect_blocks_regex = "(s|m)\d+(-(s|m)\d+)?"
+effect_blocks_regex = "(t|s|m|i)\d+(-(t|s|m|i)\d+)?"
 
 wildcard_constraints:
     chr = "chr[0-9XY]{1,2}",

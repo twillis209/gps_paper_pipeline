@@ -2,7 +2,7 @@ import re as re
 import pandas as pd
 import random
 
-effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'intermediate'}
+effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'infinitesimal', 't': 'tiny'}
 
 include: "simgwas_functions.py"
 

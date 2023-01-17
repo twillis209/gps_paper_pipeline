@@ -4,7 +4,7 @@ def get_simulation_runtime(wildcards, attempt):
 def get_null_block_files(wildcards):
     effect_block_files = get_effect_block_files(wildcards)
 
-    null_block_files_to_omit = [re.sub('small|medium|large|vlarge|huge|intermediate|random_\d+-\d+', 'null', x) for x in effect_block_files]
+    null_block_files_to_omit = [re.sub('tiny|small|medium|large|vlarge|huge|intermediate|random_\d+-\d+', 'null', x) for x in effect_block_files]
 
     null_block_files = [f"results/simgwas/simulated_sum_stats/block_sum_stats/{{no_reps}}_reps/null/{{ncases}}_{{ncontrols}}/chr{row.chr}/block_{row.block}_seed_{row.null_seed}_sum_stats.tsv.gz" for row in block_daf.itertuples()]
 
@@ -28,7 +28,7 @@ def get_effect_block_files(wildcards):
         chrom = int(block_match.group(1))
 
         if ':' in block_match.group(2):
-            range_match = re.match('([smlvhi]|r\d+-\d+-)(\d+):(\d+)', block_match.group(2))
+            range_match = re.match('([tsmlvhi]|r\d+-\d+-)(\d+):(\d+)', block_match.group(2))
 
             # random effect
             # TODO no handling of seed in this atm
@@ -50,7 +50,7 @@ def get_effect_block_files(wildcards):
                         effect_block_files.append(block_file_format % (effect, chrom, block, seed))
 
         else:
-            singleton_match = re.match('([smlvhi]|r\d+-\d+-)(\d+)', x)
+            singleton_match = re.match('([tsmlvhi]|r\d+-\d+-)(\d+)', x)
 
             block = int(singleton_match.group(2))
 

@@ -6,14 +6,20 @@ include: 'simgwas_export_functions.py'
 
 odds_ratio_dict = {"s": 1.05, "m": 1.2, 'l': 1.4, 'v': 2, 'r': 'random', 'n' : 1, 'i' : 1.1}
 
-sample_sizes = [(500, 10000),
+sample_sizes = [
+                (500, 10000),
                 (1000, 10000),
-                (2000, 10000),
                 (5000, 10000),
                 (10000, 10000),
-                (50000, 50000),
                 (100000, 100000),
-                (250000, 250000)]
+                ]
+
+ncases = [500, 1000, 5000, 10000, 100000]
+ncontrols = [10000, 10000, 10000, 10000, 100000]
+
+s400_shared_blocks = ['s0', 's100', 's200', 's300', 's400']
+m25_shared_blocks = ['m0', 'm5', 'm10', 'm15', 'm20', 'm25']
+m50_shared_blocks = ['m0', 'm10', 'm20', 'm30', 'm40', 'm50']
 
 localrules: simulation_result_quartet
 
@@ -65,12 +71,14 @@ rule compile_test_files:
         sumher_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'sumher', subset = f"a_blocks == \'{wildcards.effect_blocks}\'"),
         hoeffdings_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'hoeffdings', subset = f"a_blocks == \'{wildcards.effect_blocks}\'"),
         gps_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'gps', subset = f"a_blocks == \'{wildcards.effect_blocks}\'"),
+        li_gps_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'li_gps', subset = f"a_blocks == \'{wildcards.effect_blocks}\'"),
         theo_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'theo', subset = f"a_blocks == \'{wildcards.effect_blocks}\'")
     output:
         ldsc_out = "results/ldsc/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
         sumher_out = "results/ldak/ldak-thin/simgwas/{no_reps}_reps/randomised/rg/compiled_{effect_blocks}_results.tsv",
         hoeffdings_out = "results/hoeffdings/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
         gps_out = "results/gps/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
+        li_gps_out = "results/gps/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_li_gps_results.tsv",
         theo_out = "results/ldsc/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_theo_rg.tsv",
         done_out = "results/{effect_blocks}_{no_reps}_reps.done"
     run:
@@ -86,6 +94,9 @@ rule compile_test_files:
         gps_daf = compile_gps_results_into_daf(input.gps_files)
         gps_daf.to_csv(output.gps_out, sep = '\t', index = False)
 
+        li_gps_daf = compile_li_gps_results_into_daf(input.li_gps_files)
+        li_gps_daf.to_csv(output.li_gps_out, sep = '\t', index = False)
+
         theo_daf = compile_theo_rg_results_into_daf(input.theo_files)
         theo_daf.to_csv(output[0], sep = '\t', index = False)
 
@@ -93,4 +104,16 @@ rule compile_test_files:
 
 rule run_s400_li_gps_simulations:
     input:
-        li_gps_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'s400\'")
+        li_gps_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'s400\' & shared_blocks in {s400_shared_blocks} & ncases_A in {ncases} & ncontrols_A in {ncontrols}")
+
+rule run_m25_li_gps_simulations:
+    input:
+        li_gps_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'m25\' & shared_blocks in {m25_shared_blocks} & ncases_A in {ncases} & ncontrols_A in {ncontrols}")
+
+rule run_m50_li_gps_simulations:
+    input:
+        li_gps_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'m50\' & shared_blocks in {m50_shared_blocks} & ncases_A in {ncases} & ncontrols_A in {ncontrols}")
+
+rule run_missing_s400_li_gps_simulations:
+    input:
+        li_gps_files = lambda wildcards: [x for x in get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = "a_blocks == \'s400\'") if not os.path.exists(x)]

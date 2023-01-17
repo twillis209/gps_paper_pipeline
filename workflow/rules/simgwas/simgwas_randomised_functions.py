@@ -8,7 +8,7 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
     if wildcards.shared_effect_blocks != 'null':
         for token in wildcards.shared_effect_blocks.split('-'):
-            block_match = re.match('([smlvh])(\d+)', token)
+            block_match = re.match('([tsmlvhi])(\d+)', token)
 
             if not block_match:
                 raise ValueError("Invalid block format: %s" % token)
@@ -34,7 +34,7 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
     if wildcards.effect_blocks_A != 'null':
         for token in wildcards.effect_blocks_A.split('-'):
-            block_match_a = re.match('([smlvh])(\d+)', token)
+            block_match_a = re.match('([tsmlvhi])(\d+)', token)
 
             if not block_match_a:
                 raise ValueError("Invalid block format: %s" % token)
@@ -64,7 +64,7 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
     if wildcards.effect_blocks_B != 'null':
         for token in wildcards.effect_blocks_B.split('-'):
-            block_match_b = re.match('([smlvh])(\d+)', token)
+            block_match_b = re.match('([tismlvh])(\d+)', token)
 
             if not block_match_b:
                 raise ValueError("Invalid block format: %s" % token)

@@ -9,9 +9,9 @@ obs_liab_trans <- function(h2.obs, P, K) {
 }
 
 odds_ratios <- list('null' = 1,
-                    'tiny' = 1.02,
+                    'tiny' = 1.01,
                     'small' = 1.05,
-                    'intermediate' = 1.1,
+                    'infinitesimal' = 1.1,
                     'medium' = 1.2,
                     'large' = 1.4,
                     'vlarge' = 2)
