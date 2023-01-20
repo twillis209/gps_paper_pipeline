@@ -55,4 +55,4 @@ max-status-checks-per-second: 10
 latency-wait: 20
 cluster-status: './cluster_status.py' 
 cluster-cancel: 'scancel'
-retries: 0
+retries: 3

@@ -116,4 +116,12 @@ rule run_m50_li_gps_simulations:
 
 rule run_missing_s400_li_gps_simulations:
     input:
-        li_gps_files = lambda wildcards: [x for x in get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = "a_blocks == \'s400\'") if not os.path.exists(x)]
+        li_gps_files = lambda wildcards: [x for x in get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'s400\' & shared_blocks in {s400_shared_blocks} & ncases_A in {ncases} & ncontrols_A in {ncontrols}") if not os.path.exists(x)]
+
+rule run_missing_m25_li_gps_simulations:
+    input:
+        li_gps_files = lambda wildcards: [x for x in get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'m25\' & shared_blocks in {m25_shared_blocks} & ncases_A in {ncases} & ncontrols_A in {ncontrols}") if not os.path.exists(x)]
+
+rule run_missing_m50_li_gps_simulations:
+    input:
+        li_gps_files = lambda wildcards: [x for x in get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'m50\' & shared_blocks in {m50_shared_blocks} & ncases_A in {ncases} & ncontrols_A in {ncontrols}") if not os.path.exists(x)]
