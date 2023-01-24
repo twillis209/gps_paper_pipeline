@@ -77,7 +77,12 @@ rule permute_mean_stat_for_trait_pair:
     shell:
         "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws} -p {params.no_of_pert_iterations} -s mean"
 
-rule test_mean_stat:
+rule compute_pvalue_for_mean_stat_for_trait_pair:
     input:
-        "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s100/window_1000kb_step_50/seed_1_tags_1-2/mean_stat/pp_pert_1_gps_value.tsv",
-        "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s100/window_1000kb_step_50/seed_1_tags_1-2/mean_stat/3000_permutations/permutations.tsv"
+        permutations = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{draws}_permutations/permutations.tsv",
+        mean_stat = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{ecdf}_pert_{pert}_gps_value.tsv"
+    output:
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{draws}_permutations/{ecdf}_pert_{pert}_pvalue.tsv",
+    group: "gps"
+    script:
+        "../../scripts/compute_pvalue_for_mean_stat.R"
