@@ -45,12 +45,13 @@ group-components:
   - sumher=24
   - benchmark_naive_ecdf_algorithm=12
   - benchmark_fast_ecdf_algorithm=150
+  - sn_pvalue=1000
 rerun-incomplete: True
 rerun-triggers: 'mtime'
 verbose: False
 nolock: True
 dry-run: False
-notemp: False
+notemp: True
 max-status-checks-per-second: 10
 latency-wait: 20
 cluster-status: './cluster_status.py' 
