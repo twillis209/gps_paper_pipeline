@@ -23,6 +23,7 @@ s400_shared_blocks = ['s0', 's100', 's200', 's300', 's400']
 m25_shared_blocks = ['m0', 'm5', 'm10', 'm15', 'm20', 'm25']
 m50_shared_blocks = ['m0', 'm10', 'm20', 'm30', 'm40', 'm50']
 s200_m25_shared_blocks = ['s0-m0', 's100-m0', 's100-m15', 's100-m25', 's200-m0', 's200-m15', 's200-m25']
+sub_s400_shared_blocks = ['s0', 's200', 's400']
 
 localrules: simulation_result_quartet
 
@@ -139,4 +140,8 @@ rule run_missing_s200_m25_li_gps_simulations:
 
 rule run_s400_mean_stat_simulations:
     input:
-        lambda wildcards: [x for x in get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'mean_stat', subset = f"a_blocks == \'s400\' & shared_blocks in {s400_shared_blocks} & ncases_A in {sub_ncases} & ncontrols_A in {sub_ncontrols}") if not os.path.exists(x)]
+        lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'mean_stat', subset = f"a_blocks == \'s400\' & shared_blocks in {sub_s400_shared_blocks} & ncases_A in {sub_ncases} & ncontrols_A in {sub_ncontrols}")
+
+rule run_s400_mean_stat_simulations_with_10k_draws:
+    input:
+        lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'mean_stat', subset = f"a_blocks == \'s400\' & shared_blocks in {sub_s400_shared_blocks} & ncases_A in {sub_ncases} & ncontrols_A in {sub_ncontrols}", draws = '10000')

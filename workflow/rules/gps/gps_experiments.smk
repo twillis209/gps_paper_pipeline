@@ -1,3 +1,5 @@
+localrules: compute_pvalue_for_mean_stat_for_trait_pair
+
 rule compute_per_chr_gps_for_trait_pair:
     input:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}_per_chr/{chr}.tsv"
@@ -101,9 +103,8 @@ rule compute_pvalue_for_mean_stat_for_trait_pair:
         mean_stat = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{ecdf}_pert_{pert}_gps_value.tsv"
     output:
         "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{draws}_permutations/{ecdf}_pert_{pert}_pvalue.tsv",
-    group: "sn_pvalue"
     script:
-        "../scripts/compute_pvalue_for_mean_stat.R"
+        "../../scripts/compute_pvalue_for_mean_stat.R"
 
 rule compute_mean_stat_for_ukbb_trait_pair:
     input:
