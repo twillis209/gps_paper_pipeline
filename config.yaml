@@ -38,7 +38,7 @@ set-resources:
   - process_combined_simgwas_sum_stats:
       - runtime=25
 group-components:
-  - simulate=24
+  - simulate=72
   - permutation=1
   - ldsc_hoeffding_sumher_gps_sans_permutation=1
   - calculate_theoretical_rg=1000
