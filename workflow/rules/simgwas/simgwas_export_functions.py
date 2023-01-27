@@ -4,15 +4,15 @@ import pandas as pd
 import re
 from numpy import nan
 
-def get_all_block_files(sample_sizes):
+def get_all_block_files(sample_sizes, effect):
 
     block_files = []
 
+    seed_label = f"{effect}_seed"
+
     for row in block_daf.itertuples():
         for sample_size in sample_sizes:
-            block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/null/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{row.null_seed}_sum_stats.tsv.gz")
-            block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/small/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{row.small_seed}_sum_stats.tsv.gz")
-            block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/medium/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{row.medium_seed}_sum_stats.tsv.gz")
+            block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{effect}/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{getattr(row, seed_label)}_sum_stats.tsv.gz")
 
     return block_files
 
