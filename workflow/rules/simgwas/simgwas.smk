@@ -4,6 +4,8 @@ import random
 
 effect_size_dict = {'s': 'small', 'm': 'medium', 'l': 'large', 'v': 'vlarge', 'h': 'huge', 'r': 'random', 'i': 'infinitesimal', 't': 'tiny'}
 
+odds_ratio_dict = {'small': 1.05, 'medium': 1.2, 'null': 1}
+
 include: "simgwas_functions.py"
 
 rule get_legend_files_with_euro_common_maf:
@@ -95,14 +97,23 @@ rule simulate_sum_stats_by_ld_block:
     output:
         "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/{chr}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
     params:
-        chr_no = lambda wildcards: wildcards.chr.replace('chr', '')
+        chr_no = lambda wildcards: wildcards.chr.replace('chr', ''),
+        seed = lambda wildcards: wildcards.seed,
+        causal_variant_indices = 2000,
+        effect_size = lambda wildcards: wildcards.effect_size,
+        odds_ratio = lambda wildcards: odds_ratio_dict[wildcards.effect_size],
+        no_cases = lambda wildcards: int(wildcards.ncases),
+        no_controls = lambda wildcards: int(wildcards.ncontrols),
+        no_reps = lambda wildcards: int(wildcards.no_reps)
     threads: 3
     resources:
         mem_mb = get_mem_mb,
         runtime = get_simulation_runtime
     group: 'simulate'
-    shell:
-        "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {params.chr_no} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps {wildcards.no_reps} --seed {wildcards.seed} -o {output} -nt {threads}"
+    script:
+        "../../scripts/simgwas/simulate_sum_stats_by_ld_block.R"
+
+        #--hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {params.chr_no} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps {wildcards.no_reps} --seed {wildcards.seed} -o {output} -nt {threads}"
 
 rule get_causal_variant_by_ld_block:
     input:
