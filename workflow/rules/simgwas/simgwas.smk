@@ -94,14 +94,15 @@ rule simulate_sum_stats_by_ld_block:
         ld_mat_file = ancient("results/simgwas/{chr}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
         "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/{chr}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
+    params:
+        chr_no = lambda wildcards: wildcards.chr.replace('chr', '')
     threads: 3
     resources:
         mem_mb = get_mem_mb,
         runtime = get_simulation_runtime
     group: 'simulate'
-    benchmark: 'results/benchmarks/simulate_sum_stats_by_ld_block/{no_reps}_reps/{effect_size}/{ncases}_{ncontrols}/{chr}/block_{block}_seed_{seed}_sum_stats.txt'
     shell:
-        "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps {wildcards.no_reps} --seed {wildcards.seed} -o {output} -nt {threads}"
+        "Rscript workflow/scripts/simgwas/simulate_sum_stats_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {params.chr_no} --causal_variant_ind 2000 --effect_size {wildcards.effect_size} --no_controls {wildcards.ncontrols} --no_cases {wildcards.ncases} --no_reps {wildcards.no_reps} --seed {wildcards.seed} -o {output} -nt {threads}"
 
 rule get_causal_variant_by_ld_block:
     input:
