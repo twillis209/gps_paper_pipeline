@@ -165,7 +165,3 @@ rule collate_mean_stat_pvalues_for_ukbb:
                     line = infile.readline()
 
                 outfile.write(line)
-
-rule write_out_components_for_one_s400_simulation:
-    input:
-        "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/seed_48801_tags_1-2/mean_stat/pp_pert_1_components.tsv"
