@@ -14,7 +14,7 @@ no_reps <- snakemake@params[['no_reps']]
 
 setDTthreads(snakemake@threads)
 
-set.seed(snakemake@params[['seed']])
+set.seed(snakemake@wildcards[['seed']])
 
 leg_dat <- fread(file = snakemake@input[['block_legend_file']], sep = ' ', header = T)
 hap_dat <- fread(file = snakemake@input[['block_haplotype_file']], sep = ' ', header = F)
@@ -115,6 +115,6 @@ cols <- c("position", "a0", "a1", "id", "block", "TYPE", "EUR", "zexp", paste0("
 
 result_dat <- result_dat[, ..cols]
 
-result_dat[, block_effect_size := snakemake@params[['effect_size']]]
+result_dat[, block_effect_size := snakemake@wildcards[['effect_size']]]
 
 fwrite(result_dat, file = snakemake@output[[1]], sep = '\t', col.names = F)
