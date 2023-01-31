@@ -7,9 +7,9 @@ localrules: get_causal_variants
 effect_size_dict = {"s": "small", "m": "medium", "l": "large", "v": "vlarge", "h": "huge", "r": "random", "i": "infinitesimal", "t": "tiny"}
 cv_per_block_dict = {"small": 1, "medium": 1, "large": 1, "vlarge": 1, "huge": 1, "tiny": 2, "null": 0}
 
-cv_index_dict = {1: [2000], 2: [1000, 2000]}
+cv_index_dict = {1: [500], 2: [250, 750]}
 
-odds_ratio_dict = {"small": 1.05, "medium": 1.2, "null": 1, "tiny": 1.01}
+odds_ratio_dict = {"small": 1.05, "medium": 1.2, "null": 1, "tiny": 1.02}
 
 include: "simgwas_functions.py"
 
@@ -89,7 +89,7 @@ rule compute_block_ld_matrix:
     threads: 4
     resources:
         runtime = 60,
-        mem_mb=get_mem_mb
+        mem_mb = get_mem_mb
     shell:
         "Rscript workflow/scripts/simgwas/compute_block_ld_matrix.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --output_file {output} -nt {threads}"
 
