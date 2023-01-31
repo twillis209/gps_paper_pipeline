@@ -80,13 +80,14 @@ rule write_out_randomised_blocks_for_pair:
                 {
                     "chr" : m.group("chr"),
                     "block" : m.group("block_no"),
-                    "effect" : m.group("effect")
+                    "effect" : m.group("effect"),
+                    "no_cvs" : cv_per_block_dict[m.group("effect")]
                 }
             )
 
         block_a_daf = pd.DataFrame(a_dicts)
 
-        block_a_daf.sort_values(by = ['chr', 'block', 'effect'], inplace = True)
+        block_a_daf.sort_values(by = ['chr', 'block', 'effect', 'no_cvs'], inplace = True)
 
         b_dicts = []
 
@@ -97,13 +98,14 @@ rule write_out_randomised_blocks_for_pair:
                 {
                     "chr" : m.group("chr"),
                     "block" : m.group("block_no"),
-                    "effect" : m.group("effect")
+                    "effect" : m.group("effect"),
+                    "no_cvs" : cv_per_block_dict[m.group("effect")]
                 }
             )
 
         block_b_daf = pd.DataFrame(b_dicts)
 
-        block_b_daf.sort_values(by = ['chr', 'block', 'effect'], inplace = True)
+        block_b_daf.sort_values(by = ['chr', 'block', 'effect', 'no_cvs'], inplace = True)
 
         block_a_daf.to_csv(output.a_block_file, index = False, sep = '\t')
 

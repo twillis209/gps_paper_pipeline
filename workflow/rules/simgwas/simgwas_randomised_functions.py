@@ -13,12 +13,17 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
             if not block_match:
                 raise ValueError("Invalid block format: %s" % token)
 
-            effect = effect_size_dict[block_match.group(1)]
+            shared_effect = effect_size_dict[block_match.group(1)]
+
             no_of_shared_blocks = int(block_match.group(2))
+
+            no_of_cvs_per_block = cv_per_block_dict[shared_effect]
+
+            no_of_shared_blocks /= no_of_cvs_per_block
 
             i = 0
 
-            shared_chrom_block_dict[effect] = []
+            shared_chrom_block_dict[shared_effect] = []
 
             while i < max(no_of_shared_blocks, 0):
                 chrom = random.choice(range(1, 23))
@@ -26,7 +31,7 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
                 if (chrom, block_no) not in shared_chrom_block_nos:
                     shared_chrom_block_nos.append((chrom, block_no))
-                    shared_chrom_block_dict[effect].append((chrom, block_no))
+                    shared_chrom_block_dict[shared_effect].append((chrom, block_no))
                     i += 1
 
     a_chrom_block_nos = []
@@ -40,7 +45,12 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
                 raise ValueError("Invalid block format: %s" % token)
 
             effect_a = effect_size_dict[block_match_a.group(1)]
+
             no_of_blocks_a = int(block_match_a.group(2))
+
+            no_of_cvs_per_block_a = cv_per_block_dict[effect_a]
+
+            no_of_blocks_a /= no_of_cvs_per_block_a
 
             i = 0
 
@@ -70,7 +80,12 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
                 raise ValueError("Invalid block format: %s" % token)
 
             effect_b = effect_size_dict[block_match_b.group(1)]
+
             no_of_blocks_b = int(block_match_b.group(2))
+
+            no_of_cvs_per_block_b = cv_per_block_dict[effect_b]
+
+            no_of_blocks_b /= no_of_cvs_per_block_b
 
             i = 0
 

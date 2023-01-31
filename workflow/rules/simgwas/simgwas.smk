@@ -2,9 +2,14 @@ import re as re
 import pandas as pd
 import random
 
-effect_size_dict = {"s": "small", "m": "medium", "l": "large", "v": "vlarge", "h": "huge", "r": "random", "i": "infinitesimal", "t": "tiny"}
+localrules: get_causal_variants
 
-odds_ratio_dict = {"small": 1.05, "medium": 1.2, "null": 1}
+effect_size_dict = {"s": "small", "m": "medium", "l": "large", "v": "vlarge", "h": "huge", "r": "random", "i": "infinitesimal", "t": "tiny"}
+cv_per_block_dict = {"small": 1, "medium": 1, "large": 1, "vlarge": 1, "huge": 1, "tiny": 2, "null": 0}
+
+cv_index_dict = {1: [2000], 2: [1000, 2000]}
+
+odds_ratio_dict = {"small": 1.05, "medium": 1.2, "null": 1, "tiny": 1.01}
 
 include: "simgwas_functions.py"
 
@@ -95,10 +100,10 @@ rule simulate_sum_stats_by_ld_block:
         block_legend_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.legend.gz"),
         ld_mat_file = ancient("results/simgwas/{chr}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{ncases,\d+}_{ncontrols,\d+}/{chr}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
+        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{no_cvariants}_cv/{ncases,\d+}_{ncontrols,\d+}/{chr}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
     params:
         chr_no = lambda wildcards: wildcards.chr.replace('chr', ''),
-        causal_variant_indices = 2000,
+        causal_variant_indices = lambda wildcards: cv_index_dict[int(wildcards.no_cvariants)],
         odds_ratio = lambda wildcards: odds_ratio_dict[wildcards.effect_size],
         no_cases = lambda wildcards: int(wildcards.ncases),
         no_controls = lambda wildcards: int(wildcards.ncontrols),
@@ -111,30 +116,36 @@ rule simulate_sum_stats_by_ld_block:
     script:
         "../../scripts/simgwas/simulate_sum_stats_by_ld_block.R"
 
-rule get_causal_variant_by_ld_block:
+rule get_causal_variants_by_ld_block:
     input:
         bim_file = ancient("resources/1000g/{chr}.bim"),
         block_haplotype_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.hap.gz"),
         block_legend_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.legend.gz"),
         ld_mat_file = ancient("results/simgwas/{chr}_ld_matrices/block_{block}_ld_matrix.RData")
+    params:
+        chr_no = lambda wildcards: wildcards.chr.replace('chr', ''),
+        causal_variant_indices = lambda wildcards: cv_index_dict[2]
     output:
-        temp("results/simgwas/simulated_sum_stats/block_sum_stats/{chr}/null/10000_10000/block_{block}_causal_variant.tsv")
+        temp("results/simgwas/simulated_sum_stats/block_sum_stats/{chr}/null/10000_10000/block_{block}_causal_variants.tsv")
     threads: 4
     resources:
-        mem_mb=get_mem_mb,
-        runtime = 1
-    shell:
-        "Rscript workflow/scripts/simgwas/get_causal_variant_by_ld_block.R --hap_file {input.block_haplotype_file} --leg_file {input.block_legend_file} --bim_file {input.bim_file} --ld_mat_file {input.ld_mat_file} --chr_no {wildcards.ch} --causal_variant_ind 2000 -o {output} -nt {threads}"
+        mem_mb = get_mem_mb,
+        runtime = 5
+    group: 'causal_variants'
+    script:
+        "../../scripts/simgwas/get_causal_variants_by_ld_block.R"
 
-rule combine_block_sum_stats:
+rule get_causal_variants:
     input:
-        null_block_files = ancient(get_null_block_files),
-        effect_block_files = ancient(get_effect_block_files)
+        [[f"results/simgwas/simulated_sum_stats/block_sum_stats/chr{chrom}/null/10000_10000/block_{block}_causal_variants.tsv" for block in block_daf.query('chr == @chrom')['block']] for chrom in range(1,23)]
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/{ncases,\d+}_{ncontrols,\d+}/{effect_blocks}_sum_stats.tsv.gz")
+        "results/simgwas/combined_causal_variants.tsv"
     run:
-        for x in input:
-            shell(f"cat {x} >> {output}")
+        for i,x in enumerate(input):
+            if i == 0:
+                shell("cat %s > %s" % (x, output[0]))
+            else:
+                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
 
 rule make_whole_genome_metadata_file:
     input:
@@ -152,26 +163,4 @@ rule make_whole_genome_metadata_file:
             print(x)
             shell(f"zcat {x} | cut -f1-4,6-7,92 >> {params.uncomp_output}")
 
-        shell("gzip {params.uncomp_output}")
-
-rule make_simgwas_plink_ranges:
-    input:
-        sum_stats_metadata_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/metadata_only.tsv.gz",
-        bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
-    output:
-        [("resources/plink_ranges/1000g/chr%d.txt" % x for x in range(1,23))]
-    threads: 4
-    shell:
-        "Rscript workflow/scripts/simgwas/make_simgwas_plink_ranges.R --sum_stats_file {input.sum_stats_metadata_file} --input_bim_file {input.bim_file} --output_range_files {output} -nt {threads} --bp_pos 1 --chr_pos 92 --a0_pos 3 --a1_pos 4"
-
-rule get_causal_variants:
-    input:
-        [[f"results/simgwas/simulated_sum_stats/chr{chrom}/block_sum_stats/null/10000_10000/block_{block}_causal_variant.tsv" for block in block_daf.query('chr == @chrom')['block']] for chrom in range(1,23)]
-    output:
-        "results/simgwas/combined_causal_variants.tsv"
-    run:
-        for i,x in enumerate(input):
-            if i == 0:
-                shell("cat %s > %s" % (x, output[0]))
-            else:
-                shell("cat %s | tail -n +2  >> %s" % (x, output[0]))
+            shell("gzip {params.uncomp_output}")

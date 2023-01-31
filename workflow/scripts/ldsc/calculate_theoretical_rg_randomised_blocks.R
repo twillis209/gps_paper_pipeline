@@ -2,6 +2,8 @@ library(data.table)
 library(stringr)
 library(magrittr)
 
+save.image('calculate_theoretical_rg_randomised_blocks.RData')
+
 obs_liab_trans <- function(h2.obs, P, K) {
   z_2 <- dnorm(qnorm(1-K))^2
 
@@ -34,27 +36,35 @@ cv_dat[, geno_var := 2*EUR*(1-EUR)]
 cv_dat[, c('in_a_blocks', 'in_b_blocks') := F]
 cv_dat[, c('odds_ratio_a', 'odds_ratio_b') := 1]
 
-for(i in seq_along(1:nrow(a_blocks_dat))) {
-  if(cv_dat[a_blocks_dat[i, chr] == chr & a_blocks_dat[i, block] == block, .N] == 0) {
-    print(sprintf("Missing chr%d:block%d in a file", a_blocks_dat[i, chr], a_blocks_dat[i, block]))
+for(k in 1:2) {
+  if(k == 1) {
+    x <- a_blocks_dat
   } else {
-    cv_dat[a_blocks_dat[i, chr] == chr & a_blocks_dat[i, block] == block & a_blocks_dat[i, effect] != 'null', `:=` (in_a_blocks = T, odds_ratio_a = odds_ratios[[a_blocks_dat[i, effect]]])]
+    x <- b_blocks_dat
+  }
+
+  in_blocks_label <- ifelse(k == 1, 'in_a_blocks', 'in_b_blocks')
+  odds_ratio_label <- ifelse(k == 1, 'odds_ratio_a', 'odds_ratio_b')
+
+  for(i in 1:nrow(x)) {
+    if(x[i, no_cvs] > 0) {
+        if(cv_dat[x[i, chr] == chr & x[i, block] == block, .N] == 0) {
+            print(sprintf("Missing chr%d:block%d in a file", x[i, chr], x[i, block]))
+        } else {
+          for(j in 1:x[i, no_cvs]) {
+          # Need to iterate over j here otherwise we'll get two cvs where we sometimes only want one
+            cv_dat[x[i, chr] == chr & x[i, block] == block & x[i, effect] != 'null'][j, `:=` (in_blocks = T, odds_ratio = unlist(odds_ratios[[x[i, effect]]])), env = list(in_blocks = in_blocks_label, odds_ratio = odds_ratio_label)]
+          }
+      }
+    }
   }
 }
 
-for(i in seq_along(1:nrow(b_blocks_dat))) {
-  if(cv_dat[b_blocks_dat[i, chr] == chr & b_blocks_dat[i, block] == block, .N] == 0) {
-    print(sprintf("Missing chr%d:block%d in b file", b_blocks_dat[i, chr], b_blocks_dat[i, block]))
-  } else {
-    cv_dat[b_blocks_dat[i, chr] == chr & b_blocks_dat[i, block] == block & b_blocks_dat[i, effect] != 'null', `:=` (in_b_blocks = T, odds_ratio_b = odds_ratios[[b_blocks_dat[i, effect]]])]
-  }
-}
+if(cv_dat[in_a_blocks == T, .N] != a_blocks_dat[, sum(no_cvs)]) stop(sprintf('Missing %d causal variants from A set', a_blocks_dat[, sum(no_cvs)] - cv_dat[in_a_blocks == T, .N] ))
 
-if(cv_dat[in_a_blocks == T, .N] != a_blocks_dat[effect != 'null', .N]) stop(sprintf('Missing %d causal variants from A set', a_blocks_dat[, .N] - cv_dat[in_a_blocks == T, .N] ))
+if(cv_dat[in_b_blocks == T, .N] != b_blocks_dat[, sum(no_cvs)]) stop(sprintf('Missing %d causal variants from B set', b_blocks_dat[, sum(no_cvs)] - cv_dat[in_b_blocks == T, .N]))
 
-if(cv_dat[in_b_blocks == T, .N] != b_blocks_dat[effect != 'null', .N]) stop(sprintf('Missing %d causal variants from B set', b_blocks_dat[, .N] - cv_dat[in_b_blocks == T, .N]))
-
-if(cv_dat[in_a_blocks == T & in_b_blocks == T, .N] != merge(a_blocks_dat, b_blocks_dat, by = c('chr', 'block'))[effect.x != 'null' & effect.y != 'null', .N]) stop('Missing shared causal variants')
+if(cv_dat[in_a_blocks == T & in_b_blocks == T, .N] != merge(a_blocks_dat, b_blocks_dat, by = c('chr', 'block'))[effect.x != 'null' & effect.y != 'null', sum(no_cvs)]) stop('Missing shared causal variants')
 
 cv_dat[in_a_blocks == T, beta.A := log(odds_ratio_a)]
 cv_dat[in_b_blocks == T, beta.B := log(odds_ratio_b)]

@@ -23,19 +23,6 @@ parser$add_argument('--K_b', type = 'double', help = 'Population case prevalence
 parser$add_argument('-o', '--output_path', type = 'character', help = 'Path to output file', required = T)
 parser$add_argument('-nt', '--no_of_threads', type = 'integer', help = 'Number of threads to use', default = 1)
 
-test_args <- c("--cv_file", "results/simgwas/combined_causal_variants.tsv",
-               "--blocks_file", "resources/simgwas/available_blocks.tsv",
-               "--effect_blocks_a", "1-m0:104",
-               "--effect_blocks_b", "1-m0:9",
-               "--odds_ratio_a", 1.2,
-               "--odds_ratio_b", 1.2,
-               "--P_a", 0.02,
-               "--P_b", 0.02,
-               "--K_a", 0.5,
-               "--K_b", 0.5,
-               "-o", "test.tsv",
-               "-nt", 4)
-
 args <- parser$parse_args()
 
 setDTthreads(args$no_of_threads)

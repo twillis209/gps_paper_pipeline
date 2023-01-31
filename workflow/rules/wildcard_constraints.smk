@@ -2,6 +2,7 @@ effect_blocks_regex = "(t|s|m|i)\d+(-(t|s|m|i)\d+)?"
 
 wildcard_constraints:
     chr = "chr[0-9XY]{1,2}",
+    no_cvariants = "\d+",
     no_reps = "\d+",
     ncases = "\d+",
     ncontrols = "\d+",

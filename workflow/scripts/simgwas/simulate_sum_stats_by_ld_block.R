@@ -48,7 +48,7 @@ chosen_snps <- colnames(ld_mat)
 
 cv_ind <- snakemake@params[['causal_variant_indices']]
 
-cv_snp <- chosen_snps[cv_ind]
+cv_snps <- chosen_snps[cv_ind]
 
 sub_freq_dat <- freq_dat[, c(colnames(ld_mat), 'Probability'), with = F]
 
@@ -59,8 +59,8 @@ geno_probs <- make_GenoProbList(snps = colnames(ld_mat),
 zexp <- expected_z_score(N0 = snakemake@params[['no_controls']],
                           N1 = snakemake@params[['no_cases']],
                           snps = chosen_snps,
-                          W = cv_snp,
-                          gamma.W = log_odds_ratio,
+                          W = cv_snps,
+                          gamma.W = rep(log_odds_ratio, length(cv_snps)),
                           freq = sub_freq_dat,
                           GenoProbList = geno_probs)
 
@@ -70,8 +70,8 @@ zsim <- simulated_z_score_par(exp_z_score = zexp, ld_mat = ld_mat, nrep = no_rep
 vbetasim <- simulated_vbeta(N0 = as.numeric(snakemake@params[['no_controls']]),
                             N1 = as.numeric(snakemake@params[['no_cases']]),
                             snps = chosen_snps,
-                            W = cv_snp,
-                            gamma.W = log_odds_ratio,
+                            W = cv_snps,
+                            gamma.W = rep(log_odds_ratio, length(cv_snps)),
                             freq = sub_freq_dat,
                             nrep = no_reps)
 
