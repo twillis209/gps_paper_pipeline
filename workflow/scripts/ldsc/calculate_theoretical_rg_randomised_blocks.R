@@ -2,8 +2,6 @@ library(data.table)
 library(stringr)
 library(magrittr)
 
-save.image('calculate_theoretical_rg_randomised_blocks.RData')
-
 obs_liab_trans <- function(h2.obs, P, K) {
   z_2 <- dnorm(qnorm(1-K))^2
 

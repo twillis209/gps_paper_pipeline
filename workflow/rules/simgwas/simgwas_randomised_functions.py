@@ -1,5 +1,7 @@
 import pandas as pd
 
+# TODO why do we store block nos in a list rather than in the dict?
+# TODO should probably store no of causal variants per block, too
 def get_randomised_chrom_block_tuples_for_pair(wildcards):
     random.seed(wildcards.seed)
 
@@ -31,7 +33,7 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
                 if (chrom, block_no) not in shared_chrom_block_nos:
                     shared_chrom_block_nos.append((chrom, block_no))
-                    shared_chrom_block_dict[shared_effect].append((chrom, block_no))
+                    shared_chrom_block_dict[shared_effect].append((chrom, block_no, no_of_cvs_per_block))
                     i += 1
 
     a_chrom_block_nos = []
@@ -66,7 +68,7 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
                 if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos:
                     a_chrom_block_nos.append((chrom, block_no))
-                    a_chrom_block_dict[effect_a].append((chrom, block_no))
+                    a_chrom_block_dict[effect_a].append((chrom, block_no, no_of_cvs_per_block_a))
                     i += 1
 
     b_chrom_block_nos = []
@@ -101,7 +103,7 @@ def get_randomised_chrom_block_tuples_for_pair(wildcards):
 
                 if (chrom, block_no) not in shared_chrom_block_nos and (chrom, block_no) not in a_chrom_block_nos and (chrom, block_no) not in b_chrom_block_nos:
                     b_chrom_block_nos.append((chrom, block_no))
-                    b_chrom_block_dict[effect_b].append((chrom, block_no))
+                    b_chrom_block_dict[effect_b].append((chrom, block_no, no_of_cvs_per_block_b))
                     i += 1
 
     return (shared_chrom_block_nos, a_chrom_block_nos, b_chrom_block_nos, shared_chrom_block_dict, a_chrom_block_dict, b_chrom_block_dict)
@@ -120,8 +122,10 @@ def get_randomised_block_files_for_pair(wildcards):
         for v in shared_chrom_block_dict[k]:
             seed = block_daf.query('chr == @v[0] & block == @v[1]')[seed_label].values[0]
 
-            a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
-            b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
+            a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{v[2]}_cv/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
+
+            b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{v[2]}_cv/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
+
             block_files.append(a_file)
 
             a_block_files.append(a_file)
@@ -136,7 +140,7 @@ def get_randomised_block_files_for_pair(wildcards):
         for v in a_chrom_block_dict[k]:
             seed = block_daf.query('chr == @v[0] & block == @v[1]')[seed_label].values[0]
 
-            a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
+            a_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{v[2]}_cv/{wildcards.ncases_A}_{wildcards.ncontrols_A}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
 
             block_files.append(a_file)
             a_block_files.append(a_file)
@@ -147,7 +151,7 @@ def get_randomised_block_files_for_pair(wildcards):
         for v in b_chrom_block_dict[k]:
             seed = block_daf.query('chr == @v[0] & block == @v[1]')[seed_label].values[0]
 
-            b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
+            b_file = f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{k}/{v[2]}_cv/{wildcards.ncases_B}_{wildcards.ncontrols_B}/chr{v[0]}/block_{v[1]}_seed_{seed}_sum_stats.tsv.gz"
 
             b_block_files.append(b_file)
 

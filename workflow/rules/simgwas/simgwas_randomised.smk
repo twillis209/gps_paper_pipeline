@@ -7,8 +7,8 @@ rule tabulate_randomised_block_sum_stats_file_for_pair:
         # Much duplication of input files here but it's to avoid calling this time-consuming function more than once
         block_files = ancient(lambda wildcards: get_randomised_block_files_for_pair(wildcards))
     output:
-        a_block_file = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_A_tags_{tag_A}-{tag_B,\d+}_block_files.txt"),
-        b_block_file = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_B_tags_{tag_A}-{tag_B,\d+}_block_files.txt")
+        a_block_file = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tags_{tag_A}-{tag_B}_block_files.txt"),
+        b_block_file = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tags_{tag_A}-{tag_B}_block_files.txt")
     params:
         no_of_blocks_in_genome = block_daf.shape[0]
     threads: 1
@@ -38,8 +38,8 @@ rule split_block_files_for_pair:
         # TODO handle this using the config set-scatter value, see issue #1779 and associated fix
         no_of_splits = 12
     output:
-        a_files = temp(scatter.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A,\d+}}_{{ncontrols_A,\d+}}_{{ncases_B,\d+}}_{{ncontrols_B,\d+}}/{{effect_blocks_A,[smlvh\d-]+}}_{{effect_blocks_B,[smlvh\d-]+}}_{{shared_effect_blocks,[smlvh\d-]+}}/seed_{{seed,\d+}}_sum_stats_A_tags_{{tag_A}}-{{tag_B,\d+}}_split_files/a_file_{scatteritem}.txt")),
-        b_files = temp(scatter.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A,\d+}}_{{ncontrols_A,\d+}}_{{ncases_B,\d+}}_{{ncontrols_B,\d+}}/{{effect_blocks_A,[smlvh\d-]+}}_{{effect_blocks_B,[smlvh\d-]+}}_{{shared_effect_blocks,[smlvh\d-]+}}/seed_{{seed,\d+}}_sum_stats_B_tags_{{tag_A}}-{{tag_B,\d+}}_split_files/b_file_{scatteritem}.txt"))
+        a_files = temp(scatter.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A}}_{{ncontrols_A}}_{{ncases_B}}_{{ncontrols_B}}/{{effect_blocks_A}}_{{effect_blocks_B}}_{{shared_effect_blocks}}/seed_{{seed}}_sum_stats_A_tags_{{tag_A}}-{{tag_B}}_split_files/a_file_{scatteritem}.txt")),
+        b_files = temp(scatter.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A}}_{{ncontrols_A}}_{{ncases_B}}_{{ncontrols_B}}/{{effect_blocks_A}}_{{effect_blocks_B}}_{{shared_effect_blocks}}/seed_{{seed}}_sum_stats_B_tags_{{tag_A}}-{{tag_B}}_split_files/b_file_{scatteritem}.txt"))
     resources:
         concurrent_sans_permute_jobs = 1,
         runtime = 2
@@ -64,8 +64,8 @@ rule cat_split_block_files:
         a_block_file = ancient("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tags_{tag_A}-{tag_B}_split_files/a_file_{scatteritem}.txt"),
         b_block_file = ancient("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tags_{tag_A}-{tag_B}_split_files/b_file_{scatteritem}.txt")
     output:
-        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_A_tags_{tag_A}-{tag_B,\d+}_split_files/a_stats_{scatteritem}.tsv.gz"),
-        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_B_tags_{tag_A}-{tag_B,\d+}_split_files/b_stats_{scatteritem}.tsv.gz")
+        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tags_{tag_A}-{tag_B}_split_files/a_stats_{scatteritem}.tsv.gz"),
+        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tags_{tag_A}-{tag_B}_split_files/b_stats_{scatteritem}.tsv.gz")
     params:
         line_count_bound = 850000
     threads: 1
@@ -81,8 +81,8 @@ rule gather_split_block_files:
         a_files = ancient(gather.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A}}_{{ncontrols_A}}_{{ncases_B}}_{{ncontrols_B}}/{{effect_blocks_A}}_{{effect_blocks_B}}_{{shared_effect_blocks}}/seed_{{seed}}_sum_stats_A_tags_{{tag_A}}-{{tag_B}}_split_files/a_stats_{scatteritem}.tsv.gz")),
         b_files = ancient(gather.split_block_files_for_pair("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{{no_reps}}_reps/randomised/{{ncases_A}}_{{ncontrols_A}}_{{ncases_B}}_{{ncontrols_B}}/{{effect_blocks_A}}_{{effect_blocks_B}}_{{shared_effect_blocks}}/seed_{{seed}}_sum_stats_B_tags_{{tag_A}}-{{tag_B}}_split_files/b_stats_{scatteritem}.tsv.gz"))
     output:
-        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_A_tag_{tag_A,\d+}_of_{tag_A}-{tag_B,\d+}.tsv.gz"),
-        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_sum_stats_B_tag_{tag_B,\d+}_of_{tag_A,\d+}-{tag_B}.tsv.gz")
+        combined_sum_stats_A = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}-{tag_B}.tsv.gz"),
+        combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}-{tag_B}.tsv.gz")
     params:
         expected_line_count = 8998662
     threads: 12
@@ -98,7 +98,7 @@ rule merge_randomised_simulated_sum_stats:
         sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}-{tag_B}.tsv.gz",
         sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}-{tag_B}.tsv.gz"
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/seed_{seed,\d+}_merged_sum_stats_tags_{tag_A,\d+}-{tag_B,\d+}.tsv.gz")
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz")
     threads: 4
     params:
         file_A_stat_cols = lambda wildcards: f"p.{wildcards.tag_A}",
@@ -115,7 +115,7 @@ rule prune_merged_randomised_simulated_sum_stats:
         pruned_range_file = "resources/plink_ranges/1000g/pruned_ranges/window_{window}_step_{step}/all.prune.in",
         sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz"
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A,[smlvh\d-]+}_{effect_blocks_B,[smlvh\d-]+}_{shared_effect_blocks,[smlvh\d-]+}/window_{window}_step_{step}/seed_{seed,\d+}_pruned_sum_stats_tags_{tag_A,\d+}-{tag_B,\d+}.tsv.gz")
+        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz")
     threads: 4
     resources:
         runtime = 5
