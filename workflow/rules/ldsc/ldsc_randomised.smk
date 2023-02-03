@@ -21,7 +21,7 @@ rule munge_randomised_sum_stats:
         "envs/ldsc.yaml"
     shell:
         """
-        python $ldsc/munge_sumstats.py --sumstats {input} --N-con-col ncontrols --N-cas-col ncases --snp id --out {params.output_filename} --signed-sumstats {params.signed_sumstats_col} --p {params.pvalue_col} --a1 a1 --a2 a0 --frq EUR;
+        python2 $ldsc/munge_sumstats.py --sumstats {input} --N-con-col ncontrols --N-cas-col ncases --snp id --out {params.output_filename} --signed-sumstats {params.signed_sumstats_col} --p {params.pvalue_col} --a1 a1 --a2 a0 --frq EUR;
         """
 
 rule estimate_rg_for_randomised_sum_stats:
@@ -50,7 +50,7 @@ rule estimate_rg_for_randomised_sum_stats:
         "envs/ldsc.yaml"
     shell:
         # Hacky fix to retain 'log' file (the output is regrettably so-called), which we need whether or not the estimation process failed
-        "python $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} {params.h2_intercept} {params.rg_intercept} >{log.log} || true"
+        "python2 $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld-chr {params.ld_score_root} --w-ld-chr {params.ld_score_root} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} {params.h2_intercept} {params.rg_intercept} >{log.log} || true"
 
 rule write_out_randomised_blocks_for_pair:
     params:

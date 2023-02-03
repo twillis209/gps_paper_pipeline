@@ -21,7 +21,6 @@ s400_shared_blocks = ['s0', 's100', 's200', 's300', 's400']
 m25_shared_blocks = ['m0', 'm5', 'm10', 'm15', 'm20', 'm25']
 m50_shared_blocks = ['m0', 'm10', 'm20', 'm30', 'm40', 'm50']
 s200_m25_shared_blocks = ['s0-m0', 's100-m0', 's100-m15', 's100-m25', 's200-m0', 's200-m15', 's200-m25']
-sub_s400_shared_blocks = ['s0', 's200', 's400']
 
 localrules: simulation_result_quartet
 
@@ -120,3 +119,10 @@ rule run_m50_li_gps_simulations:
 rule run_s200_m25_li_gps_simulations:
     input:
         li_gps_files = lambda wildcards: get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'s200-m25\' & shared_blocks in {s200_m25_shared_blocks} & ncases_A in {ncases} & ncontrols_A in {ncontrols}")
+
+rule run_t1000_simulations_and_analyses:
+    input:
+        input_files = lambda wildcards: get_all_simulation_done_files("results/simgwas/simulation_parameters.tsv", reps = 400, subset = 't1000')
+    output:
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/t1000.done"
+    shell: "touch {output}"
