@@ -46,7 +46,7 @@ freq_dat[, Probability := 1/.N]
 
 chosen_snps <- colnames(ld_mat)
 
-cv_ind <- snakemake@params[['causal_variant_indices']]
+cv_ind <- sample(1:length(chosen_snps), size = snakemake@wildcards[['no_cvariants']])
 
 cv_snps <- chosen_snps[cv_ind]
 

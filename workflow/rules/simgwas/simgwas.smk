@@ -103,7 +103,6 @@ rule simulate_sum_stats_by_ld_block:
         "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{no_cvariants}_cv/{ncases,\d+}_{ncontrols,\d+}/{chr}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
     params:
         chr_no = lambda wildcards: wildcards.chr.replace('chr', ''),
-        causal_variant_indices = lambda wildcards: cv_index_dict[int(wildcards.no_cvariants)],
         odds_ratio = lambda wildcards: odds_ratio_dict[wildcards.effect_size],
         no_cases = lambda wildcards: int(wildcards.ncases),
         no_controls = lambda wildcards: int(wildcards.ncontrols),
