@@ -100,7 +100,7 @@ rule simulate_sum_stats_by_ld_block:
         block_legend_file = ancient("resources/simgwas/1000g/blockwise/{chr}/block_{block}.legend.gz"),
         ld_mat_file = ancient("results/simgwas/{chr}_ld_matrices/block_{block}_ld_matrix.RData")
     output:
-        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{no_cvariants}_cv/{ncases,\d+}_{ncontrols,\d+}/{chr}/block_{block,\d+}_seed_{seed,\d+}_sum_stats.tsv.gz"
+        "results/simgwas/simulated_sum_stats/block_sum_stats/{no_reps}_reps/{effect_size}/{no_cvariants}_cv/{ncases}_{ncontrols}/{chr}/block_{block}_seed_{seed}_sum_stats.tsv.gz"
     params:
         chr_no = lambda wildcards: wildcards.chr.replace('chr', ''),
         odds_ratio = lambda wildcards: odds_ratio_dict[wildcards.effect_size],
