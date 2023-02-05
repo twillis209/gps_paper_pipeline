@@ -13,11 +13,12 @@ rule thin_predictors:
     params:
         input_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
         output_stem = "results/ldak/ldak-thin/weights/{join}/{chr}/thin"
+    threads: 4
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
         """
-        $ldakRoot/ldak --thin {params.output_stem} --bfile {params.input_stem} --window-prune .98 --window-kb 100 > {log.log_file};
+        $ldakRoot/ldak --thin {params.output_stem} --bfile {params.input_stem} --window-prune .98 --window-kb 100 --max-threads {threads} > {log.log_file};
         awk < {output.thin_file} '{{print $1, 1}}' > {output.weights_file}
         """
 
@@ -28,16 +29,17 @@ rule calculate_ldak_thin_taggings_for_chromosome:
         "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.fam",
         weights_file = "results/ldak/ldak-thin/weights/{join}/{chr}/weights.thin"
     output:
-        tagging_file = temp("results/ldak/ldak-thin/taggings/{join,!(ukbb)}/{chr}.tagging"),
+        tagging_file = temp("results/ldak/ldak-thin/taggings/{join}/{chr}.tagging"),
     log:
         log_file = "results/ldak/ldak-thin/taggings/{join}/{chr}.tagging.log"
     params:
         input_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
         output_stem = "results/ldak/ldak-thin/taggings/{join}/{chr}"
+    threads: 4
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
-        "$ldakRoot/ldak --calc-tagging {params.output_stem} --bfile {params.input_stem} --weights {input.weights_file} --chr {wildcards.chr} --window-kb 1000 --power -.25 > {log.log_file}"
+        "$ldakRoot/ldak --calc-tagging {params.output_stem} --bfile {params.input_stem} --weights {input.weights_file} --chr {wildcards.chr} --window-kb 1000 --power -.25 --max-threads {threads} > {log.log_file}"
 
 rule join_ldak_thin_taggings:
     input:
@@ -65,7 +67,7 @@ rule process_combined_simgwas_sum_stats:
     input:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{pair_label}_tag_{tag}_of_{tag_A}-{tag_B}.tsv.gz"
     output:
-        temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{pair_label}_tag_{tag}_of_{tag_A}-{tag_B}.assoc")
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{pair_label}_tag_{tag}_of_{tag_A}-{tag_B}.assoc"
     params:
         z_colname = lambda wildcards: f'zsim.{wildcards.tag}',
         chr_colname = 'chr',

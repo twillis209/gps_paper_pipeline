@@ -14,10 +14,11 @@ rule thin_predictors_for_ukbb:
     params:
         input_stem = "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}",
         output_stem = "results/ldak/ldak-thin/weights/ukbb/{snp_set}/{chr}/thin"
+    threads: 4
     group: "sumher"
     shell:
         """
-        $ldakRoot/ldak --thin {params.output_stem} --bfile {params.input_stem} --window-prune .98 --window-kb 100 > {log.log_file};
+        $ldakRoot/ldak --thin {params.output_stem} --bfile {params.input_stem} --window-prune .98 --window-kb 100 --max-threads {threads} > {log.log_file};
         awk < {output.thin_file} '{{print $1, 1}}' > {output.weights_file}
         """
 
@@ -34,9 +35,10 @@ rule calculate_ldak_thin_taggings_for_chromosome_for_ukbb:
     params:
         input_stem = "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}",
         output_stem = "results/ldak/ldak-thin/taggings/ukbb/{snp_set}/{chr}"
+    threads: 4
     group: "sumher"
     shell:
-        "$ldakRoot/ldak --calc-tagging {params.output_stem} --bfile {params.input_stem} --weights {input.weights_file} --chr {wildcards.chr} --window-kb 1000 --power -.25 > {log.log_file}"
+        "$ldakRoot/ldak --calc-tagging {params.output_stem} --bfile {params.input_stem} --weights {input.weights_file} --chr {wildcards.chr} --window-kb 1000 --power -.25 --max-threads {threads} > {log.log_file}"
 
 rule join_ldak_thin_taggings_for_ukbb:
     input:
