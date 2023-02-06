@@ -1,5 +1,5 @@
 def get_simulation_runtime(wildcards, attempt):
-    return 15 + attempt*5
+    return 10 + attempt*5
 
 def get_null_block_files(wildcards):
     effect_block_files = get_effect_block_files(wildcards)

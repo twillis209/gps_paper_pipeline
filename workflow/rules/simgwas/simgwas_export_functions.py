@@ -12,7 +12,11 @@ def get_all_block_files(sample_sizes, effect):
 
     for row in block_daf.itertuples():
         for sample_size in sample_sizes:
-            block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{effect}/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{getattr(row, seed_label)}_sum_stats.tsv.gz")
+            if effect == 'tiny':
+                block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{effect}/2_cv/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{getattr(row, seed_label)}_sum_stats.tsv.gz")
+            else:
+                block_files.append(f"results/simgwas/simulated_sum_stats/block_sum_stats/400_reps/{effect}/1_cv/{sample_size[0]}_{sample_size[1]}/chr{row.chr}/block_{row.block}_seed_{getattr(row, seed_label)}_sum_stats.tsv.gz")
+
 
     return block_files
 
