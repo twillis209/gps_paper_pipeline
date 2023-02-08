@@ -69,11 +69,13 @@ rule write_out_randomised_blocks_for_pair:
         a_block_files = block_files[-(2*params.no_of_blocks_in_genome):-params.no_of_blocks_in_genome]
         b_block_files = block_files[-params.no_of_blocks_in_genome:]
 
-        file_m = re.compile("results/simgwas/simulated_sum_stats/block_sum_stats/(?P<no_reps>\d+)_reps/(?P<effect>\w+)/(?P<ncases>\d+)_(?P<ncontrols>\d+)/chr(?P<chr>\d+)/block_(?P<block_no>\d+)_seed_(?P<seed>\d+)_sum_stats\.tsv\.gz")
+        file_m = re.compile("results/simgwas/simulated_sum_stats/block_sum_stats/(?P<no_reps>\d+)_reps/(?P<effect>\w+)(/(?P<cv>\d+)_cv)?/(?P<ncases>\d+)_(?P<ncontrols>\d+)/chr(?P<chr>\d+)/block_(?P<block_no>\d+)_seed_(?P<seed>\d+)_sum_stats\.tsv\.gz")
 
         a_dicts = []
 
         for x in a_block_files:
+            print(x)
+
             m = file_m.match(x)
 
             a_dicts.append(
@@ -117,7 +119,7 @@ rule calculate_theoretical_rg_for_randomised_sum_stats:
         a_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed}_{tag_A}_{tag_A}-{tag_B}.tsv",
         b_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed}_{tag_B}_{tag_A}-{tag_B}.tsv"
     output:
-        theo_rg_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/seed_{seed,\d+}_{tag_A,\d+}-{tag_B,\d+}_theo_rg.tsv",
+        theo_rg_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/seed_{seed}_{tag_A}-{tag_B}_theo_rg.tsv",
     params:
         population_prevalence_A = 0.02,
         sample_prevalence_A = 0.5,
