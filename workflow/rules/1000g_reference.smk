@@ -100,22 +100,23 @@ rule make_pruned_ranges:
       "resources/plink_subsets/{join}/{snp_set}/{chr}.bim",
       "resources/plink_subsets/{join}/{snp_set}/{chr}.fam"
     output:
-      "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/{chr}.prune.in",
-      "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/{chr}.prune.out"
+      "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/{chr}.prune.in",
+      "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/{chr}.prune.out"
     params:
       bfile = "resources/plink_subsets/{join}/{snp_set}/{chr}",
-      prune_out = "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/{chr}"
+      prune_out = "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/{chr}",
+      r2 = lambda wildcards: float(wildcards.r2.replace('_', '.'))
     threads: 8
     resources:
         mem_mb=get_mem_mb
     shell:
-      "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --indep-pairwise {wildcards.window} {wildcards.step} 0.2 --out {params.prune_out}"
+      "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --indep-pairwise {wildcards.window} {wildcards.step} {params.r2} --out {params.prune_out}"
 
 rule cat_pruned_ranges:
     input:
-      ("resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/chr%d.prune.in" % x for x in range(1,23))
+      ("resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/chr%d.prune.in" % x for x in range(1,23))
     output:
-        "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/all.prune.in"
+        "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
     shell:
       "for x in {input}; do cat $x >>{output}; done"
 
@@ -180,18 +181,19 @@ rule make_1000g_pruned_ranges:
         "resources/1000g/euro/qc/{chr}_qc.bim",
         "resources/1000g/euro/qc/{chr}_qc.fam"
     output:
-        "resources/1000g/euro/qc/pruned_ranges/window_{window}_step_{step}/{chr}.prune.in",
-        "resources/1000g/euro/qc/pruned_ranges/window_{window}_step_{step}/{chr}.prune.out"
+        "resources/1000g/euro/qc/pruned_ranges/window_{window}_step_{step}_r2_{r2}/{chr}.prune.in",
+        "resources/1000g/euro/qc/pruned_ranges/window_{window}_step_{step}_r2_{r2}/{chr}.prune.out"
     params:
         bfile = "resources/1000g/euro/qc/{chr}_qc",
-        prune_out = "resources/1000g/euro/qc/pruned_ranges/window_{window}_step_{step}/{chr}"
+        prune_out = "resources/1000g/euro/qc/pruned_ranges/window_{window}_step_{step}_r2_{r2}/{chr}",
+        r2 = lambda wildcards: float(wildcards.r2.replace('_', '.'))
     threads: 8
     resources:
         mem_mb=get_mem_mb
     shell:
-        "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --indep-pairwise {wildcards.window} {wildcards.step} 0.2 --out {params.prune_out}"
+        "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --indep-pairwise {wildcards.window} {wildcards.step} {params.r2} --out {params.prune_out}"
 
 rule prune_qced_1000g_snps:
     input:
-     [("resources/1000g/euro/qc/pruned_ranges/window_1000kb_step_50/chr%s.prune.in" % x for x in range(1,23))]+
-     [("resources/1000g/euro/qc/pruned_ranges/window_50_step_5/chr%s.prune.in" % x for x in range(1,23))]
+     [("resources/1000g/euro/qc/pruned_ranges/window_1000kb_step_50_r2_0_2/chr%s.prune.in" % x for x in range(1,23))]+
+     [("resources/1000g/euro/qc/pruned_ranges/window_50_step_5_r2_0_2/chr%s.prune.in" % x for x in range(1,23))]

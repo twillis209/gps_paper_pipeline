@@ -2,10 +2,10 @@ import pandas as pd
 
 rule comparing_gps_null_distributions:
     input:
-        perm_file = "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/3000_permutations/seed_48801_tags_1-2.tsv",
-        gps_files = [x[1] % (int(x[0])+48801) for x in enumerate([f"results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/3000_permutations/seed_%d_tags_{x}-{x+1}.tsv" for x in range(1, 400, 2)])]
+        perm_file = "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/3000_permutations/seed_48801_tags_1-2.tsv",
+        gps_files = [x[1] % (int(x[0])+48801) for x in enumerate([f"results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/3000_permutations/seed_%d_tags_{x}-{x+1}.tsv" for x in range(1, 400, 2)])]
     output:
-        "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50/3000_permutations/comparing_perm_and_real_null.tsv"
+        "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/3000_permutations/comparing_perm_and_real_null.tsv"
     run:
         perm_gps = []
 

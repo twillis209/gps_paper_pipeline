@@ -23,5 +23,6 @@ wildcard_constraints:
     shared_effect_blocks  = effect_blocks_regex,
     effect_blocks = effect_blocks_regex,
     join = 'ukbb|1000g',
-    snp_set = 'all_pruned_snps|sans_mhc|with_mhc'
+    snp_set = 'all_pruned_snps|sans_mhc|with_mhc',
+    r2 = '0_\d+'
 

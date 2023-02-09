@@ -2,9 +2,9 @@ localrules: compute_pvalue_for_mean_stat_for_trait_pair
 
 rule compute_per_chr_gps_for_trait_pair:
     input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}_per_chr/{chr}.tsv"
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}_per_chr/{chr}.tsv"
     output:
-        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}_per_chr/{chr}_{ecdf}_pert_{pert}_gps_value.tsv"
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}_per_chr/{chr}_{ecdf}_pert_{pert}_gps_value.tsv"
     params:
         epsilon_multiple = 2.0
     threads: lambda wildcards: 12 if wildcards.ecdf == 'naive' else 1
@@ -16,9 +16,9 @@ rule compute_per_chr_gps_for_trait_pair:
 
 rule compute_per_chr_gps_with_intermediate_values:
     input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}_per_chr/{chr}.tsv"
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}_per_chr/{chr}.tsv"
     output:
-        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}_per_chr/{chr}_{ecdf}_pert_{pert}_gps_intermediates.tsv",
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}_per_chr/{chr}_{ecdf}_pert_{pert}_gps_intermediates.tsv",
     threads: 1
     resources:
         runtime = 30
@@ -28,9 +28,9 @@ rule compute_per_chr_gps_with_intermediate_values:
 
 rule permute_per_chr_gps_for_trait_pair:
     input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}_per_chr/{chr}.tsv"
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}_per_chr/{chr}.tsv"
     output:
-        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}_per_chr/{draws}_permutations/{chr}.tsv",
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}_per_chr/{draws}_permutations/{chr}.tsv",
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
@@ -50,9 +50,9 @@ rule test_per_chr_gps:
 
 rule compute_mean_stat_for_trait_pair:
     input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
     output:
-        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{ecdf}_pert_{pert}_gps_value.tsv"
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{ecdf}_pert_{pert}_gps_value.tsv"
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
@@ -66,9 +66,9 @@ rule compute_mean_stat_for_trait_pair:
 
 rule permute_mean_stat_for_trait_pair:
     input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
     output:
-        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{draws}_permutations/permutations.tsv",
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{draws}_permutations/permutations.tsv",
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
@@ -83,9 +83,9 @@ rule permute_mean_stat_for_trait_pair:
 
 rule write_out_mean_stat_components_for_trait_pair:
     input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
     output:
-        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{ecdf}_pert_{pert}_components.tsv"
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{ecdf}_pert_{pert}_components.tsv"
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
@@ -99,10 +99,10 @@ rule write_out_mean_stat_components_for_trait_pair:
 
 rule compute_pvalue_for_mean_stat_for_trait_pair:
     input:
-        permutations = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{draws}_permutations/permutations.tsv",
-        mean_stat = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{ecdf}_pert_{pert}_gps_value.tsv"
+        permutations = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{draws}_permutations/permutations.tsv",
+        mean_stat = "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{ecdf}_pert_{pert}_gps_value.tsv"
     output:
-        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{draws}_permutations/{ecdf}_pert_{pert}_pvalue.tsv",
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A,\d+}-{tag_B,\d+}/mean_stat/{draws}_permutations/{ecdf}_pert_{pert}_pvalue.tsv",
     script:
         "../../scripts/compute_pvalue_for_mean_stat.R"
 
@@ -110,9 +110,9 @@ rule compute_mean_stat_for_ukbb_trait_pair:
     input:
       "resources/ukbb_sum_stats/{trait_A}.done",
       "resources/ukbb_sum_stats/{trait_B}.done",
-      sum_stats_file = "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv",
+      sum_stats_file = "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv",
     output:
-        "results/{join}/{snp_set}/window_{window}_step_{step}/mean_stat/{trait_A}-{trait_B}/{ecdf}_pert_{pert}_mean_value.tsv"
+        "results/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/mean_stat/{trait_A}-{trait_B}/{ecdf}_pert_{pert}_mean_value.tsv"
     threads: 1
     group: "permute"
     resources:
@@ -124,9 +124,9 @@ rule permute_ukbb_trait_pair_for_mean_stat:
     input:
       "resources/ukbb_sum_stats/{trait_A}.done",
       "resources/ukbb_sum_stats/{trait_B}.done",
-      sum_stats_file = "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv",
+      sum_stats_file = "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv",
     output:
-        "results/{join}/{snp_set,all_pruned_snps|sans_mhc}/window_{window}_step_{step}/mean_stat/{trait_A}-{trait_B}/{draws}_permutations/permutations.tsv"
+        "results/{join}/{snp_set,all_pruned_snps|sans_mhc}/window_{window}_step_{step}_r2_{r2}/mean_stat/{trait_A}-{trait_B}/{draws}_permutations/permutations.tsv"
     params:
         no_of_perturbations = 1
     threads: 12
@@ -139,10 +139,10 @@ rule permute_ukbb_trait_pair_for_mean_stat:
 
 rule compute_pvalue_for_mean_stat_for_ukbb_trait_pair:
     input:
-        mean_stat = "results/{join}/{snp_set}/window_{window}_step_{step}/mean_stat/{trait_A}-{trait_B}/{ecdf}_pert_{pert}_mean_value.tsv",
-        permutations = "results/{join}/{snp_set,all_pruned_snps|sans_mhc}/window_{window}_step_{step}/mean_stat/{trait_A}-{trait_B}/{draws}_permutations/permutations.tsv"
+        mean_stat = "results/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/mean_stat/{trait_A}-{trait_B}/{ecdf}_pert_{pert}_mean_value.tsv",
+        permutations = "results/{join}/{snp_set,all_pruned_snps|sans_mhc}/window_{window}_step_{step}_r2_{r2}/mean_stat/{trait_A}-{trait_B}/{draws}_permutations/permutations.tsv"
     output:
-        "results/{join}/{snp_set,all_pruned_snps|sans_mhc}/window_{window}_step_{step}/mean_stat/{trait_A}-{trait_B}/{draws}_permutations/{ecdf}_pert_{pert}_pvalue.tsv"
+        "results/{join}/{snp_set,all_pruned_snps|sans_mhc}/window_{window}_step_{step}_r2_{r2}/mean_stat/{trait_A}-{trait_B}/{draws}_permutations/{ecdf}_pert_{pert}_pvalue.tsv"
     resources:
         runtime = 5
     group: "permute"
@@ -151,9 +151,9 @@ rule compute_pvalue_for_mean_stat_for_ukbb_trait_pair:
 
 rule collate_mean_stat_pvalues_for_ukbb:
     input:
-        pvalue_files = ["results/{join}/{snp_set}/window_{window}_step_{step}/mean_stat/%s/{draws}_permutations/{ecdf}_pert_{pert}_pvalue.tsv" % x for x in ukbb_trait_pairs]
+        pvalue_files = ["results/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/mean_stat/%s/{draws}_permutations/{ecdf}_pert_{pert}_pvalue.tsv" % x for x in ukbb_trait_pairs]
     output:
-        combined_pvalue_file = "results/gps/combined/{join}/{snp_set}/window_{window}_step_{step}/mean_stat/{draws}_permutations/pvalues_{ecdf}_pert_{pert}.tsv"
+        combined_pvalue_file = "results/gps/combined/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/mean_stat/{draws}_permutations/pvalues_{ecdf}_pert_{pert}.tsv"
     resources:
         runtime = 20
     run:

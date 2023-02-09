@@ -334,9 +334,9 @@ rule prune_merged_sum_stats:
     input:
       sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz",
       bim_file = "resources/plink_subsets/{join}/{snp_set}/all.bim",
-      pruned_range_file = "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}/all.prune.in"
+      pruned_range_file = "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
     output:
-        "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
+        "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
     params:
         sans_mhc = lambda wildcards: True if wildcards.snp_set == "sans_mhc" else False
     threads: 12
@@ -347,9 +347,9 @@ rule prune_merged_sum_stats:
 
 rule downsample_pruned_merged_sum_stats:
     input:
-        "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}/pruned_merged_sum_stats.tsv"
+        "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
     output:
-        temp("resources/pruned_sum_stats/{join}/{snp_set}/{no_snps}_snps/window_{window}_step_{step}/pruned_merged_sum_stats.tsv")
+        temp("resources/pruned_sum_stats/{join}/{snp_set}/{no_snps}_snps/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv")
     threads: 12
     group: 'ukbb'
     shell:

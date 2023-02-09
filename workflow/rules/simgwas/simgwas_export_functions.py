@@ -47,15 +47,15 @@ def get_test_files(simulation_pars_file, reps, filetype, subset = None, draws = 
     elif filetype == 'sumher':
         files = [f"results/ldak/ldak-thin/simgwas/{reps}_reps/randomised/rg/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.cors" for row in daf.itertuples()]
     elif filetype == 'hoeffdings':
-        files = [f"results/hoeffdings/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_hoeffdings.tsv" for row in daf.itertuples()]
+        files = [f"results/hoeffdings/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50_r2_0_2/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_hoeffdings.tsv" for row in daf.itertuples()]
     elif filetype == 'gps':
-        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50/{draws}_permutations/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_gps_pvalue.tsv" for row in daf.itertuples()]
+        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50_r2_0_2/{draws}_permutations/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_gps_pvalue.tsv" for row in daf.itertuples()]
     elif filetype == 'theo':
         files = [f"results/ldsc/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/theoretical_rg/seed_{row.seed}_{row.tag_A}-{row.tag_B}_theo_rg.tsv" for row in daf.itertuples()]
     elif filetype == 'li_gps':
-        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_li_gps_pvalue.tsv" for row in daf.itertuples()]
+        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50_r2_0_2/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_li_gps_pvalue.tsv" for row in daf.itertuples()]
     elif filetype == 'mean_stat':
-        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}/mean_stat/{draws}_permutations/pp_pert_1_pvalue.tsv" for row in daf.itertuples()]
+        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50_r2_0_2/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}/mean_stat/{draws}_permutations/pp_pert_1_pvalue.tsv" for row in daf.itertuples()]
     elif filetype == 'done':
         files = [f"results/simgwas/done/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.done" for row in daf.itertuples()]
     else:
@@ -290,7 +290,7 @@ def compile_hoeffdings_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/hoeffdings/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_hoeffdings\.tsv", x)
+        m = re.match(r"results/hoeffdings/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_2/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_hoeffdings\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -323,7 +323,7 @@ def compile_gps_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50/3000_permutations/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_gps_pvalue\.tsv", x)
+        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_2/3000_permutations/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_gps_pvalue\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -363,7 +363,7 @@ def compile_li_gps_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_li_gps_pvalue\.tsv", x)
+        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_2/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_li_gps_pvalue\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -396,7 +396,7 @@ def compile_mean_gps_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)/mean_stat/(?P<draws>\d+)_permutations/pp_pert_(?P<pert>\d+)_pvalue\.tsv", x)
+        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_2/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)/mean_stat/(?P<draws>\d+)_permutations/pp_pert_(?P<pert>\d+)_pvalue\.tsv", x)
 
         try:
             with open(x, 'r') as infile:

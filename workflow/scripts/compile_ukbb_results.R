@@ -10,13 +10,13 @@ ukbb_all_sumher_dat <- fread("results/ldak/ldak-thin/ukbb/all/rg/compiled_ukbb_s
 
 ukbb_sans_mhc_sumher_dat <- fread("results/ldak/ldak-thin/ukbb/sans_mhc/rg/compiled_ukbb_sumher_results.tsv", sep = '\t', header = T)
 
-ukbb_all_hoeffdings_dat <- fread("results/combined/all/window_1000kb_step_50/hoeffdings_results.tsv", sep = '\t', header = T)
+ukbb_all_hoeffdings_dat <- fread("results/combined/all/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv", sep = '\t', header = T)
 
-ukbb_sans_mhc_hoeffdings_dat <- fread("results/combined/sans_mhc/window_1000kb_step_50/hoeffdings_results.tsv", sep = '\t', header = T)
+ukbb_sans_mhc_hoeffdings_dat <- fread("results/combined/sans_mhc/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv", sep = '\t', header = T)
 
-ukbb_all_gps_dat <- fread("results/gps/combined/all/window_1000kb_step_50/gps_pvalues_3000_permutations.tsv", sep = '\t', header = T)
+ukbb_all_gps_dat <- fread("results/gps/combined/all/window_1000kb_step_50_r2_0_2/gps_pvalues_3000_permutations.tsv", sep = '\t', header = T)
 
-ukbb_sans_mhc_gps_dat <- fread("results/gps/combined/sans_mhc/window_1000kb_step_50/gps_pvalues_3000_permutations.tsv", sep = '\t', header = T)
+ukbb_sans_mhc_gps_dat <- fread("results/gps/combined/sans_mhc/window_1000kb_step_50_r2_0_2/gps_pvalues_3000_permutations.tsv", sep = '\t', header = T)
 
 setnames(ukbb_all_ldsc_dat, 
          c('h2.A.obs.ldsc', 'h2.A.obs.se.ldsc', 'h2.B.obs.ldsc', 'h2.B.obs.se.ldsc', 'gcov.obs.ldsc', 'gcov.obs.se.ldsc', 'rg.ldsc', 'rg.se.ldsc', 'rg.z.ldsc', 'rg.p.ldsc'),
