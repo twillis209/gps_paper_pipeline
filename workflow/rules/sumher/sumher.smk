@@ -2,17 +2,17 @@ from scipy.stats import chi2
 
 rule thin_predictors:
     input:
-        "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.bed",
-        "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.bim",
-        "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.fam"
+        "resources/1000g/euro/qc/all/snps_only/{chr}.bed",
+        "resources/1000g/euro/qc/all/snps_only/{chr}.bim",
+        "resources/1000g/euro/qc/all/snps_only/{chr}.fam"
     output:
-        thin_file = "results/ldak/ldak-thin/weights/{join}/{chr}/thin.in",
-        weights_file = "results/ldak/ldak-thin/weights/{join}/{chr}/weights.thin"
+        thin_file = "results/ldak/ldak-thin/weights/{chr}/thin.in",
+        weights_file = "results/ldak/ldak-thin/weights/{chr}/weights.thin"
     log:
-        log_file = "results/ldak/ldak-thin/weights/{join}/{chr}/thin.log"
+        log_file = "results/ldak/ldak-thin/weights/{chr}/thin.log"
     params:
-        input_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
-        output_stem = "results/ldak/ldak-thin/weights/{join}/{chr}/thin"
+        input_stem = "resources/1000g/euro/qc/all/snps_only/{chr}",
+        output_stem = "results/ldak/ldak-thin/weights/{chr}/thin"
     threads: 4
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
@@ -24,17 +24,17 @@ rule thin_predictors:
 
 rule calculate_ldak_thin_taggings_for_chromosome:
     input:
-        "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.bed",
-        "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.bim",
-        "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}.fam",
-        weights_file = "results/ldak/ldak-thin/weights/{join}/{chr}/weights.thin"
+        "resources/1000g/euro/qc/all/snps_only/{chr}.bed",
+        "resources/1000g/euro/qc/all/snps_only/{chr}.bim",
+        "resources/1000g/euro/qc/all/snps_only/{chr}.fam",
+        weights_file = "results/ldak/ldak-thin/weights/{chr}/weights.thin"
     output:
-        tagging_file = "results/ldak/ldak-thin/taggings/{join}/{chr}.tagging",
+        tagging_file = "results/ldak/ldak-thin/taggings/{chr}.tagging",
     log:
-        log_file = "results/ldak/ldak-thin/taggings/{join}/{chr}.tagging.log"
+        log_file = "results/ldak/ldak-thin/taggings/{chr}.tagging.log"
     params:
-        input_stem = "resources/1000g/euro/qc/nodup/snps_only/{join}/{chr}",
-        output_stem = "results/ldak/ldak-thin/taggings/{join}/{chr}"
+        input_stem = "resources/1000g/euro/qc/all/snps_only/{chr}",
+        output_stem = "results/ldak/ldak-thin/taggings/{chr}"
     threads: 4
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
@@ -43,14 +43,14 @@ rule calculate_ldak_thin_taggings_for_chromosome:
 
 rule join_ldak_thin_taggings:
     input:
-        [f"results/ldak/ldak-thin/taggings/{{join}}/chr{x}.tagging" for x in range(1, 23)]
+        [f"results/ldak/ldak-thin/taggings/chr{x}.tagging" for x in range(1, 23)]
     output:
-        wg_tagging_file = "results/ldak/ldak-thin/{join}/whole_genome.tagging",
-        chrom_taggings_file = "results/ldak/ldak-thin/{join}/taggings.txt"
+        wg_tagging_file = "results/ldak/ldak-thin/whole_genome.tagging",
+        chrom_taggings_file = "results/ldak/ldak-thin/taggings.txt"
     log:
-        log_file = "results/ldak/ldak-thin/{join}/whole_genome.tagging.log"
+        log_file = "results/ldak/ldak-thin/whole_genome.tagging.log"
     params:
-        output_stem = "results/ldak/ldak-thin/{join}/whole_genome"
+        output_stem = "results/ldak/ldak-thin/whole_genome"
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
