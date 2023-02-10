@@ -22,7 +22,6 @@ wildcard_constraints:
     effect_blocks_B  = effect_blocks_regex,
     shared_effect_blocks  = effect_blocks_regex,
     effect_blocks = effect_blocks_regex,
-    join = 'ukbb|1000g',
-    snp_set = 'all_pruned_snps|sans_mhc|with_mhc',
+    snp_set = 'all|ukbb|ukbb_sans_mhc',
+    variant_set = 'all|snps_only',
     r2 = '0_\d+'
-

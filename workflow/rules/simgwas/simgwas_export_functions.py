@@ -36,8 +36,10 @@ def get_all_randomised_block_files(simulation_pars_file, reps):
 
     return a_block_files+b_block_files
 
-def get_test_files(simulation_pars_file, reps, filetype, subset = None, draws = "3000"):
+def get_test_files(simulation_pars_file, reps, filetype, subset = None, draws = "3000", window = "1000kb", step = 50, r2 = 0.2):
     daf = pd.read_csv(simulation_pars_file, sep = '\t')
+
+    str_r2 = str(r2).replace('.', '_')
 
     if subset:
         daf = daf.query(subset)
@@ -47,15 +49,15 @@ def get_test_files(simulation_pars_file, reps, filetype, subset = None, draws = 
     elif filetype == 'sumher':
         files = [f"results/ldak/ldak-thin/simgwas/{reps}_reps/randomised/rg/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.cors" for row in daf.itertuples()]
     elif filetype == 'hoeffdings':
-        files = [f"results/hoeffdings/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50_r2_0_2/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_hoeffdings.tsv" for row in daf.itertuples()]
+        files = [f"results/hoeffdings/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_{window}_step_{step}_r2_{str_r2}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_hoeffdings.tsv" for row in daf.itertuples()]
     elif filetype == 'gps':
-        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50_r2_0_2/{draws}_permutations/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_gps_pvalue.tsv" for row in daf.itertuples()]
+        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_{window}_step_{step}_r2_{str_r2}/{draws}_permutations/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_gps_pvalue.tsv" for row in daf.itertuples()]
     elif filetype == 'theo':
         files = [f"results/ldsc/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/theoretical_rg/seed_{row.seed}_{row.tag_A}-{row.tag_B}_theo_rg.tsv" for row in daf.itertuples()]
     elif filetype == 'li_gps':
-        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50_r2_0_2/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_li_gps_pvalue.tsv" for row in daf.itertuples()]
+        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_{window}_step_{step}_r2_{str_r2}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}_li_gps_pvalue.tsv" for row in daf.itertuples()]
     elif filetype == 'mean_stat':
-        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_1000kb_step_50_r2_0_2/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}/mean_stat/{draws}_permutations/pp_pert_1_pvalue.tsv" for row in daf.itertuples()]
+        files = [f"results/gps/simgwas/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/window_{window}_step_{step}_r2_{str_r2}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}/mean_stat/{draws}_permutations/pp_pert_1_pvalue.tsv" for row in daf.itertuples()]
     elif filetype == 'done':
         files = [f"results/simgwas/done/{reps}_reps/randomised/{row.ncases_A}_{row.ncontrols_A}_{row.ncases_B}_{row.ncontrols_B}/{row.a_blocks}_{row.b_blocks}_{row.shared_blocks}/seed_{row.seed}_tags_{row.tag_A}-{row.tag_B}.done" for row in daf.itertuples()]
     else:
