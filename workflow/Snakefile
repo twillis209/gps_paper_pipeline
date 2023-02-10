@@ -20,8 +20,8 @@ block_daf = block_daf.query('available == True')
 
 include: "rules/wildcard_constraints.smk"
 include: "rules/1000g_reference.smk"
-include: "rules/ukbb.smk"
-include: "rules/hoeffdings.smk"
+include: "rules/ukbb/ukbb.smk"
+include: "rules/ukbb/hoeffdings.smk"
 include: "rules/simgwas/simgwas.smk"
 include: "rules/simgwas/simgwas_randomised.smk"
 include: "rules/ldsc/ldsc.smk"

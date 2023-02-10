@@ -1,11 +1,10 @@
-
 rule compute_gps_for_trait_pair_and_write_out_intermediate_values:
     input:
         ancient("resources/{trait_A}"),
         ancient("resources/{trait_B}"),
-        sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"),
+        sum_stats_file = ancient("resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"),
     output:
-        temp("results/gps/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_intermediates.tsv")
+        temp("results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_intermediates.tsv")
     threads: 12
     resources:
         runtime = 30
@@ -15,27 +14,27 @@ rule compute_gps_for_trait_pair_and_write_out_intermediate_values:
 
 rule annotate_intermediate_gps_output:
     input:
-        intermediates_file = "results/gps/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_intermediates.tsv",
-        sum_stats_file = ancient("resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv")
+        intermediates_file = "results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_intermediates.tsv",
+        sum_stats_file = ancient("resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv")
     output:
-        "results/gps/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_intermediates_annot.tsv"
+        "results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_intermediates_annot.tsv"
     group: "gps"
     threads: 4
-    script: "../../scripts/annotate_intermediate_gps_output.R"
+    script: "../../scripts/gps/annotate_intermediate_gps_output.R"
 
 rule plot_denominator_heatmap:
     input:
-        "results/gps/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_ecdf.tsv"
+        "results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_ecdf.tsv"
     output:
-        "results/plots/{join}/gps_heatmaps/{trait_A}-{trait_B}.png"
+        "results/gps/{snp_set}/{variant_set}/gps_heatmaps/{trait_A}-{trait_B}.png"
     shell:
-        "workflow/scripts/plot_gps_denom_heatmap.R -i {input} -o {output}"
+        "workflow/scripts/gps/plot_gps_denom_heatmap.R -i {input} -o {output}"
 
 rule compile_top_maximands_for_ukbb_traits:
     input:
-        annot_files = [f"results/gps/ukbb/{{snp_set}}/window_1000kb_step_50_r2_0_2/{trait_pair}_intermediates_annot.tsv" for trait_pair in ukbb_trait_pairs],
-        pvalue_files = [f"results/gps/ukbb/{{snp_set}}/window_1000kb_step_50_r2_0_2/{trait_pair}_3000_permutations_gps_pvalue.tsv" for trait_pair in ukbb_trait_pairs]
+        annot_files = [f"results/gps/{{snp_set}}/snps_only/window_1000kb_step_50_r2_0_2/{trait_pair}_intermediates_annot.tsv" for trait_pair in ukbb_trait_pairs],
+        pvalue_files = [f"results/gps/{{snp_set}}/snps_only/window_1000kb_step_50_r2_0_2/{trait_pair}_3000_permutations_gps_pvalue.tsv" for trait_pair in ukbb_trait_pairs]
     output:
-        "results/gps/ukbb/{snp_set}/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv"
+        "results/gps/{snp_set}/snps_only/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv"
     threads: 4
-    script: "../../scripts/compile_top_maximands_for_ukbb_traits.R"
+    script: "../../scripts/gps/compile_top_maximands_for_ukbb_traits.R"

@@ -2,17 +2,17 @@ from scipy.stats import chi2
 
 rule thin_predictors:
     input:
-        "resources/1000g/euro/qc/all/snps_only/{chr}.bed",
-        "resources/1000g/euro/qc/all/snps_only/{chr}.bim",
-        "resources/1000g/euro/qc/all/snps_only/{chr}.fam"
+        "resources/1000g/euro/qc/{snp_set}/snps_only/{chr}.bed",
+        "resources/1000g/euro/qc/{snp_set}/snps_only/{chr}.bim",
+        "resources/1000g/euro/qc/{snp_set}/snps_only/{chr}.fam"
     output:
-        thin_file = "results/ldak/ldak-thin/weights/{chr}/thin.in",
-        weights_file = "results/ldak/ldak-thin/weights/{chr}/weights.thin"
+        thin_file = "results/ldak/ldak-thin/weights/{snp_set}/{chr}/thin.in",
+        weights_file = "results/ldak/ldak-thin/weights/{snp_set}/{chr}/weights.thin"
     log:
-        log_file = "results/ldak/ldak-thin/weights/{chr}/thin.log"
+        log_file = "results/ldak/ldak-thin/weights/{snp_set}/{chr}/thin.log"
     params:
-        input_stem = "resources/1000g/euro/qc/all/snps_only/{chr}",
-        output_stem = "results/ldak/ldak-thin/weights/{chr}/thin"
+        input_stem = "resources/1000g/euro/qc/{snp_set}/snps_only/{chr}",
+        output_stem = "results/ldak/ldak-thin/weights/{snp_set}/{chr}/thin"
     threads: 4
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
@@ -24,17 +24,17 @@ rule thin_predictors:
 
 rule calculate_ldak_thin_taggings_for_chromosome:
     input:
-        "resources/1000g/euro/qc/all/snps_only/{chr}.bed",
-        "resources/1000g/euro/qc/all/snps_only/{chr}.bim",
-        "resources/1000g/euro/qc/all/snps_only/{chr}.fam",
-        weights_file = "results/ldak/ldak-thin/weights/{chr}/weights.thin"
+        "resources/1000g/euro/qc/{snp_set}/snps_only/{chr}.bed",
+        "resources/1000g/euro/qc/{snp_set}/snps_only/{chr}.bim",
+        "resources/1000g/euro/qc/{snp_set}/snps_only/{chr}.fam",
+        weights_file = "results/ldak/ldak-thin/weights/{snp_set}/{chr}/weights.thin"
     output:
-        tagging_file = "results/ldak/ldak-thin/taggings/{chr}.tagging",
+        tagging_file = "results/ldak/ldak-thin/taggings/{snp_set}/{chr}.tagging",
     log:
-        log_file = "results/ldak/ldak-thin/taggings/{chr}.tagging.log"
+        log_file = "results/ldak/ldak-thin/taggings/{snp_set}/{chr}.tagging.log"
     params:
-        input_stem = "resources/1000g/euro/qc/all/snps_only/{chr}",
-        output_stem = "results/ldak/ldak-thin/taggings/{chr}"
+        input_stem = "resources/1000g/euro/qc/{snp_set}/snps_only/{chr}",
+        output_stem = "results/ldak/ldak-thin/taggings/{snp_set}/{chr}"
     threads: 4
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
@@ -43,14 +43,14 @@ rule calculate_ldak_thin_taggings_for_chromosome:
 
 rule join_ldak_thin_taggings:
     input:
-        [f"results/ldak/ldak-thin/taggings/chr{x}.tagging" for x in range(1, 23)]
+        [f"results/ldak/ldak-thin/taggings/{{snp_set}}/chr{x}.tagging" for x in range(1, 23)]
     output:
-        wg_tagging_file = "results/ldak/ldak-thin/whole_genome.tagging",
-        chrom_taggings_file = "results/ldak/ldak-thin/taggings.txt"
+        wg_tagging_file = "results/ldak/ldak-thin/{snp_set}/whole_genome.tagging",
+        chrom_taggings_file = "results/ldak/ldak-thin/{snp_set}/taggings.txt"
     log:
-        log_file = "results/ldak/ldak-thin/whole_genome.tagging.log"
+        log_file = "results/ldak/ldak-thin/{snp_set}/whole_genome.tagging.log"
     params:
-        output_stem = "results/ldak/ldak-thin/whole_genome"
+        output_stem = "results/ldak/ldak-thin/{snp_set}/whole_genome"
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
@@ -85,7 +85,7 @@ rule process_combined_simgwas_sum_stats:
 
 rule estimate_rg_with_ldak_thin_for_simgwas:
     input:
-        wg_tagging_file = "results/ldak/ldak-thin/1000g/whole_genome.tagging",
+        wg_tagging_file = "results/ldak/ldak-thin/all/whole_genome.tagging",
         sum_stats_file_A = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_A_tag_{tag_A}_of_{tag_A}-{tag_B}.assoc",
         sum_stats_file_B = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tag_{tag_B}_of_{tag_A}-{tag_B}.assoc"
     output:

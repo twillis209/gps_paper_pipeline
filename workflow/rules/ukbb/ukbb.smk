@@ -232,27 +232,6 @@ ukbb_trait_pairs = ["20002_1111-22126",
 "E4_DM1-N80",
 "I42-N80"]
 
-pid_ukbb_trait_pairs = ["pid-20002_1220",
-"pid-20002_1286",
-"pid-20002_1289",
-"pid-20002_1291",
-"pid-20002_1381",
-"pid-20002_1464",
-"pid-20002_1111",
-"pid-22126",
-"pid-20002_1462",
-"pid-K51",
-"pid-20002_1465",
-"pid-20002_1473",
-"pid-K80",
-"pid-20002_1452",
-"pid-20002_1154",
-"pid-D25",
-"pid-6148_2",
-"pid-6148_5",
-"pid-20002_1226",
-"pid-E4_DM1"]
-
 trait_pairs_for_increasing_perm_fits = ["20002_1220-K80", "20002_1452-22126", "20002_1465-K80",  "20002_1286-D25", "6148_2-K51", "20002_1291-K80"]
 
 rule download_ukbb_sum_stats:
@@ -292,65 +271,27 @@ rule merge_ukbb_sum_stats:
     resources:
         runtime = 20
     group: 'ukbb'
-    script: "../scripts/merge_ukbb_sum_stats.R"
-
-rule make_ukbb_plink_ranges:
-    input:
-      sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz",
-      bim_files = [("resources/1000g/euro/qc/chr%d_qc.bim" % x for x in range(1,23)),
-      "resources/1000g/euro/qc/chrX_qc.bim"]
-    output:
-      bim_files = [("resources/plink_ranges/ukbb/{snp_set}/chr%d.txt" % x for x in range(1,23)),
-      "resources/plink_ranges/ukbb/{snp_set}/chrX.txt"]
-    params:
-        sans_mhc = lambda wildcards: True if wildcards.snp_set == 'sans_mhc' else False
-    threads: 12
-    resources:
-        runtime = 12
-    group: 'ukbb'
-    script: "../scripts/make_ukbb_plink_ranges.R"
-
-rule subset_ukbb_snp_variants:
-    input:
-        "resources/1000g/euro/qc/nodup/{chr}.bed",
-        "resources/1000g/euro/qc/nodup/{chr}.bim",
-        "resources/1000g/euro/qc/nodup/{chr}.fam",
-        range_file = "resources/plink_ranges/ukbb/{snp_set}/{chr}.txt"
-    output:
-        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.bed",
-        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.bim",
-        "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}.fam"
-    params:
-        input_stem = "resources/1000g/euro/qc/nodup/{chr}",
-        output_stem = "resources/ukbb_sum_stats/{snp_set}/nodup/snps_only/{chr}"
-    threads: 12
-    resources:
-        mem_mb=get_mem_mb
-    group: 'ukbb'
-    shell:
-        "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --snps-only --make-bed --extract {input.range_file} --silent --out {params.output_stem}"
+    script: "../scripts/ukbb/merge_ukbb_sum_stats.R"
 
 rule prune_merged_sum_stats:
     input:
       sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz",
-      bim_file = "resources/plink_subsets/{join}/{snp_set}/all.bim",
-      pruned_range_file = "resources/plink_ranges/{join}/{snp_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
+      bim_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/all.bim",
+      pruned_range_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
     output:
-        "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
-    params:
-        sans_mhc = lambda wildcards: True if wildcards.snp_set == "sans_mhc" else False
+        "resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
     threads: 12
     resources:
         runtime = 30
     group: 'ukbb'
-    script: "../scripts/prune_merged_sum_stats.R"
+    script: "../scripts/ukbb/prune_merged_sum_stats.R"
 
 rule downsample_pruned_merged_sum_stats:
     input:
-        "resources/pruned_sum_stats/{join}/{snp_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
+        "resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
     output:
-        temp("resources/pruned_sum_stats/{join}/{snp_set}/{no_snps}_snps/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv")
+        temp("resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{no_snps}_snps/pruned_merged_sum_stats.tsv")
     threads: 12
     group: 'ukbb'
-    shell:
-     "Rscript workflow/scripts/downsample_sum_stats.R -i {input} -n {wildcards.no_snps} -o {output} -nt {threads}"
+    script:
+     "../scripts/ukbb/downsample_sum_stats.R"

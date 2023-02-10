@@ -80,9 +80,19 @@ rule qc:
 rule make_subset_ranges:
     input:
         bim = "resources/1000g/euro/qc/{chr}.bim",
-        ukbb = "resources/ukbb/ukbb_sum_stats/merged_ukbb_sum_stats.tsv.gz"
     output:
         "resources/1000g/euro/qc/{snp_set}/ranges/{chr}.txt"
+    threads: 8
+    resources:
+        mem_mb=get_mem_mb
+    script: "../scripts/1000g/make_subset_ranges.R"
+
+rule make_subset_ranges:
+    input:
+        bim = "resources/1000g/euro/qc/{chr}.bim",
+        ukbb = "resources/ukbb/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz"
+    output:
+        "resources/1000g/euro/qc/{snp_set,ukbb_with_mhc|ukbb_sans_mhc}/ranges/{chr}.txt"
     threads: 8
     resources:
         mem_mb=get_mem_mb

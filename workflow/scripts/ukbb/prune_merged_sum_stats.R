@@ -4,14 +4,6 @@ setDTthreads(snakemake@threads)
 
 sum_stats_dat <- fread(snakemake@input[['sum_stats_file']], sep = '\t', header = T)
 
-if(snakemake@params[['sans_mhc']]) {
-  sum_stats_dat[, c('chr', 'bp') := tstrsplit(variant, split = ':', keep = 1:2)]
-
-  sum_stats_dat <- sum_stats_dat[!(chr == 6 & bp %between% c(24e6, 45e6))]
-
-  sum_stats_dat[, c('chr', 'bp') := NULL]
-}
-
 pruned_rsid_dat <- fread(snakemake@input[['pruned_range_file']], sep = ' ', header = F)
 
 names(pruned_rsid_dat) <- 'ID'
