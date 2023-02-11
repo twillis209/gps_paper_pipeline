@@ -111,8 +111,8 @@ rule merge_randomised_simulated_sum_stats:
 
 rule prune_merged_randomised_simulated_sum_stats:
     input:
-        bim_file = "resources/1000g/euro/qc/chr1-22_qc.bim",
-        pruned_range_file = "resources/plink_ranges/1000g/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in",
+        bim_file = "resources/1000g/euro/qc/all/all/all.bim",
+        pruned_range_file = "resources/1000g/euro/qc/all/all/ranges/prune/window_{window}_step_{step}_r2_{r2}/all.prune.in",
         sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_merged_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz"
     output:
         temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz")

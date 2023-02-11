@@ -33,6 +33,7 @@ rule vcf_to_bed:
   threads: 8
   resources:
       mem_mb=get_mem_mb
+  group: "1000g"
   shell:
       "plink2 --memory {resources.mem_mb} --threads {threads} --vcf {input} --make-bed --out {params.out} --set-all-var-ids @:#:\$r:\$a --max-alleles 2 --new-id-max-allele-len 20 'truncate'"
 
@@ -43,6 +44,7 @@ rule make_euro_fam:
       ped = "resources/1000g/integrated_call_samples_v3.20200731.ALL.ped.txt"
   output:
     "resources/1000g/euro.fam"
+  group: "1000g"
   script:
     "../scripts/1000g/get_euro_fam_file.R"
 
@@ -59,6 +61,7 @@ rule get_euro_samples:
   threads: 8
   resources:
       mem_mb=get_mem_mb
+  group: "1000g"
   shell:
     "plink2 --memory {resources.mem_mb} --threads {threads} --bfile resources/1000g/{wildcards.chr} --keep resources/1000g/euro.fam --make-bed --silent --out resources/1000g/euro/{wildcards.chr}_euro"
 
@@ -74,6 +77,7 @@ rule qc:
     threads: 8
     resources:
         mem_mb=get_mem_mb
+    group: "1000g"
     shell:
         "plink2 --memory {resources.mem_mb} --threads {threads} --bfile resources/1000g/euro/{wildcards.chr}_euro --geno 0.1 --mind 0.1 --maf 0.005 --hwe 1e-50 --rm-dup 'force-first' --make-bed --silent --out resources/1000g/euro/qc/{wildcards.chr}_qc"
 
@@ -81,13 +85,14 @@ rule make_subset_ranges:
     input:
         bim = "resources/1000g/euro/qc/{chr}.bim",
     output:
-        "resources/1000g/euro/qc/{snp_set}/ranges/{chr}.txt"
+        "resources/1000g/euro/qc/{snp_set,all}/ranges/{chr}.txt"
     threads: 8
     resources:
         mem_mb=get_mem_mb
+    group: "1000g"
     script: "../scripts/1000g/make_subset_ranges.R"
 
-rule make_subset_ranges:
+rule make_ukbb_subset_ranges:
     input:
         bim = "resources/1000g/euro/qc/{chr}.bim",
         ukbb = "resources/ukbb/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz"
@@ -96,6 +101,7 @@ rule make_subset_ranges:
     threads: 8
     resources:
         mem_mb=get_mem_mb
+    group: "1000g"
     script: "../scripts/1000g/make_subset_ranges.R"
 
 rule subset_reference:
@@ -114,6 +120,7 @@ rule subset_reference:
     threads: 8
     resources:
         mem_mb=get_mem_mb
+    group: "1000g"
     shell:
       "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --extract {input.range_file} --make-bed --out {params.out}"
 
@@ -132,6 +139,7 @@ rule make_pruned_ranges:
     threads: 8
     resources:
         mem_mb=get_mem_mb
+    group: "1000g"
     shell:
       "plink --memory {resources.mem_mb} --threads {threads} --bfile {params.bfile} --indep-pairwise {wildcards.window} {wildcards.step} {params.r2} --out {params.prune_out}"
 
@@ -140,6 +148,7 @@ rule cat_pruned_ranges:
       ("resources/1000g/euro/qc/{snp_set}/{variant_set}/ranges/prune/window_{window}_step_{step}_r2_{r2}/chr%d.prune.in" % x for x in range(1,23))
     output:
         "resources/1000g/euro/qc/{snp_set}/{variant_set}/ranges/prune/window_{window}_step_{step}_r2_{r2}/all.prune.in"
+    group: "1000g"
     shell:
       "for x in {input}; do cat $x >>{output}; done"
 
@@ -147,7 +156,8 @@ rule cat_bim_files:
     input:
         [f"resources/1000g/euro/qc/{{snp_set}}/{{variant_set}}/chr{x}.bim" for x in range(1,23)]
     output:
-        "resources/1000g/euro/qc/{snp_set}/{{variant_set}}/all.bim"
+        "resources/1000g/euro/qc/{snp_set}/{variant_set}/all.bim"
+    group: "1000g"
     shell:
         "for x in {input}; do cat $x >>{output}; done"
 
@@ -166,5 +176,6 @@ rule subset_to_get_snp_variants_only:
     threads: 8
     resources:
         mem_mb=get_mem_mb
+    group: "1000g"
     shell:
         "plink2 --memory {resources.mem_mb} --threads {threads} --bfile {params.input_stem} --snps-only --make-bed --silent --out {params.output_stem}"

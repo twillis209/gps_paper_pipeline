@@ -33,11 +33,11 @@ rule plot_gev_estimates_for_increasing_n_for_selected_ukbb_trait_pairs:
 
 rule plot_gev_estimates_for_increasing_no_snps:
     input:
-        ["results/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{no_snps}_snps/{trait_A}-{trait_B}_{draws}_permutations_estimates.tsv" % x for x in [10000, 50000, 100000, 200000, 300000, 400000]]
+        [f"results/{{snp_set}}/{{variant_set}}/window_{{window}}_step_{{step}}_r2_{{r2}}/{x}_snps/{{trait_A}}-{{trait_B}}_{{draws}}_permutations_estimates.tsv" for x in [10000, 50000, 100000, 200000, 300000, 400000]]
     output:
         "results/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_{draws}_permutations_variable_no_snps_estimates.png"
     params:
-        fit_file_string = " ".join(["results/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{no_snps}_snps/{trait_A}-{trait_B}_{draws}_permutations_estimates.tsv" % x for x in [10000, 50000, 100000, 200000, 300000, 400000]])
+        fit_file_string = " ".join([f"results/{{snp_set}}/{{variant_set}}/window_{{window}}_step_{{step}}_r2_{{r2}}/{x}_snps/{{trait_A}}-{{trait_B}}_{{draws}}_permutations_estimates.tsv" for x in [10000, 50000, 100000, 200000, 300000, 400000]])
     shell:
       "Rscript workflow/scripts/ukbb/plot_gev_estimates_for_increasing_no_snps.R -i {params.fit_file_string} -n 10000 50000 100000 200000 300000 400000 -o {output}"
 

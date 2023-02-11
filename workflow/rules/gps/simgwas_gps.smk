@@ -76,3 +76,18 @@ rule compute_hoeffdings_for_sim_pair:
         sed -i 's/{params.a_colname}/{wildcards.effect_blocks_A}_{wildcards.shared_effect_blocks}/' {output}
         sed -i 's/{params.b_colname}/{wildcards.effect_blocks_B}_{wildcards.shared_effect_blocks}/' {output}
         """
+
+rule compute_gps_for_simgwas_nd_write_out_intermediate_values:
+    input:
+        sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
+    output:
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A}-{tag_B}_gps_intermediates.tsv"
+    params:
+        a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
+        b_colname = lambda wildcards: f"p.{wildcards.tag_B}"
+    threads: 12
+    resources:
+        runtime = 30
+    group: "gps"
+    shell:
+        "workflow/scripts/gps_cpp/build/apps/fitAndEvaluateEcdfsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -n {threads} -o {output}"
