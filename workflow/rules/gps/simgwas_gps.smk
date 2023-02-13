@@ -77,7 +77,7 @@ rule compute_hoeffdings_for_sim_pair:
         sed -i 's/{params.b_colname}/{wildcards.effect_blocks_B}_{wildcards.shared_effect_blocks}/' {output}
         """
 
-rule compute_gps_for_simgwas_nd_write_out_intermediate_values:
+rule report_intermediate_gps_values_for_simgwas:
     input:
         sum_stats_file = "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
     output:

@@ -32,6 +32,10 @@ rule run_t1000_block_simulations:
     input:
         block_files = get_all_block_files(sample_sizes = sample_sizes, effect = 'tiny')
 
+rule run_small_10k_block_simulations:
+    input:
+        block_files = get_all_block_files(sample_sizes = [(10000, 10000)], effect = 'small')
+
 rule simulation_result_quintet:
     input:
         "results/ldsc/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/rg/fixed_h2_free_rg_intercept/seed_{seed}_tags_{tag_A}-{tag_B}.log",

@@ -7,3 +7,4 @@ dependencies:
 - bioconda/noarch::snakemake >= 7.19.1
 - pandas
 - scipy
+- ipython
