@@ -45,3 +45,12 @@ rule compile_real_results:
         "results/combined/all_pruned_snps/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
         "results/ldak/ldak-thin/ukbb/all/rg/compiled_ukbb_sumher_results.tsv"
     script: "../scripts/compile_ukbb_results.R"
+
+rule compile_intermediate_values_across_s400:
+    input:
+        "results/gps/simgwas/400_reps/randomised/500_10000_500_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_1_tags_1-2_gps_intermediates.tsv",
+        "results/gps/simgwas/400_reps/randomised/1000_10000_1000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_12201_tags_1-2_gps_intermediates.tsv",
+        "results/gps/simgwas/400_reps/randomised/5000_10000_5000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_36601_tags_1-2_gps_intermediates.tsv",
+        "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_48801_tags_1-2_gps_intermediates.tsv",
+        "results/gps/simgwas/400_reps/randomised/100000_100000_100000_100000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_73201_tags_1-2_gps_intermediates.tsv"
+
