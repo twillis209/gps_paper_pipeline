@@ -70,9 +70,9 @@ rule cat_split_block_files:
         line_count_bound = 850000
     threads: 1
     resources:
-        runtime = lambda wildcards, attempt: 40*attempt,
+        runtime = lambda wildcards, attempt: 80*attempt,
         mem_mb = get_mem_mb,
-    retries: 3
+    retries: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     script: "../../scripts/simgwas/combine_randomised_block_sum_stats.R"
 

@@ -13,7 +13,7 @@ rule compute_gps_for_sim_pair:
         no_of_pert_iterations = 0
     threads: 12
     resources:
-        runtime = 5
+        runtime = 90
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
