@@ -1,5 +1,8 @@
-#r2_values = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.5, 0.8]
-r2_values = [0.5, 0.8]
+r2_values = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.5, 0.8]
+#r2_values = [0.5, 0.8]
+
+def get_test_files_for_r2_sweep(ncases, blocks, shared_blocks, r2_values):
+    return list(chain(*[get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'gps', subset = f"a_blocks == \'{blocks}\' & shared_blocks == \'{shared_blocks}\' & ncases_A == {ncases}", r2 = x) for x in r2_values]))+list(chain(*[get_test_files("results/simgwas/simulation_parameters.tsv", reps = 400, filetype = 'li_gps', subset = f"a_blocks == \'{blocks}\' & shared_blocks == \'{shared_blocks}\' & ncases_A == {ncases}", r2 = x) for x in r2_values]))
 
 rule run_r2_sweep:
     input:
@@ -28,6 +31,5 @@ rule run_r2_sweeps:
         "results/gps/simgwas/400_reps/randomised/1000_10000_1000_10000/m50_m50_m25/r2_sweep/r2_sweep.tsv",
         "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/r2_sweep/r2_sweep.tsv",
         "results/gps/simgwas/400_reps/randomised/1000_10000_1000_10000/m50_m50_m0/r2_sweep/r2_sweep.tsv"
-
 
 
