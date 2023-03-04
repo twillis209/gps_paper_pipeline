@@ -10,7 +10,7 @@ cluster: "mkdir -p logs/{name} &&
   --ntasks 1
   --cpus-per-task {threads}
   --mail-type FAIL
-  --partition cclake,cclake-himem,skylake-himem,skylake,icelake,icelake-himem
+  --partition cclake,cclake-himem,skylake-himem,skylake
   --parsable"
 # NB: We need the --parsable option to allow the cluster-status script cluster-cancel command to work 
 jobs: 1000
@@ -52,7 +52,7 @@ rerun-triggers: 'mtime'
 verbose: False
 nolock: True
 dry-run: False
-notemp: False
+notemp: True
 max-status-checks-per-second: 10
 latency-wait: 20
 cluster-status: './cluster_status.py' 

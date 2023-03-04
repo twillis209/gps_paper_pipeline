@@ -11,7 +11,7 @@ merged_dat[, id.B := NULL]
 
 setnames(merged_dat, 'id.A', 'id')
 
-if(length(unique(merged_dat$chr)) != 22) {
+if(is.null(snakemake@wildcards[['chr']]) & length(unique(merged_dat$chr)) != 22) {
   stop(sprintf("Incorrect number of chromosomes present in merged summary statistics: %s", length(unique(merged_dat$chr))))
 } else {
   merged_dat <- unique(merged_dat, by = c('chr', 'position'))

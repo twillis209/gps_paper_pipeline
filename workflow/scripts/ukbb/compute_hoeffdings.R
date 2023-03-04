@@ -2,8 +2,6 @@ library(data.table)
 library(Rcpp)
 library(independence)
 
-setDTthreads(snakemake@threads)
-
 sourceCpp(code = '
 #include <Rcpp.h>
 #include <map>

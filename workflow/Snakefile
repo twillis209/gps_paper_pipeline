@@ -12,7 +12,8 @@ def get_permute_time(wildcards, threads, attempt):
     return min(max_time, attempt*int(0.75*int(wildcards.draws)/int(threads)))
 
 scattergather:
-    split_block_files_for_pair = 12
+    split_block_files_for_pair = 12,
+    split_block_files_for_chrom_for_pair = 12
 
 block_daf = pd.read_csv("resources/ldetect/available_blocks.tsv", sep = "\t")
 
@@ -24,11 +25,14 @@ include: "rules/ukbb/ukbb.smk"
 include: "rules/ukbb/hoeffdings.smk"
 include: "rules/simgwas/simgwas.smk"
 include: "rules/simgwas/simgwas_randomised.smk"
+include: "rules/simgwas/simgwas_randomised_one_chrom.smk"
 include: "rules/ldsc/ldsc.smk"
 include: "rules/ldsc/ukbb_ldsc.smk"
 include: "rules/ldsc/ldsc_randomised.smk"
+include: "rules/ldsc/ldsc_randomised_one_chrom.smk"
 include: "rules/gps/ukbb_gps.smk"
 include: "rules/gps/simgwas_gps.smk"
+include: "rules/gps/simgwas_gps_one_chrom.smk"
 include: "rules/gps/gof.smk"
 include: "rules/gps/properties.smk"
 include: "rules/simgwas/simgwas_export.smk"
