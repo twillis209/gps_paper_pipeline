@@ -40,12 +40,11 @@ rule estimate_rg_for_chrom_randomised_sum_stats:
     params:
         log_file_par = "results/ldsc/simgwas/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/rg/{h2_intercept,fixed|free}_h2_{rg_intercept,fixed|free}_rg_intercept/seed_{seed}_tags_{tag_A}-{tag_B}",
         # NB: Trailing '/' is needed in ld_score_root
-        ld_score_root = "resources/ldsc/eur_w_ld_chr/",
+        ld_score_stem = lambda wildcards: f"resources/ldsc/eur_w_ld_chr/{wildcards.chr.replace('chr', '')}",
         population_prevalence = 0.02,
         sample_prevalence = 0.5,
         h2_intercept = lambda wildcards: "--intercept-h2 1,1" if wildcards.h2_intercept == "fixed" else "",
-        rg_intercept = lambda wildcards: "--intercept-gencov 0,0" if wildcards.rg_intercept == "fixed" else "",
-        no_of_snps = lambda wildcards: 673682 #snp_daf.query()
+        rg_intercept = lambda wildcards: "--intercept-gencov 0,0" if wildcards.rg_intercept == "fixed" else ""
     resources:
         runtime = 2
     priority: 1
@@ -54,7 +53,7 @@ rule estimate_rg_for_chrom_randomised_sum_stats:
         "envs/ldsc.yaml"
     shell:
         # Hacky fix to retain 'log' file (the output is regrettably so-called), which we need whether or not the estimation process failed
-        "python2 $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld {input.l2_ldscore} --w-ld {input.l2_M5_50} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} {params.h2_intercept} {params.rg_intercept} >{log.log} || true"
+        "python2 $ldsc/ldsc.py --rg {input.sum_stats_A},{input.sum_stats_B} --ref-ld {params.ld_score_stem} --w-ld {params.ld_score_stem} --out {params.log_file_par} --samp-prev {params.sample_prevalence},{params.sample_prevalence} --pop-prev {params.population_prevalence},{params.population_prevalence} {params.h2_intercept} {params.rg_intercept} >{log.log} || true"
 
 rule write_out_randomised_blocks_for_chrom_for_pair:
     params:

@@ -125,7 +125,7 @@ rule get_causal_variants_by_ld_block:
         chr_no = lambda wildcards: wildcards.chr.replace('chr', ''),
         causal_variant_indices = lambda wildcards: cv_index_dict[2]
     output:
-        temp("results/simgwas/simulated_sum_stats/block_sum_stats/{chr}/null/10000_10000/block_{block}_causal_variants.tsv")
+        temp("results/simgwas/simulated_sum_stats/block_sum_stats/{chr}/null/0_cv/10000_10000/block_{block}_causal_variants.tsv")
     threads: 4
     resources:
         mem_mb = get_mem_mb,
@@ -136,7 +136,7 @@ rule get_causal_variants_by_ld_block:
 
 rule get_causal_variants:
     input:
-        [[f"results/simgwas/simulated_sum_stats/block_sum_stats/chr{chrom}/null/10000_10000/block_{block}_causal_variants.tsv" for block in block_daf.query('chr == @chrom')['block']] for chrom in range(1,23)]
+        [[f"results/simgwas/simulated_sum_stats/block_sum_stats/chr{chrom}/null/0_cv/10000_10000/block_{block}_causal_variants.tsv" for block in block_daf.query('chr == @chrom')['block']] for chrom in range(1,23)]
     output:
         "results/simgwas/combined_causal_variants.tsv"
     run:
@@ -148,7 +148,7 @@ rule get_causal_variants:
 
 rule make_whole_genome_metadata_file:
     input:
-        [["results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/10000_10000/block_%d_sum_stats.tsv.gz" % (chrom, block) for block in block_daf.query('chr == @chrom')['block']] for chrom in range(1,23)]
+        [["results/simgwas/simulated_sum_stats/chr%d/block_sum_stats/null/0_cv/10000_10000/block_%d_sum_stats.tsv.gz" % (chrom, block) for block in block_daf.query('chr == @chrom')['block']] for chrom in range(1,23)]
     output:
         temp("results/simgwas/simulated_sum_stats/whole_genome_sum_stats/metadata_only.tsv.gz")
     params:
