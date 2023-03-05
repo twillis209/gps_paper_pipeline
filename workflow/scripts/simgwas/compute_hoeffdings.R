@@ -43,7 +43,7 @@ hoeffding_res <- run_hoeffding(sum_stats_dat, snakemake@wildcards[['trait_A']], 
 
 res_dat <- data.table(t(unlist(hoeffding_res[c('n', 'Dn', 'scaled', 'p.value')])))
 
-res_dat[, `:=` (trait_A = snakemake@wildcards[['trait_A']], trait_B = snakemake@wildcards[['trait_B']])]
+res_dat[, `:=` (trait_A = snakemake@wildcards[['effect_blocks_A']], trait_B = snakemake@wildcards[['effect_blocks_B']])]
 
 res_dat <- res_dat[, c('trait_A', 'trait_B', 'n', 'Dn', 'scaled', 'p.value')]
 

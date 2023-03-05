@@ -66,9 +66,8 @@ rule compute_hoeffdings_for_chrom_for_pair:
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     resources:
         runtime = 2
-    shell:
+    script: "../../scripts/simgwas/compute_hoeffdings.R"
         """
-        Rscript workflow/scripts/ukbb/compute_hoeffdings.R -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -o {output} -nt 1
         sed -i 's/{params.a_colname}/{wildcards.effect_blocks_A}_{wildcards.shared_effect_blocks}/' {output}
         sed -i 's/{params.b_colname}/{wildcards.effect_blocks_B}_{wildcards.shared_effect_blocks}/' {output}
         """
