@@ -136,7 +136,7 @@ rule unzip_pruned_merged_randomised_simulated_sum_stats_for_chrom:
 
 rule count_lines_in_sum_stats_for_chrom:
     input:
-        "results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{label,A|B}_tag_{tag}_of_{tag_A}-{tag_B}.tsv.gz"
+        "results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{label}_tag_{tag}_of_{tag_A}-{tag_B}.tsv.gz"
     output:
         "results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{label,A|B}_tag_{tag}_of_{tag_A}-{tag_B}_linecount.txt"
     shell:
