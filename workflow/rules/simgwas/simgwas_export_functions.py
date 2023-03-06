@@ -70,10 +70,8 @@ def compile_sumher_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/ldak/ldak-thin/simgwas/(?P<no_reps>\d+)_reps/randomised/rg/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.cors", x)
+        m = re.match(r"results/ldak/ldak-thin/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?rg/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.cors", x)
 
-        #odds_ratios_A = parse_effect_token_to_odds_ratios(m.group('a_blocks'))
-        #odds_ratios_B = parse_effect_token_to_odds_ratios(m.group('b_blocks'))
         try:
             with open(x, 'r') as infile:
 
@@ -106,8 +104,6 @@ def compile_sumher_results_into_daf(input_files):
                     'ncontrols.A' : m.group('ncontrols_A'),
                     'ncases.B' : m.group('ncases_B'),
                     'ncontrols.B' : m.group('ncontrols_B'),
-                    #'odds_ratio.A': odds_ratios_A,
-                    #'odds_ratio.B': odds_ratios_B,
                     'blocks.A' : m.group('a_blocks'),
                     'blocks.B' : m.group('b_blocks'),
                     'shared_blocks' : m.group('shared_blocks'),
@@ -141,7 +137,7 @@ def compile_ldsc_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/ldsc/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/rg/fixed_h2_free_rg_intercept/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.log", x)
+        m = re.match(r"results/ldsc/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/rg/fixed_h2_free_rg_intercept/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.log", x)
 
         try:
             with open(x, 'r') as infile:
@@ -292,7 +288,7 @@ def compile_hoeffdings_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/hoeffdings/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_2/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_hoeffdings\.tsv", x)
+        m = re.match(r"results/hoeffdings/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_2/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_hoeffdings\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -325,7 +321,7 @@ def compile_gps_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_\d+/3000_permutations/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_gps_pvalue\.tsv", x)
+        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_\d+/3000_permutations/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_gps_pvalue\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -365,7 +361,7 @@ def compile_li_gps_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_\d+/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_li_gps_pvalue\.tsv", x)
+        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_\d+/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_li_gps_pvalue\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -435,7 +431,7 @@ def compile_theo_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/ldsc/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/theoretical_rg/seed_(?P<seed>\w+)_(?P<tag_a>\d+)-(?P<tag_b>\d+)_theo_rg\.tsv", x)
+        m = re.match(r"results/ldsc/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/theoretical_rg/seed_(?P<seed>\w+)_(?P<tag_a>\d+)-(?P<tag_b>\d+)_theo_rg\.tsv", x)
 
         with open(x, 'r') as infile:
             lines = [x.strip() for x in infile.readlines()]

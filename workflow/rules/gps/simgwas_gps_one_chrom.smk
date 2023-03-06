@@ -1,3 +1,5 @@
+localrules: compute_li_gps_pvalue_for_chrom_for_pair, fit_gev_and_compute_gps_pvalue_for_chrom_for_pair
+
 rule compute_gps_for_chrom_for_pair:
     input:
         sum_stats_file = "results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
@@ -8,10 +10,8 @@ rule compute_gps_for_chrom_for_pair:
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
         no_of_pert_iterations = 1
     threads: 1
-    resources:
-        runtime = 30
     priority: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     shell:
         "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -p {params.no_of_pert_iterations} -n {threads} -f pp -o {output}"
 
@@ -27,7 +27,7 @@ rule permute_for_chrom_for_pair:
     threads: 12
     resources:
         mem_mb = get_mem_mb,
-        runtime = get_permute_time,
+        runtime = 10
     group: "permutation"
     priority: 1
     shell:
@@ -38,7 +38,7 @@ rule compute_li_gps_pvalue_for_chrom_for_pair:
         "results/gps/simgwas/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A}-{tag_B}_gps_value.tsv",
     output:
         "results/gps/simgwas/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A}-{tag_B}_li_gps_pvalue.tsv"
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     script:
         "../../scripts/compute_li_gps_pvalue.R"
 
@@ -63,11 +63,7 @@ rule compute_hoeffdings_for_chrom_for_pair:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}"
     priority: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     resources:
         runtime = 2
     script: "../../scripts/simgwas/compute_hoeffdings.R"
-        """
-        sed -i 's/{params.a_colname}/{wildcards.effect_blocks_A}_{wildcards.shared_effect_blocks}/' {output}
-        sed -i 's/{params.b_colname}/{wildcards.effect_blocks_B}_{wildcards.shared_effect_blocks}/' {output}
-        """

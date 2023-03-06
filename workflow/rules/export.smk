@@ -56,6 +56,6 @@ rule compile_intermediate_values_across_s400:
 
 rule test_one_chrom_r2_sweep:
     input:
-        [f"results/simgwas/done/400_reps/randomised/chr1/10000_10000_10000_10000/m20_m20_m0/window_1000kb_step_50_r2_{x}/seed_1_tags_1-2.done" for x in ["0_2", "0_5", "0_8"]]
+        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400)
 
 

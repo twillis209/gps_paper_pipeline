@@ -2,6 +2,8 @@ tags = [str(x) for x in range(1, 401)]
 
 include: "simgwas_randomised_one_chrom_functions.py"
 
+localrules: count_lines_in_pruned_sum_stats_for_chrom, count_lines_in_sum_stats_for_chrom
+
 def get_no_of_blocks_in_chrom(wildcards):
     chr_token = int(wildcards.chr.replace('chr', ''))
     return block_daf.query('chr == @chr_token').shape[0]
@@ -18,7 +20,7 @@ rule tabulate_randomised_block_sum_stats_file_for_chrom_for_pair:
     resources:
         concurrent_sans_permute_jobs = 1,
         runtime = 10
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     run:
         a_block_files = input.block_files[-(2*params.no_of_blocks_in_chrom):-params.no_of_blocks_in_chrom]
         b_block_files = input.block_files[-params.no_of_blocks_in_chrom:]
@@ -45,7 +47,7 @@ rule split_block_files_for_chrom_for_pair:
     resources:
         concurrent_sans_permute_jobs = 1,
         runtime = 2
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     shell:
         """
         split --numeric-suffixes=1 -nl/{params.no_of_splits} {input.a_block_file} {params.a_file_prefix} --additional-suffix={params.suffix}
@@ -70,10 +72,10 @@ rule cat_split_block_files_for_chrom_for_pair:
         combined_sum_stats_B = temp("results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_B_tags_{tag_A}-{tag_B}_split_files/b_stats_{scatteritem}.tsv.gz")
     threads: 1
     resources:
-        runtime = lambda wildcards, attempt: 80*attempt,
+        runtime = 5,
         mem_mb = get_mem_mb,
     retries: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     script: "../../scripts/simgwas/combine_randomised_block_sum_stats.R"
 
 rule gather_split_block_files_for_chrom_for_pair:
@@ -88,7 +90,7 @@ rule gather_split_block_files_for_chrom_for_pair:
         mem_mb = get_mem_mb,
         concurrent_sans_permute_jobs = 1,
         runtime = 10
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     script: "../../scripts/simgwas/gather_split_block_files.R"
 
 rule merge_randomised_simulated_sum_stats_for_chrom:
@@ -104,7 +106,7 @@ rule merge_randomised_simulated_sum_stats_for_chrom:
     resources:
         runtime = 5
     priority: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     script: "../../scripts/simgwas/merge_sim_sum_stats.R"
 
 rule prune_merged_randomised_simulated_sum_stats_for_chrom:
@@ -117,7 +119,7 @@ rule prune_merged_randomised_simulated_sum_stats_for_chrom:
     threads: 4
     resources:
         runtime = 5
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     shell:
         "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
 
@@ -130,7 +132,7 @@ rule unzip_pruned_merged_randomised_simulated_sum_stats_for_chrom:
     resources:
         runtime = 5
     priority: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     shell:
         "gunzip -c {input} >{output}"
 

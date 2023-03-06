@@ -16,7 +16,7 @@ rule process_combined_simgwas_sum_stats_for_chrom:
     resources:
         runtime = 5
     priority: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     script:
         "../../scripts/process_combined_simgwas_sum_stats_for_sumher.R"
 
@@ -38,7 +38,7 @@ rule estimate_rg_with_ldak_thin_for_simgwas_for_chrom:
     resources:
         runtime = 5
     priority: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     shell:
         """
         $ldakRoot/ldak --sum-cors {params.output_stem} --tagfile {input.tagging_file} --summary {input.sum_stats_file_A} --summary2 {input.sum_stats_file_B} --allow-ambiguous YES --check-sums NO --cutoff 0.01 > {log.log_file}

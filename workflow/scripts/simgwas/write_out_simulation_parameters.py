@@ -49,7 +49,6 @@ daf = pd.DataFrame(sim_dicts)
 
 daf = daf[["a_blocks", "b_blocks", "shared_blocks", "ncases_A", "ncontrols_A", "ncases_B", "ncontrols_B", "tag_A", "tag_B", "seed"]]
 
-
 target_shared_blocks = [
 "s0-m0",
 "s0-m15",

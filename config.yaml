@@ -47,12 +47,13 @@ group-components:
   - benchmark_fast_ecdf_algorithm=150
   - sn_pvalue=1000
   - causal_variants=100
+  - one_chrom_analysis=25
 rerun-incomplete: True
 rerun-triggers: 'mtime'
 verbose: False
 nolock: True
 dry-run: False
-notemp: True
+notemp: False
 max-status-checks-per-second: 10
 latency-wait: 20
 cluster-status: './cluster_status.py' 

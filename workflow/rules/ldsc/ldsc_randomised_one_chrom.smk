@@ -19,7 +19,7 @@ rule munge_chrom_randomised_sum_stats:
     resources:
         runtime = 5
     priority: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     conda:
         "envs/ldsc.yaml"
     shell:
@@ -48,7 +48,7 @@ rule estimate_rg_for_chrom_randomised_sum_stats:
     resources:
         runtime = 2
     priority: 1
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "one_chrom_analysis"
     conda:
         "envs/ldsc.yaml"
     shell:

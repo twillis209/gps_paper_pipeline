@@ -37,9 +37,9 @@ run_hoeffding <- function(dat, trait_A_code, trait_B_code) {
   hoeffding.D.test(xs = dat[[trait_A_code]], ys = dat[[trait_B_code]])
 }
 
-sum_stats_dat <- fread(snakemake@input[['sum_stats_file']], sep = '\t', header = T, select = c(snakemake@wildcards[['trait_A']], snakemake@wildcards[['trait_B']]))
+sum_stats_dat <- fread(snakemake@input[['sum_stats_file']], sep = '\t', header = T, select = c(snakemake@params[['a_colname']], snakemake@params[['b_colname']]))
 
-hoeffding_res <- run_hoeffding(sum_stats_dat, snakemake@wildcards[['trait_A']], snakemake@wildcards[['trait_B']])
+hoeffding_res <- run_hoeffding(sum_stats_dat, snakemake@params[['a_colname']], snakemake@params[['b_colname']])
 
 res_dat <- data.table(t(unlist(hoeffding_res[c('n', 'Dn', 'scaled', 'p.value')])))
 

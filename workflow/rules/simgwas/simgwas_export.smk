@@ -3,6 +3,7 @@ import os
 from numpy import nan
 
 include: 'simgwas_export_functions.py'
+include: 'simgwas_one_chrom_export_functions.py'
 
 sample_sizes = [
                 (500, 10000),
@@ -22,7 +23,7 @@ m25_shared_blocks = ['m0', 'm5', 'm10', 'm15', 'm20', 'm25']
 m50_shared_blocks = ['m0', 'm10', 'm20', 'm30', 'm40', 'm50']
 s200_m25_shared_blocks = ['s0-m0', 's100-m0', 's100-m15', 's100-m25', 's200-m0', 's200-m15', 's200-m25']
 
-localrules: simulation_result_quintet
+localrules: simulation_result_quintet, simulation_result_quintet_for_chrom
 
 rule run_500_null_block_simulations:
     input:
