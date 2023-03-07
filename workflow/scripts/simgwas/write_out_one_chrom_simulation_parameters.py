@@ -24,27 +24,25 @@ r2_values = [0.2, 0.5, 0.8]
 
 for sample_tuple in sample_sizes:
     for effect_tuple in effect_tuples:
-        for r2 in r2_values:
-            for i in range(len(tags))[::2]:
-                sim_dicts.append(
-                                {
-                                    "chr" : "chr1",
-                                    "a_blocks" : effect_tuple.a_blocks,
-                                    "b_blocks" : effect_tuple.b_blocks,
-                                    "shared_blocks" : effect_tuple.shared_blocks,
-                                    "ncases_A" : sample_tuple[0],
-                                    "ncontrols_A" : sample_tuple[1],
-                                    "ncases_B" : sample_tuple[0],
-                                    "ncontrols_B" : sample_tuple[1],
-                                    "tag_A" : tags[i],
-                                    "tag_B" : tags[i+1],
-                                    "r2" : r2,
-                                    "window" : "1000kb",
-                                    "step" : 50,
-                                    "seed" : seed
-                                }
-                            )
-                seed += 1
+        for i in range(len(tags))[::2]:
+            sim_dicts += [{
+                                "chr" : "chr1",
+                                "a_blocks" : effect_tuple.a_blocks,
+                                "b_blocks" : effect_tuple.b_blocks,
+                                "shared_blocks" : effect_tuple.shared_blocks,
+                                "ncases_A" : sample_tuple[0],
+                                "ncontrols_A" : sample_tuple[1],
+                                "ncases_B" : sample_tuple[0],
+                                "ncontrols_B" : sample_tuple[1],
+                                "tag_A" : tags[i],
+                                "tag_B" : tags[i+1],
+                                "r2" : r2,
+                                "window" : "1000kb",
+                                "step" : 50,
+                                "seed" : seed
+                           } for r2 in r2_values
+                        ]
+            seed += 1
 
 daf = pd.DataFrame(sim_dicts)
 

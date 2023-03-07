@@ -17,7 +17,7 @@ rule munge_chrom_randomised_sum_stats:
         log = "results/simgwas/simulated_sum_stats/munged_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A,\d+}_{ncontrols_A,\d+}_{ncases_B,\d+}_{ncontrols_B,\d+}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed,\d+}_{pair_label,[AB]}_{tag,\d+}_of_{tag_A,\d+}-{tag_B,\d+}.tsv.log"
     threads: 1
     resources:
-        runtime = 5
+        runtime = 2
     priority: 1
     group: "one_chrom_analysis"
     conda:
@@ -65,7 +65,7 @@ rule write_out_randomised_blocks_for_chrom_for_pair:
         b_block_file = "results/ldsc/simgwas/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/theoretical_rg/block_files/seed_{seed,\d+}_{tag_B,\d+}_{tag_A,\d+}-{tag_B}.tsv"
     threads: 1
     resources:
-        runtime = 10
+        runtime = 5
     group: "calculate_theoretical_rg"
     run:
         block_files = get_randomised_block_files_for_pair(wildcards)
@@ -131,6 +131,6 @@ rule calculate_theoretical_rg_for_chrom_randomised_sum_stats:
         population_prevalence_B = 0.02,
         sample_prevalence_B = 0.5,
     resources:
-        runtime = 10
+        runtime = 2
     group: "calculate_theoretical_rg"
     script: "../../scripts/ldsc/calculate_theoretical_rg_randomised_blocks.R"

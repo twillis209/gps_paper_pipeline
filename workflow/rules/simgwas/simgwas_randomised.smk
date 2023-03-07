@@ -2,7 +2,7 @@ tags = [str(x) for x in range(1, 401)]
 
 include: "simgwas_randomised_functions.py"
 
-localrules: count_lines_in_sum_stats, count_lines_in_pruned_sum_stats
+localrules: count_lines_in_simgwas_sum_stats, count_lines_in_simgwas_pruned_sum_stats
 
 rule tabulate_randomised_block_sum_stats_file_for_pair:
     input:
@@ -148,7 +148,7 @@ rule write_out_per_chromosome_merged_randomised_simulated_sum_stats:
     group: "gwas"
     script: "../scripts/write_out_summary_statistics_per_chromosome.R"
 
-rule count_lines_in_sum_stats:
+rule count_lines_in_simgwas_sum_stats:
     input:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{label}_tag_{tag}_of_{tag_A}-{tag_B}.tsv.gz"
     output:
@@ -156,7 +156,7 @@ rule count_lines_in_sum_stats:
     shell:
         "zcat {input} | tail -n +2 | wc -l >{output}"
 
-rule count_lines_in_pruned_sum_stats:
+rule count_lines_in_simgwas_pruned_sum_stats:
     input:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz"
     output:
@@ -164,7 +164,7 @@ rule count_lines_in_pruned_sum_stats:
     shell:
         "zcat {input} | tail -n +2 | wc -l >{output}"
 
-rule run_count_jobs:
+rule run_simgwas_count_jobs:
     input:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/10000_10000_10000_10000/m50_m50_m0/seed_1_sum_stats_A_tag_1_of_1-2_linecount.txt",
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/10000_10000_10000_10000/m50_m50_m0/window_1000kb_step_50_r2_0_2/seed_1_pruned_sum_stats_tags_1-2_linecount.txt",

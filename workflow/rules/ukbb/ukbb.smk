@@ -295,3 +295,19 @@ rule downsample_pruned_merged_sum_stats:
     group: 'ukbb'
     script:
      "../scripts/ukbb/downsample_sum_stats.R"
+
+rule count_lines_in_ukbb_sum_stats:
+    input:
+        "resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz"
+    output:
+        "resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats_linecount.txt"
+    shell:
+        "tail -n +2 {input} | wc -l >{output}"
+
+rule count_lines_in_ukbb_pruned_sum_stats:
+    input:
+        "results/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
+    output:
+        "results/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats_linecount.txt"
+    shell:
+        "tail -n +2 {input} | wc -l >{output}"

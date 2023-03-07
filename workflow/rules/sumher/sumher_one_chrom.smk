@@ -14,7 +14,7 @@ rule process_combined_simgwas_sum_stats_for_chrom:
         sample_size = lambda wildcards: int(wildcards.ncases_A)+int(wildcards.ncontrols_A)
     threads: 2
     resources:
-        runtime = 5
+        runtime = 2
     priority: 1
     group: "one_chrom_analysis"
     script:
@@ -36,7 +36,7 @@ rule estimate_rg_with_ldak_thin_for_simgwas_for_chrom:
     params:
         output_stem = "results/ldak/ldak-thin/simgwas/{no_reps}_reps/randomised/rg/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_tags_{tag_A}-{tag_B}"
     resources:
-        runtime = 5
+        runtime = 2
     priority: 1
     group: "one_chrom_analysis"
     shell:

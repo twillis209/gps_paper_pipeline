@@ -30,5 +30,3 @@ rule compile_intermediate_values_across_s400:
 rule test_one_chrom_r2_sweep:
     input:
         get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400)
-
-

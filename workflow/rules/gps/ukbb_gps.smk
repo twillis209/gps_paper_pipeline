@@ -7,8 +7,6 @@ rule compute_gps_for_trait_pair:
       sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv",
     output:
         temp("results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_gps_value.tsv")
-    log:
-        "results/gps/{snp_set}/{variant_set}//window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_{draws}_permutations_gps_value.log"
     params:
         no_of_pert_iterations = 1
     threads: 10
@@ -47,7 +45,7 @@ rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
     shell:
       "Rscript workflow/scripts/fit_gev_and_compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
 
-rule compute_li_gps_pvalue_for_sim_pair:
+rule compute_li_gps_pvalue_for_trait_pair:
     input:
         "results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_gps_value.tsv"
     output:

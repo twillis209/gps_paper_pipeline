@@ -19,7 +19,7 @@ rule tabulate_randomised_block_sum_stats_file_for_chrom_for_pair:
     threads: 1
     resources:
         concurrent_sans_permute_jobs = 1,
-        runtime = 10
+        runtime = 1
     group: "one_chrom_analysis"
     run:
         a_block_files = input.block_files[-(2*params.no_of_blocks_in_chrom):-params.no_of_blocks_in_chrom]
@@ -88,8 +88,7 @@ rule gather_split_block_files_for_chrom_for_pair:
     threads: 12
     resources:
         mem_mb = get_mem_mb,
-        concurrent_sans_permute_jobs = 1,
-        runtime = 10
+        runtime = 1
     group: "one_chrom_analysis"
     script: "../../scripts/simgwas/gather_split_block_files.R"
 
@@ -104,7 +103,7 @@ rule merge_randomised_simulated_sum_stats_for_chrom:
         file_A_stat_cols = lambda wildcards: f"p.{wildcards.tag_A}",
         file_B_stat_cols = lambda wildcards: f"p.{wildcards.tag_B}"
     resources:
-        runtime = 5
+        runtime = 1
     priority: 1
     group: "one_chrom_analysis"
     script: "../../scripts/simgwas/merge_sim_sum_stats.R"
@@ -118,7 +117,7 @@ rule prune_merged_randomised_simulated_sum_stats_for_chrom:
         temp("results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz")
     threads: 4
     resources:
-        runtime = 5
+        runtime = 1
     group: "one_chrom_analysis"
     shell:
         "Rscript workflow/scripts/simgwas/prune_sim_sum_stats.R --sum_stats_file {input.sum_stats_file} --bim_file {input.bim_file} --prune_file {input.pruned_range_file} -o {output} -nt {threads}"
@@ -130,7 +129,7 @@ rule unzip_pruned_merged_randomised_simulated_sum_stats_for_chrom:
         temp("results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv")
     threads: 1
     resources:
-        runtime = 5
+        runtime = 1
     priority: 1
     group: "one_chrom_analysis"
     shell:
@@ -141,6 +140,8 @@ rule count_lines_in_sum_stats_for_chrom:
         "results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{label}_tag_{tag}_of_{tag_A}-{tag_B}.tsv.gz"
     output:
         "results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/seed_{seed}_sum_stats_{label,A|B}_tag_{tag}_of_{tag_A}-{tag_B}_linecount.txt"
+    resources:
+        runtime = 1
     shell:
         "zcat {input} | tail -n +2 | wc -l >{output}"
 
@@ -149,5 +150,7 @@ rule count_lines_in_pruned_sum_stats_for_chrom:
         "results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv.gz"
     output:
         "results/simgwas/simulated_sum_stats/per_chrom_sum_stats/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}_linecount.txt"
+    resources:
+        runtime = 1
     shell:
         "zcat {input} | tail -n +2 | wc -l >{output}"
