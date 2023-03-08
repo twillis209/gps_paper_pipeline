@@ -57,3 +57,22 @@ rule benchmark_ecdf_algorithms:
             head -n 1 $x | sed 's/^ \(.*\)s wall,.*$/\1/' >>{output.lw}
         done
         """
+
+rule benchmark_permute_sim_pair:
+    input:
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_1_pruned_sum_stats_tags_1-2.tsv"
+    output:
+        "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/3000_permutations/seed_1_tags_1-2.benchmark.tsv"
+    params:
+        a_colname = "p.1",
+        b_colname = "p.2",
+        no_of_pert_iterations = 1
+    threads: 12
+    resources:
+        mem_mb = get_mem_mb,
+        runtime = get_permute_time,
+    benchmark:
+        repeat("benchmarks/pp_pert_1.benchmark.txt", 10)
+    group: "permutation"
+    shell:
+        "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n 3000 -p 1"
