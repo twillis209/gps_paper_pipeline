@@ -60,12 +60,12 @@ rule benchmark_ecdf_algorithms:
 
 rule benchmark_permute_sim_pair:
     input:
-        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_1_pruned_sum_stats_tags_1-2.tsv"
+        "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_pruned_sum_stats_tags_{tag_A}-{tag_B}.tsv"
     output:
-        "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/3000_permutations/seed_1_tags_1-2.benchmark.tsv"
+        "results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/{draws}_permutations/seed_{seed}_tags_{tag_A}-{tag_B}_benchmark_run.tsv"
     params:
-        a_colname = "p.1",
-        b_colname = "p.2",
+        a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
+        b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
         no_of_pert_iterations = 1
     threads: 12
     resources:
@@ -75,4 +75,4 @@ rule benchmark_permute_sim_pair:
         repeat("benchmarks/pp_pert_1.benchmark.txt", 10)
     group: "permutation"
     shell:
-        "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n 3000 -p 1"
+        "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws} -p {params.no_of_pert_iterations}"
