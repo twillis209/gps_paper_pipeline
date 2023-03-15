@@ -1,4 +1,4 @@
-localrules: fit_gev_and_compute_gps_pvalue_for_trait_pair, collate_gps_pvalue_data
+localrules: fit_gev_and_compute_gps_pvalue_for_trait_pair
 
 rule compute_gps_for_trait_pair:
     input:

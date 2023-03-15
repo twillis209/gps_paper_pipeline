@@ -72,7 +72,7 @@ rule benchmark_permute_sim_pair:
         mem_mb = get_mem_mb,
         runtime = get_permute_time,
     benchmark:
-        repeat("benchmarks/pp_pert_1.benchmark.txt", 10)
+        repeat("benchmarks/results/gps/simgwas/{no_reps}_reps/randomised/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/{draws}_permutations/seed_{seed}_tags_{tag_A}-{tag_B}_benchmark_run.txt", 10)
     group: "permutation"
     shell:
         "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws} -p {params.no_of_pert_iterations}"
