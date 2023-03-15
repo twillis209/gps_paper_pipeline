@@ -70,7 +70,7 @@ def compile_sumher_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/ldak/ldak-thin/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?rg/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.cors", x)
+        m = re.match(r"results/ldak/ldak-thin/simgwas/(?P<no_reps>\d+)_reps/randomised/rg(/chr\d+)?/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)\.cors", x)
 
         try:
             with open(x, 'r') as infile:
