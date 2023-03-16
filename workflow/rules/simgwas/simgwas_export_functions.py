@@ -287,8 +287,7 @@ def compile_hoeffdings_results_into_daf(input_files):
     d = []
 
     for x in input_files:
-
-        m = re.match(r"results/hoeffdings/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_2/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_hoeffdings\.tsv", x)
+        m = re.match(r"results/hoeffdings/simgwas/(?P<no_reps>\d+)_reps/randomised(/chr\d+)?/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_(?P<window>\d+kb)_step_(?P<step>\d+)_r2_(?P<r2>\d+_\d+)/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_hoeffdings\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -308,9 +307,35 @@ def compile_hoeffdings_results_into_daf(input_files):
                     'shared_blocks' : m.group('shared_blocks'),
                     'tag_pair' : f"{m.group('tag_a')}-{m.group('tag_b')}",
                     'seed' : f"{m.group('seed')}",
+                    'window': m.group('window'),
+                    'step': m.group('step'),
+                    'r2': float(m.group('r2').replace('_', '.')),
                     'hoeff.p' : pval
                 }
             )
+
+        except ValueError:
+            _, _, n, Dn, scaled = lines[1].split('\t')
+            pval = nan
+
+            d.append(
+                {
+                    'ncases.A' : m.group('ncases_A'),
+                    'ncontrols.A' : m.group('ncontrols_A'),
+                    'ncases.B' : m.group('ncases_B'),
+                    'ncontrols.B' : m.group('ncontrols_B'),
+                    'blocks.A' : m.group('a_blocks'),
+                    'blocks.B' : m.group('b_blocks'),
+                    'shared_blocks' : m.group('shared_blocks'),
+                    'tag_pair' : f"{m.group('tag_a')}-{m.group('tag_b')}",
+                    'seed' : f"{m.group('seed')}",
+                    'window': m.group('window'),
+                    'step': m.group('step'),
+                    'r2': float(m.group('r2').replace('_', '.')),
+                    'hoeff.p' : pval
+                }
+            )
+            continue
         except FileNotFoundError:
             continue
 
@@ -321,7 +346,7 @@ def compile_gps_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_\d+/3000_permutations/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_gps_pvalue\.tsv", x)
+        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_(?P<window>\d+kb)_step_(?P<step>\d+)_r2_(?P<r2>\d+_\d+)/(?P<draws>\d+)_permutations/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_gps_pvalue\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -340,6 +365,9 @@ def compile_gps_results_into_daf(input_files):
                     'shared_blocks' : m.group('shared_blocks'),
                     'tag_pair' : f"{m.group('tag_a')}-{m.group('tag_b')}",
                     'seed' : f"{m.group('seed')}",
+                    'window': m.group('window'),
+                    'step': m.group('step'),
+                    'r2': float(m.group('r2').replace('_', '.')),
                     'gps' : gps,
                     'n' : n,
                     'loc' : loc,
@@ -361,7 +389,7 @@ def compile_li_gps_results_into_daf(input_files):
 
     for x in input_files:
 
-        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_\d+/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_li_gps_pvalue\.tsv", x)
+        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(chr\d+/)?(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_(?P<window>\d+kb)_step_(?P<step>\d+)_r2_(?P<r2>\d+_\d+)/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)_li_gps_pvalue\.tsv", x)
 
         try:
             with open(x, 'r') as infile:
@@ -380,43 +408,9 @@ def compile_li_gps_results_into_daf(input_files):
                     'shared_blocks' : m.group('shared_blocks'),
                     'tag_pair' : f"{m.group('tag_a')}-{m.group('tag_b')}",
                     'seed' : f"{m.group('seed')}",
-                    'gps' : gps,
-                    'pval' : pval
-                }
-            )
-        except FileNotFoundError:
-            continue
-
-    return pd.DataFrame(d)
-
-def compile_mean_gps_results_into_daf(input_files):
-    d = []
-
-    for x in input_files:
-
-        m = re.match(r"results/gps/simgwas/(?P<no_reps>\d+)_reps/randomised/(?P<ncases_A>\d+)_(?P<ncontrols_A>\d+)_(?P<ncases_B>\d+)_(?P<ncontrols_B>\d+)/(?P<a_blocks>[\w-]+)_(?P<b_blocks>[\w-]+)_(?P<shared_blocks>[\w-]+)/window_1000kb_step_50_r2_0_2/seed_(?P<seed>\w+)_tags_(?P<tag_a>\d+)-(?P<tag_b>\d+)/mean_stat/(?P<draws>\d+)_permutations/pp_pert_(?P<pert>\d+)_pvalue\.tsv", x)
-
-        try:
-            with open(x, 'r') as infile:
-                lines = [x.strip() for x in infile.readlines()]
-
-            _, _, xi, omega, alpha, gps, pval = lines[1].split('\t')
-
-            d.append(
-                {
-                    'ncases.A' : m.group('ncases_A'),
-                    'ncontrols.A' : m.group('ncontrols_A'),
-                    'ncases.B' : m.group('ncases_B'),
-                    'ncontrols.B' : m.group('ncontrols_B'),
-                    'blocks.A' : m.group('a_blocks'),
-                    'blocks.B' : m.group('b_blocks'),
-                    'shared_blocks' : m.group('shared_blocks'),
-                    'tag_pair' : f"{m.group('tag_a')}-{m.group('tag_b')}",
-                    'seed' : f"{m.group('seed')}",
-                    'permutations' : f"{m.group('draws')}",
-                    'xi': xi,
-                    'omega': omega,
-                    'alpha': alpha,
+                    'window': m.group('window'),
+                    'step': m.group('step'),
+                    'r2': float(m.group('r2').replace('_', '.')),
                     'gps' : gps,
                     'pval' : pval
                 }
