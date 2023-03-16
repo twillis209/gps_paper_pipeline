@@ -263,7 +263,7 @@ rule merge_ukbb_sum_stats:
     input:
         ukbb_files = ["resources/ukbb_sum_stats/%s.gwas.imputed_v3.both_sexes.tsv" % x for x in ukbb_trait_codes]
     output:
-        merged_file = "resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz"
+        merged_file = "resources/ukbb_sum_stats/{snp_set}/all/merged_ukbb_sum_stats.tsv.gz"
     params:
         ukbb_trait_codes = ukbb_trait_codes,
         sans_mhc = lambda wildcards: True if wildcards.snp_set == 'sans_mhc' else False
@@ -275,9 +275,9 @@ rule merge_ukbb_sum_stats:
 
 rule prune_merged_sum_stats:
     input:
-      sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz",
-      bim_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/all.bim",
-      pruned_range_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
+        sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/{variant_set}/merged_ukbb_sum_stats.tsv.gz",
+        bim_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/all.bim",
+        pruned_range_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
     output:
         "resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
     threads: 12

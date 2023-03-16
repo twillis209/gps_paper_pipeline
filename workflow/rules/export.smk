@@ -30,3 +30,9 @@ rule compile_intermediate_values_across_s400:
 rule run_m20_one_chrom_r2_sweep:
     input:
         get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400)
+
+rule compile_li_gps_ukbb_results:
+    input:
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv"
+

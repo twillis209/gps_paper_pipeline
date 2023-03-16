@@ -1,5 +1,7 @@
 include: "ukbb_export_functions.py"
 
+localrules: compile_ukbb_gps_results, compile_ukbb_li_gps_results, compile_ukbb_ldsc_results, compile_ukbb_sumher_results, compile_ukbb_hoeffdings_results
+
 # TODO still haven't changed the paths for the existing results to match the new snp_set/variant_set convention
 rule compile_ukbb_gps_results:
     input:

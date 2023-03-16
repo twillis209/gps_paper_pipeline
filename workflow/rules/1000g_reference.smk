@@ -95,9 +95,9 @@ rule make_subset_ranges:
 rule make_ukbb_subset_ranges:
     input:
         bim = "resources/1000g/euro/qc/{chr}.bim",
-        ukbb = "resources/ukbb/ukbb_sum_stats/{snp_set}/merged_ukbb_sum_stats.tsv.gz"
+        ukbb = "resources/ukbb_sum_stats/{snp_set}/{variant_set}/merged_ukbb_sum_stats.tsv.gz"
     output:
-        "resources/1000g/euro/qc/{snp_set,ukbb_with_mhc|ukbb_sans_mhc}/ranges/{chr}.txt"
+        "resources/1000g/euro/qc/{snp_set}/{variant_set}/ranges/{chr}.txt"
     threads: 8
     resources:
         mem_mb=get_mem_mb
@@ -109,14 +109,14 @@ rule subset_reference:
       "resources/1000g/euro/qc/{chr}.bed",
       "resources/1000g/euro/qc/{chr}.bim",
       "resources/1000g/euro/qc/{chr}.fam",
-      range_file = "resources/1000g/euro/qc/{snp_set}/ranges/{chr}.txt"
+      range_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/ranges/{chr}.txt"
     output:
-      "resources/1000g/euro/qc/{snp_set}/all/{chr}.bed",
-      "resources/1000g/euro/qc/{snp_set}/all/{chr}.bim",
-      "resources/1000g/euro/qc/{snp_set}/all/{chr}.fam"
+      "resources/1000g/euro/qc/{snp_set}/{variant_set}/{chr}.bed",
+      "resources/1000g/euro/qc/{snp_set}/{variant_set}/{chr}.bim",
+      "resources/1000g/euro/qc/{snp_set}/{variant_set}/{chr}.fam"
     params:
       bfile = "resources/1000g/euro/qc/{chr}",
-      out = "resources/1000g/euro/qc/{snp_set}/all/{chr}"
+      out = "resources/1000g/euro/qc/{snp_set}/{variant_set}/{chr}"
     threads: 8
     resources:
         mem_mb=get_mem_mb
@@ -130,11 +130,11 @@ rule make_pruned_ranges:
         "resources/1000g/euro/qc/{snp_set}/{variant_set}/{chr}.bim",
         "resources/1000g/euro/qc/{snp_set}/{variant_set}/{chr}.fam"
     output:
-        "resources/1000g/euro/qc/{snp_set}/{variant_set}/ranges/prune/window_{window}_step_{step}_r2_{r2}/{chr}.prune.in",
-        "resources/1000g/euro/qc/{snp_set}/{variant_set}/ranges/prune/window_{window}_step_{step}_r2_{r2}/{chr}.prune.out"
+        "resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/{chr}.prune.in",
+        "resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/{chr}.prune.out"
     params:
       bfile = "resources/1000g/euro/qc/{snp_set}/{variant_set}/{chr}",
-      prune_out = "resources/1000g/euro/qc/{snp_set}/{variant_set}/ranges/prune/window_{window}_step_{step}_r2_{r2}/{chr}",
+      prune_out = "resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/{chr}",
       r2 = lambda wildcards: float(wildcards.r2.replace('_', '.'))
     threads: 8
     resources:
@@ -145,9 +145,9 @@ rule make_pruned_ranges:
 
 rule cat_pruned_ranges:
     input:
-      ("resources/1000g/euro/qc/{snp_set}/{variant_set}/ranges/prune/window_{window}_step_{step}_r2_{r2}/chr%d.prune.in" % x for x in range(1,23))
+      ("resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/chr%d.prune.in" % x for x in range(1,23))
     output:
-        "resources/1000g/euro/qc/{snp_set}/{variant_set}/ranges/prune/window_{window}_step_{step}_r2_{r2}/all.prune.in"
+        "resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
     group: "1000g"
     shell:
       "for x in {input}; do cat $x >>{output}; done"
