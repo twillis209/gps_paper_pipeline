@@ -10,14 +10,13 @@ rule compute_gps_for_sim_pair:
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
-        no_of_pert_iterations = 1
     threads: 1
     resources:
-        runtime = 30
+        runtime = 1
     priority: 1
     group: "ldsc_hoeffding_sumher_gps_sans_permutation"
     shell:
-        "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -p {params.no_of_pert_iterations} -n {threads} -f pp -o {output}"
+        "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {params.a_colname} -b {params.b_colname} -c {wildcards.effect_blocks_A} -d {wildcards.effect_blocks_B} -n {threads} -f pp -o {output}"
 
 rule permute_sim_pair:
     input:
@@ -27,7 +26,6 @@ rule permute_sim_pair:
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
-        no_of_pert_iterations = 1
     threads: 12
     resources:
         mem_mb = get_mem_mb,
@@ -35,7 +33,7 @@ rule permute_sim_pair:
     group: "permutation"
     priority: 1
     shell:
-        "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws} -p {params.no_of_pert_iterations}"
+        "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws}"
 
 rule compute_li_gps_pvalue_for_sim_pair:
     input:
