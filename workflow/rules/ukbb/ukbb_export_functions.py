@@ -53,12 +53,12 @@ def compile_ukbb_li_gps_results_into_daf(input_files):
             d.append(
                 {
                     'snp_set' : m.group('snp_set'),
-                    'variant_set' : m.group('snp_set'),
+                    'variant_set' : m.group('variant_set'),
                     'window' : m.group('window'),
                     'step' : m.group('step'),
                     'r2' : m.group('r2').replace('_', '.'),
-                    'trait_A' : m.group('trait_pair').split('-')[0],
-                    'trait_B' : m.group('trait_pair').split('-')[1],
+                    'trait_A' : m.group('trait_A'),
+                    'trait_B' : m.group('trait_B'),
                     'gps' : gps,
                     'pval' : pval
                 }

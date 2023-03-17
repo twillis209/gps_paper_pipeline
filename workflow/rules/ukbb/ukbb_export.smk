@@ -10,7 +10,7 @@ rule compile_ukbb_gps_results:
         "results/gps/combined/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{draws}_permutations/gps_pvalues.tsv"
     run:
         daf = compile_ukbb_gps_results_into_daf(input)
-        daf.to_csv(output, sep = '\t', index = False)
+        daf.to_csv(output[0], sep = '\t', index = False)
 
 rule compile_ukbb_li_gps_results:
     input:
@@ -19,7 +19,7 @@ rule compile_ukbb_li_gps_results:
         "results/gps/combined/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/li_gps_pvalues.tsv"
     run:
         daf = compile_ukbb_li_gps_results_into_daf(input)
-        daf.to_csv(output, sep = '\t', index = False)
+        daf.to_csv(output[0], sep = '\t', index = False)
 
 rule compile_ukbb_ldsc_results:
     input:
@@ -28,7 +28,7 @@ rule compile_ukbb_ldsc_results:
         "results/ldsc/rg/ukbb/{snp_set}/fixed_h2_free_rg_intercept/compiled_results.tsv"
     run:
         daf = compile_ukbb_ldsc_results_into_daf(input)
-        daf.to_csv(output, sep = '\t', index = False)
+        daf.to_csv(output[0], sep = '\t', index = False)
 
 rule compile_ukbb_sumher_results:
     input:
@@ -37,7 +37,7 @@ rule compile_ukbb_sumher_results:
         "results/ldak/ldak-thin/{snp_set}/rg/compiled_ukbb_sumher_results.tsv"
     run:
         daf = compile_ukbb_sumher_results_into_daf(input)
-        daf.to_csv(output, sep = '\t', index = False)
+        daf.to_csv(output[0], sep = '\t', index = False)
 
 rule compile_ukbb_hoeffdings_results:
     input:
@@ -46,7 +46,7 @@ rule compile_ukbb_hoeffdings_results:
         "results/combined/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/hoeffdings_results.tsv"
     run:
         daf = compile_ukbb_hoeffdings_results_into_daf(input)
-        daf.to_csv(output, sep = '\t', index = False)
+        daf.to_csv(output[0], sep = '\t', index = False)
 
 # TODO need to fix top maximands file paths
 rule ukbb_sans_mhc:

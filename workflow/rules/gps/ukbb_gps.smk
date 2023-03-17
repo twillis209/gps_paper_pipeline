@@ -1,4 +1,4 @@
-localrules: fit_gev_and_compute_gps_pvalue_for_trait_pair, compute_li_gps_pvalue_for_trait_pair
+localrules: compute_gps_for_trait_pair, fit_gev_and_compute_gps_pvalue_for_trait_pair, compute_li_gps_pvalue_for_trait_pair
 
 rule compute_gps_for_trait_pair:
     input:
@@ -8,7 +8,6 @@ rule compute_gps_for_trait_pair:
     output:
         temp("results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_gps_value.tsv")
     threads: 1
-    group: "gps"
     resources:
         runtime = 1
     shell:

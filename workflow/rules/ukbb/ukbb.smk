@@ -271,7 +271,7 @@ rule merge_ukbb_sum_stats:
     resources:
         runtime = 20
     group: 'ukbb'
-    script: "../scripts/ukbb/merge_ukbb_sum_stats.R"
+    script: "../../scripts/ukbb/merge_ukbb_sum_stats.R"
 
 rule prune_merged_sum_stats:
     input:
@@ -284,7 +284,7 @@ rule prune_merged_sum_stats:
     resources:
         runtime = 30
     group: 'ukbb'
-    script: "../scripts/ukbb/prune_merged_sum_stats.R"
+    script: "../../scripts/ukbb/prune_merged_sum_stats.R"
 
 rule downsample_pruned_merged_sum_stats:
     input:
@@ -294,7 +294,7 @@ rule downsample_pruned_merged_sum_stats:
     threads: 12
     group: 'ukbb'
     script:
-     "../scripts/ukbb/downsample_sum_stats.R"
+     "../../scripts/ukbb/downsample_sum_stats.R"
 
 rule count_lines_in_ukbb_sum_stats:
     input:
