@@ -1,3 +1,5 @@
+import os
+
 rule run_simulated_analyses:
     input:
         "results/s400_400_reps.done",
@@ -26,10 +28,6 @@ rule compile_intermediate_values_across_s400:
         "results/gps/simgwas/400_reps/randomised/5000_10000_5000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_36601_tags_1-2_gps_intermediates.tsv",
         "results/gps/simgwas/400_reps/randomised/10000_10000_10000_10000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_48801_tags_1-2_gps_intermediates.tsv",
         "results/gps/simgwas/400_reps/randomised/100000_100000_100000_100000/s400_s400_s0/window_1000kb_step_50_r2_0_2/seed_73201_tags_1-2_gps_intermediates.tsv"
-
-rule run_m20_one_chrom_r2_sweep:
-    input:
-        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400)
 
 rule compile_li_gps_ukbb_results:
     input:

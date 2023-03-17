@@ -147,3 +147,7 @@ rule run_t1000_simulations_and_analyses:
     output:
         "results/simgwas/simulated_sum_stats/whole_genome_sum_stats/400_reps/randomised/t1000.done"
     shell: "touch {output}"
+
+rule run_m20_one_chrom_r2_sweep:
+    input:
+        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv")

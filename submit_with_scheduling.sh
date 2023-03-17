@@ -3,8 +3,8 @@
 #SBATCH -A MRC-BSU-SL2-CPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --time=3:00:00
+#SBATCH --cpus-per-task=4
+#SBATCH --time=20:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH -p cclake
 #SBATCH -o logs/gps_paper_pipeline_scheduler/%j.out
