@@ -41,7 +41,7 @@ rule compile_ukbb_sumher_results:
 
 rule compile_ukbb_hoeffdings_results:
     input:
-        ["results/{{snp_set}}/{{variant_set}}/window_{{window}}_step_{{step}}_r2_{{r2}}/{x}_hoeffdings.tsv" for x in ukbb_trait_pairs]
+        [f"results/{{snp_set}}/{{variant_set}}/window_{{window}}_step_{{step}}_r2_{{r2}}/{x}_hoeffdings.tsv" for x in ukbb_trait_pairs]
     output:
         "results/combined/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/hoeffdings_results.tsv"
     run:
@@ -51,21 +51,21 @@ rule compile_ukbb_hoeffdings_results:
 # TODO need to fix top maximands file paths
 rule ukbb_sans_mhc:
     input:
-        "results/gps/ukbb_sans_mhc/snps_only/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv",
-        "results/gps/combined/ukbb_sans_mhc/snps_only/window_1000kb_step_50_r2_0_2/3000_permutations.tsv",
-        "results/gps/combined/ukbb_sans_mhc/snps_only/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv",
         "results/ldsc/rg/ukbb/ukbb_sans_mhc/fixed_h2_free_rg_intercept/compiled_results.tsv",
-        "results/combined/ukbb_sans_mhc/snps_only/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
+        "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
         "results/ldak/ldak-thin/ukbb_sans_mhc/rg/compiled_ukbb_sumher_results.tsv"
 
 rule ukbb_with_mhc:
     input:
-        "results/gps/ukbb_sans_mhc/snps_only/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv",
-        "results/gps/combined/ukbb_sans_mhc/snps_only/window_1000kb_step_50_r2_0_2/3000_permutations.tsv",
-        "results/gps/combined/ukbb_sans_mhc/snps_only/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv",
-        "results/ldsc/rg/ukbb/ukbb_sans_mhc/fixed_h2_free_rg_intercept/compiled_results.tsv",
-        "results/combined/ukbb_sans_mhc/snps_only/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
-        "results/ldak/ldak-thin/ukbb_sans_mhc/rg/compiled_ukbb_sumher_results.tsv"
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv",
+        "results/ldsc/rg/ukbb/ukbb_with_mhc/fixed_h2_free_rg_intercept/compiled_results.tsv",
+        "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
+        "results/ldak/ldak-thin/ukbb_with_mhc/rg/compiled_ukbb_sumher_results.tsv"
 
 # TODO get 
 rule compile_real_results:

@@ -12,6 +12,7 @@ rule preprocess_ukbb_sum_stats_trait:
     threads: 12
     resources:
         tmpdir = 'tmp'
+    group: "ukbb_ldsc"
     script: "../../scripts/ldsc/preprocess_ukbb_sum_stats_for_ldsc.R"
 
 rule munge_ukbb_sum_stats:
@@ -33,6 +34,7 @@ rule munge_ukbb_sum_stats:
         runtime = 10
     conda:
         "envs/ldsc.yaml"
+    group: "ukbb_ldsc"
     shell:
         """
         python $ldsc/munge_sumstats.py --sumstats {input} --N-col {params.n_col} --snp {params.id_col} --out {params.output_filename} --signed-sumstats {params.signed_sumstats_col} --p {params.pvalue_col} --a1 a1 --a2 a2 --frq EUR;
@@ -56,7 +58,7 @@ rule estimate_rg_for_ukbb_sum_stats:
         rg_intercept = lambda wildcards: "--intercept-gencov 0,0" if wildcards.rg_intercept == "fixed" else ""
     resources:
         runtime = 2
-    group: "ldsc_hoeffding_sumher_gps_sans_permutation"
+    group: "ukbb_ldsc"
     conda:
         "envs/ldsc.yaml"
     shell:

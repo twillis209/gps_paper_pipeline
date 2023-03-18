@@ -275,7 +275,7 @@ rule merge_ukbb_sum_stats:
 
 rule prune_merged_sum_stats:
     input:
-        sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/{variant_set}/merged_ukbb_sum_stats.tsv.gz",
+        sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/all/merged_ukbb_sum_stats.tsv.gz",
         bim_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/all.bim",
         pruned_range_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
     output:

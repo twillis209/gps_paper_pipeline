@@ -47,4 +47,8 @@ res_dat[, `:=` (trait_A = snakemake@wildcards[['effect_blocks_A']], trait_B = sn
 
 res_dat <- res_dat[, c('trait_A', 'trait_B', 'n', 'Dn', 'scaled', 'p.value')]
 
+if(is.na(res_dat$p.value)) {
+  stop("Failed to compute Hoeffding's test p-value")
+}
+
 fwrite(res_dat, file = snakemake@output[[1]], sep = '\t', col.names = T, row.names = F)

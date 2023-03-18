@@ -15,7 +15,7 @@ def compile_ukbb_gps_results_into_daf(input_files):
             d.append(
                 {
                     'snp_set' : m.group('snp_set'),
-                    'variant_set' : m.group('snp_set'),
+                    'variant_set' : m.group('variant_set'),
                     'window' : m.group('window'),
                     'step' : m.group('step'),
                     'r2' : m.group('r2').replace('_', '.'),

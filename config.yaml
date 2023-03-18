@@ -42,12 +42,12 @@ group-components:
   - permutation=1
   - ldsc_hoeffding_sumher_gps_sans_permutation=1
   - calculate_theoretical_rg=1000
-  - sumher=24
+  - sumher=48
   - benchmark_naive_ecdf_algorithm=12
   - benchmark_fast_ecdf_algorithm=150
-  - sn_pvalue=1000
   - causal_variants=100
   - one_chrom_analysis=25
+  - ukbb_ldsc=50
 rerun-incomplete: True
 rerun-triggers: 'mtime'
 verbose: False

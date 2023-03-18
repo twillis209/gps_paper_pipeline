@@ -150,4 +150,4 @@ rule run_t1000_simulations_and_analyses:
 
 rule run_m20_one_chrom_r2_sweep:
     input:
-        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv")
+        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400)
