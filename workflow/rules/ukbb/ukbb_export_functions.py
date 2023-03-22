@@ -71,10 +71,10 @@ def compile_ukbb_li_gps_results_into_daf(input_files):
 def compile_ukbb_ldsc_results_into_daf(input_files):
     d = []
 
-    h2_regex = r"Total Liability scale h2: (.+)\s+\((.+)\)"
+    h2_regex = r"Total \w+ scale h2: (.+)\s+\((.+)\)"
     int_regex = r"Intercept: (.+)\s+\((.+)\)"
 
-    gcov_regex = r"Total Liability scale gencov: (.+)\s+\((.+)\)"
+    gcov_regex = r"Total \w+ scale gencov: (.+)\s+\((.+)\)"
     gcov_zprod_regex = r"Mean z1\*z2: (.+)"
 
     for x in input_files:
@@ -255,7 +255,6 @@ def compile_ukbb_hoeffdings_results_into_daf(input_files):
             line = infile.readline()
             line = infile.readline()
 
-        # Category Trait1_Her SD Trait2_Her SD Both_Coher SD Correlation SD
         trait_A, trait_B, n, Dn, scaled, pvalue = line.split()
 
         d.append(

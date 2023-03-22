@@ -150,4 +150,8 @@ rule run_t1000_simulations_and_analyses:
 
 rule run_m20_one_chrom_r2_sweep:
     input:
-        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400)
+        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400, subset = 'a_blocks == \'m20\'')
+
+rule run_s60_one_chrom_r2_sweep:
+    input:
+        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400, subset = 'shared_blocks in [\'s0\', \'s30\', \'s60\']')

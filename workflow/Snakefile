@@ -21,6 +21,7 @@ block_daf = block_daf.query('available == True')
 
 include: "rules/wildcard_constraints.smk"
 include: "rules/1000g_reference.smk"
+include: "rules/ukbb/traits.smk"
 include: "rules/ukbb/ukbb.smk"
 include: "rules/ukbb/ukbb_export.smk"
 include: "rules/ukbb/hoeffdings.smk"

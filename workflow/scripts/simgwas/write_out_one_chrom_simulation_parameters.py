@@ -4,8 +4,9 @@ from collections import namedtuple
 EffectBlocks = namedtuple("EffectBlocks", "a_blocks b_blocks shared_blocks")
 
 medium_effect_tuples = [EffectBlocks(a_blocks = "m20", b_blocks = "m20", shared_blocks = f"m{x}") for x in range(0, 21, 5)]
+small_effect_tuples = [EffectBlocks(a_blocks = "s60", b_blocks = "s60", shared_blocks = f"s{x}") for x in range(0, 61, 10)]
 
-effect_tuples = medium_effect_tuples
+effect_tuples = medium_effect_tuples+small_effect_tuples
 
 tags = [str(x) for x in range(1, 401)]
 
