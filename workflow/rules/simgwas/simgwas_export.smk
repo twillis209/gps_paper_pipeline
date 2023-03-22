@@ -154,4 +154,4 @@ rule run_m20_one_chrom_r2_sweep:
 
 rule run_s60_one_chrom_r2_sweep:
     input:
-        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400, subset = 'shared_blocks in [\'s0\', \'s30\', \'s60\']')
+        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400, subset = 'shared_blocks == \'s0\' or shared_blocks == \'s30\' or shared_blocks == \'s60\'')

@@ -4,7 +4,7 @@ def get_one_chrom_simulation_done_files(simulation_pars_file, reps, subset = Non
     daf = pd.read_csv(simulation_pars_file, sep = '\t')
 
     if subset:
-        daf = daf.query('a_blocks == @subset & b_blocks == @subset')
+        daf = daf.query(subset)
 
     daf['r2'] = daf['r2'].apply(lambda x: str(x).replace('.', '_'))
 
