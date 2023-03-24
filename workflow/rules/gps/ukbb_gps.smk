@@ -7,9 +7,11 @@ rule compute_gps_for_trait_pair:
       sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv",
     output:
         temp("results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_gps_value.tsv")
-    threads: 1
+    # Need extra threads for the memory
+    threads: 4
     resources:
-        runtime = 1
+        runtime = 1,
+        mem_mb = get_mem_mb
     shell:
       "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -n {threads} -f pp -o {output}"
 
@@ -34,17 +36,20 @@ rule fit_gev_and_compute_gps_pvalue_for_trait_pair:
         perm_file = "results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{draws}_permutations/{trait_A}-{trait_B}.tsv"
     output:
         "results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_{draws}_permutations_gps_pvalue.tsv"
+    params:
+        trait_A = lambda wildcards: wildcards.trait_A,
+        trait_B = lambda wildcards: wildcards.trait_B
     resources:
-        runtime = 5
-    group: "gps"
-    shell:
-      "Rscript workflow/scripts/fit_gev_and_compute_gps_pvalue.R -g {input.gps_file} -p {input.perm_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -o {output}"
+        runtime = 1
+    script:
+      "../../scripts/fit_gev_and_compute_gps_pvalue.R"
 
 rule compute_li_gps_pvalue_for_trait_pair:
     input:
         "results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_gps_value.tsv"
     output:
         "results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_li_gps_pvalue.tsv"
-    group: "gps"
+    resources:
+        runtime = 1
     script:
         "../../scripts/compute_li_gps_pvalue.R"

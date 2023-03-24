@@ -1,22 +1,16 @@
-library(argparse)
 library(data.table)
 library(evd)
 library(fitdistrplus)
 
-parser <- ArgumentParser(description = 'Computes p-value for GPS statistic using permuted data')
-parser$add_argument('-g', '--gps_file', type = 'character', help = 'Path to file containing GPS value', required = T)
-parser$add_argument('-p', '--perm_file', type = 'character', help = 'Path to file containing GPS value generated from permuted data', required = T)
-parser$add_argument('-a', '--trait_a', type = 'character', help = 'Trait A', required = T)
-parser$add_argument('-b', '--trait_b', type = 'character', help = 'Trait B', required = T)
-parser$add_argument('-o', '--output_file', type = 'character', help = 'Path to output file', required = T)
+gps_dat <- fread(snakemake@input[['gps_file']], sep = '\t', header = T)
 
-args <- parser$parse_args()
+gps <- gps_dat[Trait_A == snakemake@params[['trait_A']] & Trait_B == snakemake@params[['trait_B']], GPS]
 
-gps_dat <- fread(args$gps_file, sep = '\t', header = T)
+perm_dat <- fread(snakemake@input[['perm_file']], sep = '\t', header = T)
 
-gps <- gps_dat[Trait_A == args$trait_a & Trait_B == args$trait_b, GPS]
-
-perm_dat <- fread(args$perm_file, sep = '\t', header = T)
+if(perm_dat[is.infinite(GPS), .N] > 0) {
+  stop(sprinf("%d infinite-valued permuted GPS realisations", perm_dat[is.infinite(GPS), .N]))
+}
 
 fgev.fit <- tryCatch(
    fgev(perm_dat$GPS),
@@ -41,4 +35,4 @@ shape.sd <- fgev.fitdist$sd[['shape']]
 
 pvalue <- pgev(gps, loc = loc, scale = scale, shape = shape, lower.tail = F)
 
-fwrite(data.table(gps = gps, n = nrow(perm_dat), loc = loc, loc.sd = loc.sd, scale = scale, scale.sd = scale.sd, shape = shape, shape.sd = shape.sd, pval = pvalue), sep = '\t', file = args$output_file)
+fwrite(data.table(gps = gps, n = nrow(perm_dat), loc = loc, loc.sd = loc.sd, scale = scale, scale.sd = scale.sd, shape = shape, shape.sd = shape.sd, pval = pvalue), sep = '\t', file = snakemake@output[[1]])

@@ -67,7 +67,28 @@ rule ukbb_with_mhc:
         "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
         "results/ldak/ldak-thin/ukbb_with_mhc/rg/compiled_ukbb_sumher_results.tsv"
 
-# TODO get 
+rule ukbb_with_mhc_and_alternative_r2:
+    input:
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/li_gps_pvalues.tsv",
+        "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/hoeffdings_results.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/li_gps_pvalues.tsv",
+        "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/hoeffdings_results.tsv"
+
+rule ukbb_sans_mhc_and_alternative_r2:
+    input:
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/li_gps_pvalues.tsv",
+        "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/hoeffdings_results.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/li_gps_pvalues.tsv",
+        "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/hoeffdings_results.tsv"
+
 rule compile_real_results:
     input:
         "results/gps/combined/sans_mhc/window_1000kb_step_50_r2_0_2/gps_pvalues_3000_permutations.tsv",

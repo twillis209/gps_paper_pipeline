@@ -30,7 +30,7 @@ rule merge_ukbb_sum_stats:
         merged_file = "resources/ukbb_sum_stats/{snp_set}/all/merged_ukbb_sum_stats.tsv.gz"
     params:
         ukbb_trait_codes = ukbb_trait_codes,
-        sans_mhc = lambda wildcards: True if wildcards.snp_set == 'sans_mhc' else False
+        sans_mhc = lambda wildcards: True if wildcards.snp_set == 'ukbb_sans_mhc' else False
     threads: 12
     resources:
         runtime = 20
