@@ -154,4 +154,41 @@ rule run_m20_one_chrom_r2_sweep:
 
 rule run_s60_one_chrom_r2_sweep:
     input:
-        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400, subset = 'shared_blocks == \'s0\' or shared_blocks == \'s30\' or shared_blocks == \'s60\'')
+        get_one_chrom_simulation_done_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = 400, subset = 'shared_blocks == \'s15\' or shared_blocks == \'s45\'')
+
+rule compile_r2_sweep_test_files:
+    input:
+        ldsc_files = lambda wildcards: get_one_chrom_test_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'ldsc', subset = f"{wildcards.effect_blocks}"),
+        sumher_files = lambda wildcards: get_one_chrom_test_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'sumher', subset = f"{wildcards.effect_blocks}"),
+        hoeffdings_files = lambda wildcards: get_one_chrom_test_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'hoeffdings', subset = f"{wildcards.effect_blocks}"),
+        gps_files = lambda wildcards: get_one_chrom_test_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'gps', subset = f"{wildcards.effect_blocks}"),
+        li_gps_files = lambda wildcards: get_one_chrom_test_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'li_gps', subset = f"{wildcards.effect_blocks}"),
+        theo_files = lambda wildcards: get_one_chrom_test_files("results/simgwas/one_chrom_simulation_parameters.tsv", reps = wildcards.no_reps, filetype = 'theo', subset = f"{wildcards.effect_blocks}")
+    output:
+        ldsc_out = "results/ldsc/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
+        sumher_out = "results/ldak/ldak-thin/simgwas/{no_reps}_reps/randomised/rg/compiled_{effect_blocks}_results.tsv",
+        hoeffdings_out = "results/hoeffdings/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
+        gps_out = "results/gps/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_results.tsv",
+        li_gps_out = "results/gps/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_li_gps_results.tsv",
+        theo_out = "results/ldsc/simgwas/{no_reps}_reps/randomised/compiled_{effect_blocks}_theo_rg.tsv",
+        done_out = "results/{effect_blocks}_{no_reps}_reps.done"
+    run:
+        ldsc_daf = compile_ldsc_results_into_daf(input.ldsc_files)
+        ldsc_daf.to_csv(output.ldsc_out, sep = '\t', index = False)
+
+        sumher_daf = compile_sumher_results_into_daf(input.sumher_files)
+        sumher_daf.to_csv(output.sumher_out, sep = '\t', index = False)
+
+        hoeffdings_daf = compile_hoeffdings_results_into_daf(input.hoeffdings_files)
+        hoeffdings_daf.to_csv(output.hoeffdings_out, sep = '\t', index = False)
+
+        gps_daf = compile_gps_results_into_daf(input.gps_files)
+        gps_daf.to_csv(output.gps_out, sep = '\t', index = False)
+
+        li_gps_daf = compile_li_gps_results_into_daf(input.li_gps_files)
+        li_gps_daf.to_csv(output.li_gps_out, sep = '\t', index = False)
+
+        theo_daf = compile_theo_rg_results_into_daf(input.theo_files)
+        theo_daf.to_csv(output[0], sep = '\t', index = False)
+
+        shell("touch {output.done_out}")

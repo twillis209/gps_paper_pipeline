@@ -48,6 +48,7 @@ group-components:
   - causal_variants=100
   - one_chrom_analysis=25
   - ukbb_ldsc=50
+  - gps=50
 rerun-incomplete: True
 rerun-triggers: 'mtime'
 verbose: False

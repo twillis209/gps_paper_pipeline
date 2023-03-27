@@ -8,7 +8,7 @@ rule compute_gps_for_trait_pair:
     output:
         temp("results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_gps_value.tsv")
     # Need extra threads for the memory
-    threads: 4
+    threads: 1
     resources:
         runtime = 1,
         mem_mb = get_mem_mb
@@ -26,7 +26,6 @@ rule permute_trait_pair:
     resources:
         mem_mb = get_mem_mb,
         runtime = get_permute_time,
-    group: "gps"
     shell:
       "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {threads} -n {wildcards.draws}"
 

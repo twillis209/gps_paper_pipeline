@@ -1,4 +1,4 @@
-localrules: compute_li_gps_pvalue_for_chrom_for_pair, fit_gev_and_compute_gps_pvalue_for_chrom_for_pair
+localrules: compute_li_gps_pvalue_for_chrom_for_pair, fit_gev_and_compute_gps_pvalue_for_chrom_for_pair, compute_hoeffdings_for_chrom_for_pair
 
 rule compute_gps_for_chrom_for_pair:
     input:
@@ -24,11 +24,10 @@ rule permute_for_chrom_for_pair:
     params:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}",
-    threads: 12
+    threads: 6
     resources:
         mem_mb = get_mem_mb,
-        runtime = 3
-    group: "one_chrom_analysis"
+        runtime = 20
     priority: 1
     shell:
         "workflow/scripts/gps_cpp/build/apps/permuteTraitsCLI -i {input.sum_stats_file} -o {output} -a {params.a_colname} -b {params.b_colname} -c {threads} -n {wildcards.draws}"
@@ -38,7 +37,6 @@ rule compute_li_gps_pvalue_for_chrom_for_pair:
         "results/gps/simgwas/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A}-{tag_B}_gps_value.tsv",
     output:
         "results/gps/simgwas/{no_reps}_reps/randomised/{chr}/{ncases_A}_{ncontrols_A}_{ncases_B}_{ncontrols_B}/{effect_blocks_A}_{effect_blocks_B}_{shared_effect_blocks}/window_{window}_step_{step}_r2_{r2}/seed_{seed}_tags_{tag_A}-{tag_B}_li_gps_pvalue.tsv"
-    group: "one_chrom_analysis"
     resources:
         runtime = 1
     script:
@@ -55,7 +53,6 @@ rule fit_gev_and_compute_gps_pvalue_for_chrom_for_pair:
         trait_B = lambda wildcards: wildcards.effect_blocks_B
     resources:
         runtime = 1
-    group: "one_chrom_analysis"
     script:
         "../../scripts/fit_gev_and_compute_gps_pvalue.R"
 
@@ -68,7 +65,6 @@ rule compute_hoeffdings_for_chrom_for_pair:
         a_colname = lambda wildcards: f"p.{wildcards.tag_A}",
         b_colname = lambda wildcards: f"p.{wildcards.tag_B}"
     priority: 1
-    group: "one_chrom_analysis"
     resources:
         runtime = 2
     script: "../../scripts/simgwas/compute_hoeffdings.R"
