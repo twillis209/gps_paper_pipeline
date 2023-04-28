@@ -10,7 +10,7 @@ rule compute_gps_for_trait_pair:
     # Need extra threads for the memory
     threads: 4
     resources:
-        runtime = 1,
+        runtime = 10,
         mem_mb = get_mem_mb
     shell:
       "workflow/scripts/gps_cpp/build/apps/computeGpsCLI -i {input.sum_stats_file} -a {wildcards.trait_A} -b {wildcards.trait_B} -c {wildcards.trait_A} -d {wildcards.trait_B} -n {threads} -f pp -o {output}"

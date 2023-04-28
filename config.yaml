@@ -4,7 +4,7 @@ cluster: "mkdir -p logs/{name} &&
   -o logs/{name}/%j.out
   -e logs/{name}/%j.err
   --export ALL,OMP_NUM_THREADS={threads}
-  --account MRC-BSU-SL2-CPU 
+  --account MRC-BSU-SL3-CPU 
   --time {resources.runtime}
   --nodes 1
   --ntasks 1
@@ -14,7 +14,7 @@ cluster: "mkdir -p logs/{name} &&
   --parsable"
 # NB: We need the --parsable option to allow the cluster-status script cluster-cancel command to work 
 jobs: 1000
-local-cores: 2
+local-cores: 8
 cores: 12
 keep-going: True
 use-conda: True

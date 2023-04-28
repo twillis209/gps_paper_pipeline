@@ -54,6 +54,15 @@ rule run_r2_0_8_sans_mhc_jobs:
         "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/li_gps_pvalues.tsv",
         "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/hoeffdings_results.tsv"
 
+rule run_r2_0_8_sans_mhc_only_gps_jobs:
+    input:
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/3000_permutations/gps_pvalues.tsv"
+
+rule run_r2_0_8_sans_mhc_only_li_gps_hoeffdings_jobs:
+    input:
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/li_gps_pvalues.tsv",
+        "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/hoeffdings_results.tsv"
+
 rule run_ukbb_top_maximands:
     input:
         "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv",
