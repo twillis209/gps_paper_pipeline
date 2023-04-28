@@ -8,7 +8,7 @@ rule compute_gps_for_trait_pair:
     output:
         temp("results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{trait_A}-{trait_B}_gps_value.tsv")
     # Need extra threads for the memory
-    threads: 1
+    threads: 4
     resources:
         runtime = 1,
         mem_mb = get_mem_mb

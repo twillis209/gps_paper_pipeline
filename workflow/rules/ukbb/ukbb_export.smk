@@ -48,55 +48,54 @@ rule compile_ukbb_hoeffdings_results:
         daf = compile_ukbb_hoeffdings_results_into_daf(input)
         daf.to_csv(output[0], sep = '\t', index = False)
 
-# TODO need to fix top maximands file paths
-rule ukbb_sans_mhc:
+rule run_r2_0_8_sans_mhc_jobs:
     input:
-        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv",
-        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/3000_permutations/gps_pvalues.tsv",
-        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv",
-        "results/ldsc/rg/ukbb/ukbb_sans_mhc/fixed_h2_free_rg_intercept/compiled_results.tsv",
-        "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
-        "results/ldak/ldak-thin/ukbb_sans_mhc/rg/compiled_ukbb_sumher_results.tsv"
-
-rule ukbb_with_mhc:
-    input:
-        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv",
-        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/3000_permutations/gps_pvalues.tsv",
-        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv",
-        "results/ldsc/rg/ukbb/ukbb_with_mhc/fixed_h2_free_rg_intercept/compiled_results.tsv",
-        "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
-        "results/ldak/ldak-thin/ukbb_with_mhc/rg/compiled_ukbb_sumher_results.tsv"
-
-rule ukbb_with_mhc_and_alternative_r2:
-    input:
-        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/compiled_top_maximands.tsv",
-        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/3000_permutations/gps_pvalues.tsv",
-        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/li_gps_pvalues.tsv",
-        "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/hoeffdings_results.tsv",
-        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/compiled_top_maximands.tsv",
-        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/3000_permutations/gps_pvalues.tsv",
-        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/li_gps_pvalues.tsv",
-        "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/hoeffdings_results.tsv"
-
-rule ukbb_sans_mhc_and_alternative_r2:
-    input:
-        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/compiled_top_maximands.tsv",
-        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/3000_permutations/gps_pvalues.tsv",
-        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/li_gps_pvalues.tsv",
-        "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/hoeffdings_results.tsv",
-        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/compiled_top_maximands.tsv",
         "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/3000_permutations/gps_pvalues.tsv",
         "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/li_gps_pvalues.tsv",
         "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/hoeffdings_results.tsv"
 
-rule compile_real_results:
+rule run_ukbb_top_maximands:
     input:
-        "results/gps/combined/sans_mhc/window_1000kb_step_50_r2_0_2/gps_pvalues_3000_permutations.tsv",
-        "results/ldsc/rg/ukbb/sans_mhc/fixed_h2_free_rg_intercept/compiled_results.tsv",
-        "results/combined/sans_mhc/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
-        "results/ldak/ldak-thin/ukbb/sans_mhc/rg/compiled_ukbb_sumher_results.tsv",
-        "results/gps/combined/all/window_1000kb_step_50_r2_0_2/gps_pvalues_3000_permutations.tsv",
-        "results/ldsc/rg/ukbb/all/fixed_h2_free_rg_intercept/compiled_results.tsv",
-        "results/combined/all_pruned_snps/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
-        "results/ldak/ldak-thin/ukbb/all/rg/compiled_ukbb_sumher_results.tsv"
-    script: "../scripts/compile_ukbb_results.R"
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/compiled_top_maximands.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/compiled_top_maximands.tsv"
+
+rule run_ukbb_gps:
+    input:
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/3000_permutations/gps_pvalues.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/3000_permutations/gps_pvalues.tsv"
+
+rule run_ukbb_li_gps:
+    input:
+        #"results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv",
+        #"results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/li_gps_pvalues.tsv",
+        "results/gps/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/li_gps_pvalues.tsv",
+        #"results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/li_gps_pvalues.tsv",
+        #"results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/li_gps_pvalues.tsv",
+        "results/gps/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/li_gps_pvalues.tsv"
+
+rule run_ukbb_hoeffdings:
+    input:
+        "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
+        "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_5/hoeffdings_results.tsv",
+        "results/combined/ukbb_sans_mhc/all/window_1000kb_step_50_r2_0_8/hoeffdings_results.tsv",
+        "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_2/hoeffdings_results.tsv",
+        "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_5/hoeffdings_results.tsv",
+        "results/combined/ukbb_with_mhc/all/window_1000kb_step_50_r2_0_8/hoeffdings_results.tsv"
+
+rule run_ukbb_ldsc:
+    input:
+        "results/ldsc/rg/ukbb/ukbb_sans_mhc/fixed_h2_free_rg_intercept/compiled_results.tsv",
+        "results/ldsc/rg/ukbb/ukbb_with_mhc/fixed_h2_free_rg_intercept/compiled_results.tsv"
+
+rule run_ukbb_sumher:
+    input:
+        "results/ldak/ldak-thin/ukbb_sans_mhc/rg/compiled_ukbb_sumher_results.tsv",
+        "results/ldak/ldak-thin/ukbb_with_mhc/rg/compiled_ukbb_sumher_results.tsv"

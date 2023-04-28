@@ -39,16 +39,27 @@ rule merge_ukbb_sum_stats:
 
 rule prune_merged_sum_stats:
     input:
-        sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/all/merged_ukbb_sum_stats.tsv.gz",
-        bim_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/all.bim",
-        pruned_range_file = "resources/1000g/euro/qc/{snp_set}/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
+        sum_stats_file = "resources/ukbb_sum_stats/ukbb_with_mhc/all/merged_ukbb_sum_stats.tsv.gz",
+        bim_file = "resources/1000g/euro/qc/ukbb_with_mhc/{variant_set}/all.bim",
+        pruned_range_file = "resources/1000g/euro/qc/ukbb_with_mhc/{variant_set}/pruned_ranges/window_{window}_step_{step}_r2_{r2}/all.prune.in"
     output:
-        "resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
+        "resources/ukbb_sum_stats/ukbb_with_mhc/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
     threads: 12
     resources:
         runtime = 30
     group: 'ukbb'
     script: "../../scripts/ukbb/prune_merged_sum_stats.R"
+
+rule remove_mhc_from_pruned_merged_sum_stats:
+    input:
+        "resources/ukbb_sum_stats/ukbb_with_mhc/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
+    output:
+        "resources/ukbb_sum_stats/ukbb_sans_mhc/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv"
+    threads: 12
+    resources:
+        runtime = 5
+    group: 'ukbb'
+    script: "../../scripts/ukbb/remove_mhc_from_pruned_merged_sum_stats.R"
 
 rule downsample_pruned_merged_sum_stats:
     input:
