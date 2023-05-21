@@ -8,8 +8,9 @@ max_time = 12*60
 def get_mem_mb(wildcards, threads):
     return threads * 3420
 
+# NB: Very platform-dependent
 def get_permute_time(wildcards, threads, attempt):
-    return min(max_time, attempt*int(0.75*int(wildcards.draws)/int(threads)))
+    return min(max_time, attempt*int(1.6*int(wildcards.draws)/int(threads)))
 
 scattergather:
     split_block_files_for_pair = 12,
