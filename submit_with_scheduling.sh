@@ -64,4 +64,4 @@ source  /home/tw395/.bashrc
 
 conda activate gps_paper_pipeline
 
-snakemake --profile "." "${@}"
+snakemake --profile profile "${@}"
