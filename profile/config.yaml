@@ -52,7 +52,7 @@ group-components:
   - ukbb_ldsc=50
   - gps=50
 rerun-incomplete: True
-rerun-triggers: 'mtime'
+#rerun-triggers: 'mtime'
 verbose: False
 nolock: True
 dry-run: False
