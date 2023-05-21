@@ -9,7 +9,7 @@ gps <- gps_dat[Trait_A == snakemake@params[['trait_A']] & Trait_B == snakemake@p
 perm_dat <- fread(snakemake@input[['perm_file']], sep = '\t', header = T)
 
 if(perm_dat[is.infinite(GPS), .N] > 0) {
-  stop(sprinf("%d infinite-valued permuted GPS realisations", perm_dat[is.infinite(GPS), .N]))
+  stop(sprintf("%d infinite-valued permuted GPS realisations", perm_dat[is.infinite(GPS), .N]))
 }
 
 fgev.fit <- tryCatch(
