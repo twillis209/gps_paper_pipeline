@@ -4,7 +4,7 @@ cluster: "mkdir -p logs/{name} &&
   -o logs/{name}/%j.out
   -e logs/{name}/%j.err
   --export ALL,OMP_NUM_THREADS={threads}
-  --account MRC-BSU-SL3-CPU 
+  --account MRC-BSU-SL2-CPU 
   --time {resources.runtime}
   --nodes 1
   --ntasks 1
@@ -14,7 +14,7 @@ cluster: "mkdir -p logs/{name} &&
   --parsable"
 # NB: We need the --parsable option to allow the cluster-status script cluster-cancel command to work 
 jobs: 1000
-local-cores: 8
+local-cores: 4
 cores: 12
 keep-going: True
 use-conda: True
@@ -31,6 +31,7 @@ set-threads:
   - process_combined_simgwas_sum_stats=12
   - calculate_theoretical_rg=1
   - permute_sim_pair=12
+  - permute_trait_pair=12
 set-resources:
   - merge_randomised_simulated_sum_stats:
       - runtime=25
@@ -49,7 +50,7 @@ group-components:
   - causal_variants=100
   - one_chrom_analysis=25
   - ukbb_ldsc=50
-  - gps=10
+  - gps=50
 rerun-incomplete: True
 rerun-triggers: 'mtime'
 verbose: False
