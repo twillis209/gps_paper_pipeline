@@ -5,8 +5,8 @@ from itertools import chain
 def get_trait_token(trait_wildcard):
     if '20002_' in trait_wildcard:
         return trait_wildcard.replace('20002_', '')
-    elif '_DM1' in trait_wildcard:
-        return trait_wildcard.replace('_DM1', '')
+    elif trait_wildcard == 'E4_DM1':
+        return 'E10'
     else:
         return trait_wildcard
 
@@ -63,7 +63,10 @@ rule count_field_overlapping_trait_instances:
     run:
         a_count = int(shell("tail -n +2 {input} | grep -c {params.trait_A_token}", read = True))
         b_count = int(shell("tail -n +2 {input} | grep -c {params.trait_B_token}", read = True))
-        ab_count = int(shell("tail -n +2 {input} | grep {params.trait_A_token} | grep -c {params.trait_B_token}", read = True))
+        try:
+            ab_count = int(shell("tail -n +2 {input} | grep {params.trait_A_token} | grep -c {params.trait_B_token}", read = True))
+        except Exception:
+            ab_count = 0
 
         with open(output[0], 'w') as out:
             out.write(f"{wildcards.trait_A}\t{wildcards.trait_B}\t{a_count}\t{b_count}\t{ab_count}\n")
@@ -78,7 +81,6 @@ rule compile_overlapping_instances_files:
         "results/metadata/ukbb/overlaps/compiled_pairs.tsv"
     localrule: True
     shell:"""
-    echo -e "trait_A\ttrait_B\tA_count\tB_count\tAB_count" >>{output}
-    cat {input} >>{output}
+        echo -e "trait_A\ttrait_B\tA_count\tB_count\tAB_count" >>{output}
+        cat {input} >>{output}
     """
-
