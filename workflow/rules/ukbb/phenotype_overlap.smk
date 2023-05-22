@@ -61,26 +61,38 @@ rule count_field_overlapping_trait_instances:
         trait_B_token = lambda wildcards: get_trait_token(wildcards.trait_B)
     localrule: True
     run:
-        a_count = int(shell("tail -n +2 {input} | grep -c {params.trait_A_token}", read = True))
-        b_count = int(shell("tail -n +2 {input} | grep -c {params.trait_B_token}", read = True))
-        try:
-            ab_count = int(shell("tail -n +2 {input} | grep {params.trait_A_token} | grep -c {params.trait_B_token}", read = True))
-        except Exception:
-            ab_count = 0
+        a_cases = int(shell("tail -n +2 {input} | grep -c {params.trait_A_token}", read = True))
+        b_cases = int(shell("tail -n +2 {input} | grep -c {params.trait_B_token}", read = True))
+        ab_cases = int(shell("tail -n +2 {input} | grep {params.trait_A_token} | grep -c {params.trait_B_token}", read = True))
+        a_controls = int(shell("tail -n +2 {input} | grep -v -c {params.trait_A_token}", read = True))
+        b_controls = int(shell("tail -n +2 {input} | grep -v -c {params.trait_B_token}", read = True))
+        ab_controls = int(shell("tail -n +2 {input} | grep -v {params.trait_A_token} | grep -v -c {params.trait_B_token}", read = True))
 
         with open(output[0], 'w') as out:
-            out.write(f"{wildcards.trait_A}\t{wildcards.trait_B}\t{a_count}\t{b_count}\t{ab_count}\n")
+            out.write(f"{wildcards.trait_A}\t{wildcards.trait_B}\t{a_cases}\t{b_cases}\t{ab_cases}\t{a_controls}\t{b_controls}\t{ab_controls}\n")
 
+traits_to_keep = ["20002_1464","20002_1381","20002_1111","22126","20002_1462","K51","20002_1465","20002_1473","K80","20002_1452","20002_1154","D25","6148_2","6148_5","20002_1226","E4_DM1","I42","N80"]
 
-overlapping_instance_pairs = list(chain(*[[f"{ukbb_trait_codes[i]}_and_{ukbb_trait_codes[j]}" for j in range(i+1,len(ukbb_trait_codes))] for i in range(len(ukbb_trait_codes))]))
+overlapping_instance_pairs = list(chain(*[[f"{traits_to_keep[i]}_and_{traits_to_keep[j]}" for j in range(i+1,len(traits_to_keep))] for i in range(len(traits_to_keep))]))
 
 rule compile_overlapping_instances_files:
     input:
         [f"results/metadata/ukbb/overlaps/{x}.tsv" for x in overlapping_instance_pairs]
     output:
-        "results/metadata/ukbb/overlaps/compiled_pairs.tsv"
+        temp("results/metadata/ukbb/overlaps/compiled_pairs.tsv")
     localrule: True
     shell:"""
-        echo -e "trait_A\ttrait_B\tA_count\tB_count\tAB_count" >>{output}
+        echo -e "trait_A\ttrait_B\tA_cases\tB_cases\tAB_cases\tA_controls\tB_controls\tAB_controls" >>{output}
         cat {input} >>{output}
     """
+
+rule annotate_overlap_results:
+    input:
+        overlap = "results/metadata/ukbb/overlaps/compiled_pairs.tsv",
+        metadata = "resources/ukbb_sum_stats/trait_metadata.tsv"
+    output:
+        "results/metadata/ukbb/overlaps/annotated_compiled_pairs.tsv"
+    params:
+        traits_to_keep = traits_to_keep
+    localrule: True
+    script: "../../scripts/ukbb/annotate_overlap_results.R"

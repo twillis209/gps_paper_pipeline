@@ -22,7 +22,7 @@ rule permute_trait_pair:
       "resources/ukbb_sum_stats/{trait_B}.done",
       sum_stats_file = "resources/ukbb_sum_stats/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/pruned_merged_sum_stats.tsv",
     output:
-        "results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{draws}_permutations/{trait_A}-{trait_B}.tsv"
+        protected("results/gps/{snp_set}/{variant_set}/window_{window}_step_{step}_r2_{r2}/{draws}_permutations/{trait_A}-{trait_B}.tsv")
     threads: 12
     resources:
         mem_mb = get_mem_mb,
