@@ -49,6 +49,7 @@ rule recode_ukb_tab_file:
         "results/metadata/ukbb/trait_columns_recoded.tsv"
     localrule: True
     threads: 8
+    conda: "../../envs/gps_paper.yaml"
     script: "../../scripts/recode_ukbb_fields.R"
 
 rule count_field_overlapping_trait_instances:
@@ -95,4 +96,5 @@ rule annotate_overlap_results:
     params:
         traits_to_keep = traits_to_keep
     localrule: True
+    conda: "../../envs/gps_paper.yaml"
     script: "../../scripts/ukbb/annotate_overlap_results.R"

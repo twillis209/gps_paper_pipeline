@@ -1,0 +1,18 @@
+name: gps_paper
+channels:
+- conda-forge
+- bioconda
+dependencies:
+- python >= 3.11
+- pandas
+- scipy
+- r-base >= 4.2.3
+- r-data.table >= 1.14.8
+- r-stringr
+- r-magrittr
+- r-r.utils
+- r-tidyverse
+- r-ggplot2
+- r-ggtext
+- r-ggrepel
+- r-patchwork

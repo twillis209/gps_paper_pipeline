@@ -16,4 +16,9 @@ m_dat[, f.temp := sqrt(A_cases * B_cases / A_controls / B_controls)]
 m_dat[, rho := ( AB_controls * f.temp + AB_cases / f.temp ) / sqrt( (A_controls + A_cases) * (B_controls + B_cases) )]
 m_dat[, f.temp := NULL]
 
+m_dat[, 'P(AB|A)' := AB_cases/A_cases]
+m_dat[, 'P(AB|B)' := AB_cases/B_cases]
+
+m_dat <- m_dat[, .(trait_A = desc_A, trait_B = desc_B, trait_A_code = trait_A, trait_B_code = trait_B, A_cases, B_cases, AB_cases, `P(AB|A)`, `P(AB|B)`, A_controls, B_controls, AB_controls, A_cases.gwas = ncases_A, B_cases.gwas = ncases_B, A_controls.gwas = ncontrols_A, B_controls.gwas = ncontrols_B, rho)]
+
 fwrite(m_dat, file = snakemake@output[[1]], sep = '\t')

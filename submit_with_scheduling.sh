@@ -62,6 +62,6 @@ echo -e "\nExecuting command:\n==================\n\n"
 
 source  /home/tw395/.bashrc
 
-conda activate gps_paper_pipeline
+unset R_LIBS
 
 snakemake --profile profile "${@}"
