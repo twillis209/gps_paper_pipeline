@@ -16,3 +16,7 @@ dependencies:
 - r-ggtext
 - r-ggrepel
 - r-patchwork
+- r-mvtnorm
+- r-Hmisc
+- r-evd
+- r-fitdistrplus

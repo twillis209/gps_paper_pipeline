@@ -10,7 +10,7 @@ cluster: "mkdir -p logs/{name} &&
   --ntasks 1
   --cpus-per-task {threads}
   --mail-type FAIL
-  --partition cclake,cclake-himem,skylake-himem,skylake
+  --partition cclake
   --parsable"
 # NB: We need the --parsable option to allow the cluster-status script cluster-cancel command to work 
 jobs: 1000
@@ -51,6 +51,7 @@ group-components:
   - one_chrom_analysis=25
   - ukbb_ldsc=50
   - gps=50
+  - rho_permutation=100
 rerun-incomplete: True
 #rerun-triggers: 'mtime'
 verbose: False

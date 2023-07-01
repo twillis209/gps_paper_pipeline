@@ -24,4 +24,8 @@ wildcard_constraints:
     effect_blocks = effect_blocks_regex,
     snp_set = 'all|ukbb_with_mhc|ukbb_sans_mhc',
     variant_set = 'all|snps_only',
-    r2 = '0_\d+'
+    r2 = '0_\d+',
+    rep = '\d+',
+    zmean = '\d+',
+    zsd = '\d+',
+    rho = '0_\d+'

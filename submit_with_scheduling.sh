@@ -64,4 +64,6 @@ source  /home/tw395/.bashrc
 
 unset R_LIBS
 
+conda activate snakemake_env
+
 snakemake --profile profile "${@}"
