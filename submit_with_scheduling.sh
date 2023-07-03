@@ -60,7 +60,17 @@ echo -e "\nnumtasks=$numtasks, numnodes=$numnodes, mpi_tasks_per_node=$mpi_tasks
 
 echo -e "\nExecuting command:\n==================\n\n"
 
-source  /home/tw395/.bashrc
+__conda_setup="$('/rds/project/rds-csoP2nj6Y6Y/tw395/mambaforge/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/rds/project/rds-csoP2nj6Y6Y/tw395/mambaforge/etc/profile.d/conda.sh" ]; then
+        . "/rds/project/rds-csoP2nj6Y6Y/tw395/mambaforge/etc/profile.d/conda.sh"
+    else
+        export PATH="/rds/project/rds-csoP2nj6Y6Y/tw395/mambaforge/bin:$PATH"
+    fi
+fi
+unset __conda_setup
 
 unset R_LIBS
 
