@@ -53,7 +53,7 @@ group-components:
   - gps=50
   - rho_permutation=100
 rerun-incomplete: True
-#rerun-triggers: 'mtime'
+rerun-triggers: 'mtime'
 verbose: False
 nolock: True
 dry-run: False
@@ -62,4 +62,4 @@ max-status-checks-per-second: 10
 latency-wait: 20
 cluster-status: './cluster_status.py' 
 cluster-cancel: 'scancel'
-retries: 3
+retries: 1
